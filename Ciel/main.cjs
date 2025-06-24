@@ -1,13 +1,15 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 
 let mainWindow;
 
 function createWindow() {
+  ipcMain.handle('ping', () => 'pong');
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
       nodeIntegration: true,
+        preload: 'preload.js'
     },
   });
 
