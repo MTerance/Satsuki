@@ -15,11 +15,12 @@
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
     "format": "prettier --write src/",
-    "start": "electron-forge start",
+    "start": "vite build & electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make"
   },
   "dependencies": {
+    "@electron-forge/plugin-vite": "^7.8.1",
     "@tailwindcss/vite": "^4.1.10",
     "concurrently": "^9.2.0",
     "daisyui": "^5.0.43",
@@ -53,6 +54,24 @@
   "config": {
     "forge": {
       "packagerConfig": {},
+      "plugins": [
+        {
+          "name": "@electron-forge/plugin-vite",
+          "config": {
+            "build": [
+              {
+                "entry": "main.cjs",
+                "config": "vite.main.config.js"
+              },
+              {
+                "entry": "preload.js",
+                "config": "vite.preload.config.js"
+              }
+            ],
+            "renderer": []
+          }
+        }
+      ],     
       "makers": [
         {
           "name": "@electron-forge/maker-squirrel",
