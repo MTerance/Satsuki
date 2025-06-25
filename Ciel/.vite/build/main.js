@@ -1,5 +1,6 @@
 "use strict";
 const require$$0 = require("electron");
+const require$$1 = require("path");
 function getDefaultExportFromCjs(x) {
   return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
 }
@@ -9,6 +10,7 @@ function requireMain() {
   if (hasRequiredMain) return main$1;
   hasRequiredMain = 1;
   const { app, BrowserWindow, ipcMain } = require$$0;
+  const path = require$$1;
   let mainWindow;
   function createWindow() {
     ipcMain.handle("ping", () => "pong");
@@ -17,7 +19,7 @@ function requireMain() {
       height: 600,
       webPreferences: {
         nodeIntegration: true,
-        preload: "preload.js"
+        preload: path.join(__dirname, "preload.js")
       }
     });
     mainWindow.loadFile("dist/index.html");

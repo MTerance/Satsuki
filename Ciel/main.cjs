@@ -1,4 +1,5 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
+const path = require('path');
 
 let mainWindow;
 
@@ -9,7 +10,7 @@ function createWindow() {
     height: 600,
     webPreferences: {
       nodeIntegration: true,
-        preload: 'preload.js'
+      preload: path.join(__dirname, 'preload.js')
     },
   });
 
