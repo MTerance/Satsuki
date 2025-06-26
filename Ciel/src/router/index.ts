@@ -22,6 +22,11 @@ const router = createRouter({
       name: 'database',
       component: () => import('../components/DatabaseDemo.vue'),
     },
+    {
+      path: '/websocket',
+      name: 'websocket',
+      component: () => import('../components/WebSocketDemo.vue'),
+    },
   ],
 })
 
