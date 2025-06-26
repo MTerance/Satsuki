@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "main": "main.cjs",
+  "main": "electron/main.cjs",
   "author": "Shomaa Azelkara",
   "description": "A simple Electron app with Vue 3 and Vite",
   "license": "MIT",
