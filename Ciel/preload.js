@@ -5,5 +5,12 @@ contextBridge.exposeInMainWorld('versions', {
     electron: () => process.versions.electron,
     chrome: () => process.versions.chrome,
     app: () => process.versions.app,
-    // ping: () => ipcRenderer.invoke('ping', () => 'pong'),
+    ping: () => ipcRenderer.invoke('ping'),
+});
+
+// Expose database API to renderer process
+contextBridge.exposeInMainWorld('database', {
+    addUser: (userData) => ipcRenderer.invoke('db-add-user', userData),
+    getUsers: () => ipcRenderer.invoke('db-get-users'),
+    deleteUser: (userId) => ipcRenderer.invoke('db-delete-user', userId),
 });
