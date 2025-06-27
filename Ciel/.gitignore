@@ -29,4 +29,11 @@ coverage
 
 *.tsbuildinfo
 
+# Build outputs
 out/
+dist-installer/
+dist-electron/
+dist-renderer/
+
+# Database files
+database.db
