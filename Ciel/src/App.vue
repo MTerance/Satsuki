@@ -15,6 +15,7 @@ import HelloWorld from './components/HelloWorld.vue'
         <RouterLink to="/about">About</RouterLink>
         <RouterLink to="/database">Database</RouterLink>
         <RouterLink to="/websocket">WebSocket</RouterLink>
+        <RouterLink to="/screen-detector">Screen Detector</RouterLink>
       </nav>
     </div>
   </header>
