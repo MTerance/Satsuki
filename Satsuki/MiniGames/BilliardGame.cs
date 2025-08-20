@@ -11,13 +11,32 @@ namespace Satsuki.MiniGames
     public partial class BilliardGame : Node3D
     {
         [Export] public Node3D whiteBall;
+        [Export] public Node3D[] balls;
         [Export] public Node3D cue;
         [Export] public Camera3D camera;
+        [Export] public Node3D[] pockets;
 
         private bool _isAiming = false;
         private float _force = 0.0f;
         private const float MaxForce = 20.0f;
-        private
+
+
+        private void CheckPocketCollisions()
+        {
+            foreach (var pocket in pockets)
+            {
+                foreach(Node child in GetTree().GetNodesInGroup("balls"))
+                {
+                    if (child is Node3D ball && ball.GlobalPosition.DistanceTo(
+                        pocket.GlobalPosition) < 0.1f)
+                    {
+                        GD.Print($"Ball pocketed : {ball.Name}");
+                        ball.QueueFree();
+                    }
+                }
+            }
+        }
+
         public override void _Process(double delta)
         {
             if (_isAiming)
@@ -39,6 +58,7 @@ namespace Satsuki.MiniGames
                     _force = 0.0f; // Reset force after shooting
                 }
             }
+            CheckPocketCollisions();
         }
 
         private void ShootBall()
@@ -84,7 +104,7 @@ namespace Satsuki.MiniGames
 
         public override void _Ready()
         {
-            if (whiteBall.HasNode("RigidBody3D"))
+            if (!whiteBall.HasNode("RigidBody3D"))
             {
                 RigidBody3D ballBody = new RigidBody3D();
                 whiteBall.AddChild(ballBody);
