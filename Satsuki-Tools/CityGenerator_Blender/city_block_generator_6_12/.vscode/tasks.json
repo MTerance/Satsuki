@@ -1,0 +1,32 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Test City Block Generator avec nouvelles routes",
+			"type": "shell",
+			"command": "echo \"Pour tester l'addon corrigé dans Blender:\"",
+			"args": [
+				"&&",
+				"echo \"1. Ouvrez Blender\"",
+				"&&",
+				"echo \"2. Allez dans Edit > Preferences > Add-ons\"",
+				"&&",
+				"echo \"3. Installez le fichier depuis: c:\\Users\\sshom\\Documents\\assets\\Tools\\city_block_generator_6_12\"",
+				"&&",
+				"echo \"4. Activez l'addon 'City Block Generator'\"",
+				"&&",
+				"echo \"5. Dans la vue 3D, recherchez le panneau 'CityGen' dans la sidebar (N)\"",
+				"&&",
+				"echo \"6. Testez avec une grille 3x3 et observez l'alignement des routes aux blocs\"",
+				"&&",
+				"echo \"7. Vérifiez que les routes sont maintenant collées aux trottoirs/blocs\"",
+				"&&",
+				"echo \"Version actuelle: 6.12.6 avec corrections d'alignement\"",
+				"&&",
+				"echo \"Les routes devraient maintenant être parfaitement positionnées entre les blocs!\""
+			],
+			"group": "test",
+			"isBackground": false
+		}
+	]
+}
