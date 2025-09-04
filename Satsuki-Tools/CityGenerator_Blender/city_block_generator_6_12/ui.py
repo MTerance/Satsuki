@@ -14,7 +14,7 @@ class CITYGEN_PT_Panel(Panel):
         scene = context.scene
         
         # Vérifier l'existence des propriétés directes
-        required_props = ['citygen_width', 'citygen_length', 'citygen_max_floors', 'citygen_road_width']
+        required_props = ['citygen_width', 'citygen_length', 'citygen_max_floors', 'citygen_road_width', 'citygen_buildings_per_block', 'citygen_seamless_roads', 'citygen_building_variety', 'citygen_height_variation']
         missing_props = [prop for prop in required_props if not hasattr(scene, prop)]
         
         if missing_props:
@@ -36,6 +36,20 @@ class CITYGEN_PT_Panel(Panel):
         # Étages et routes
         grid.prop(scene, "citygen_max_floors", text="Étages max")
         grid.prop(scene, "citygen_road_width", text="Routes")
+        
+        # Nouveaux paramètres
+        grid.prop(scene, "citygen_buildings_per_block", text="Bât./Bloc")
+        grid.prop(scene, "citygen_seamless_roads", text="Routes collées")
+        
+        layout.separator()
+        
+        # Section variété des bâtiments
+        layout.label(text="Variété des bâtiments:", icon='HOME')
+        
+        # Paramètres de variété
+        variety_grid = layout.grid_flow(columns=1, align=True)
+        variety_grid.prop(scene, "citygen_building_variety", text="Formes")
+        variety_grid.prop(scene, "citygen_height_variation", text="Hauteurs")
         
         layout.separator()
         

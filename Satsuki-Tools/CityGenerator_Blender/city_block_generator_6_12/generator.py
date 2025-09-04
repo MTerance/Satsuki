@@ -153,8 +153,278 @@ def safe_mesh_operation(operation_func, obj, *args, **kwargs):
         print(f"Erreur lors de l'opération mesh: {str(e)}")
         return False
 
-def generate_building(x, y, width, depth, height, mat, zone_type='RESIDENTIAL', district_materials=None, shape_mode='AUTO'):
-    """Génère un bâtiment avec une forme selon le mode choisi et gestion d'erreurs"""
+def calculate_building_subdivisions(block_width, block_depth, buildings_per_block):
+    """Calcule les subdivisions d'un bloc pour placer plusieurs bâtiments"""
+    import math
+    
+    if buildings_per_block <= 1:
+        return [(0, 0, block_width, block_depth)]
+    
+    # Calculer une grille optimale pour le nombre de bâtiments
+    if buildings_per_block == 2:
+        # 2 bâtiments : côte à côte ou l'un au-dessus de l'autre selon les proportions
+        if block_width >= block_depth:
+            # Diviser horizontalement
+            sub_width = block_width / 2
+            return [
+                (0, 0, sub_width, block_depth),
+                (sub_width, 0, sub_width, block_depth)
+            ]
+        else:
+            # Diviser verticalement
+            sub_depth = block_depth / 2
+            return [
+                (0, 0, block_width, sub_depth),
+                (0, sub_depth, block_width, sub_depth)
+            ]
+    
+    elif buildings_per_block == 3:
+        # 3 bâtiments : disposition 3x1 ou 1x3
+        if block_width >= block_depth:
+            sub_width = block_width / 3
+            return [
+                (0, 0, sub_width, block_depth),
+                (sub_width, 0, sub_width, block_depth),
+                (sub_width * 2, 0, sub_width, block_depth)
+            ]
+        else:
+            sub_depth = block_depth / 3
+            return [
+                (0, 0, block_width, sub_depth),
+                (0, sub_depth, block_width, sub_depth),
+                (0, sub_depth * 2, block_width, sub_depth)
+            ]
+    
+    elif buildings_per_block == 4:
+        # 4 bâtiments : grille 2x2
+        sub_width = block_width / 2
+        sub_depth = block_depth / 2
+        return [
+            (0, 0, sub_width, sub_depth),
+            (sub_width, 0, sub_width, sub_depth),
+            (0, sub_depth, sub_width, sub_depth),
+            (sub_width, sub_depth, sub_width, sub_depth)
+        ]
+    
+    else:
+        # Pour 5-9 bâtiments : grille 3x3 ou 3x2
+        if buildings_per_block <= 6:
+            # Grille 3x2
+            sub_width = block_width / 3
+            sub_depth = block_depth / 2
+            subdivisions = []
+            for i in range(3):
+                for j in range(2):
+                    if len(subdivisions) < buildings_per_block:
+                        subdivisions.append((i * sub_width, j * sub_depth, sub_width, sub_depth))
+            return subdivisions
+        else:
+            # Grille 3x3
+            sub_width = block_width / 3
+            sub_depth = block_depth / 3
+            subdivisions = []
+            for i in range(3):
+                for j in range(3):
+                    if len(subdivisions) < buildings_per_block:
+                        subdivisions.append((i * sub_width, j * sub_depth, sub_width, sub_depth))
+            return subdivisions
+
+def choose_building_type(variety_level, zone_type, width, depth, height, building_index=0):
+    """Choisit intelligemment le type de bâtiment selon la variété demandée"""
+    import random
+    
+    # Types de bâtiments disponibles avec leurs conditions
+    building_types = {
+        'rectangular': {'weight': 40, 'min_size': 2.0},
+        'tower': {'weight': 15, 'min_size': 3.0, 'min_height': 15},
+        'stepped': {'weight': 12, 'min_size': 4.0, 'min_height': 12},
+        'l_shaped': {'weight': 8, 'min_size': 5.0},
+        'u_shaped': {'weight': 6, 'min_size': 6.0},
+        't_shaped': {'weight': 5, 'min_size': 5.0},
+        'circular': {'weight': 4, 'min_size': 4.0},
+        'elliptical': {'weight': 3, 'min_size': 4.0},
+        'complex': {'weight': 2, 'min_size': 6.0, 'min_height': 18},
+        'pyramid': {'weight': 3, 'min_size': 4.0, 'min_height': 12},
+        'cone': {'weight': 2, 'min_size': 3.0, 'min_height': 10}
+    }
+    
+    # Ajuster les poids selon le niveau de variété
+    if variety_level == 'LOW':
+        # Principalement rectangulaires
+        weights = ['rectangular'] * 70 + ['tower'] * 20 + ['stepped'] * 10
+    elif variety_level == 'MEDIUM':
+        # Équilibre
+        weights = (['rectangular'] * 35 + ['tower'] * 15 + ['stepped'] * 12 + 
+                  ['l_shaped'] * 8 + ['u_shaped'] * 6 + ['t_shaped'] * 5 + 
+                  ['circular'] * 4 + ['elliptical'] * 3 + ['pyramid'] * 2)
+    elif variety_level == 'HIGH':
+        # Maximum de variété
+        weights = (['rectangular'] * 20 + ['tower'] * 15 + ['stepped'] * 12 + 
+                  ['l_shaped'] * 10 + ['u_shaped'] * 8 + ['t_shaped'] * 7 + 
+                  ['circular'] * 6 + ['elliptical'] * 5 + ['complex'] * 4 + 
+                  ['pyramid'] * 3 + ['cone'] * 2)
+    elif variety_level == 'MODERN':
+        # Tours et gratte-ciels
+        weights = ['tower'] * 40 + ['stepped'] * 25 + ['rectangular'] * 20 + ['complex'] * 15
+    elif variety_level == 'CREATIVE':
+        # Formes artistiques
+        weights = (['circular'] * 20 + ['elliptical'] * 15 + ['pyramid'] * 12 + 
+                  ['cone'] * 10 + ['complex'] * 10 + ['l_shaped'] * 8 + 
+                  ['u_shaped'] * 8 + ['t_shaped'] * 7 + ['tower'] * 5 + ['rectangular'] * 5)
+    else:
+        weights = ['rectangular'] * 50 + ['tower'] * 25 + ['stepped'] * 25
+    
+    # Choisir un type aléatoire
+    chosen_type = random.choice(weights)
+    
+    # Vérifier si le type choisi est approprié pour les dimensions
+    type_info = building_types.get(chosen_type, building_types['rectangular'])
+    min_size = type_info.get('min_size', 2.0)
+    min_height = type_info.get('min_height', 0)
+    
+    # Si les dimensions ne conviennent pas, choisir un type plus simple
+    if min(width, depth) < min_size or height < min_height:
+        if min(width, depth) >= 3.0:
+            chosen_type = random.choice(['rectangular', 'tower', 'stepped'])
+        else:
+            chosen_type = 'rectangular'
+    
+    # Ajustement selon le type de zone
+    if zone_type == 'COMMERCIAL' and chosen_type in ['rectangular', 'stepped']:
+        if random.random() < 0.3:  # 30% de chance
+            chosen_type = 'tower'
+    elif zone_type == 'INDUSTRIAL' and chosen_type in ['tower', 'complex']:
+        if random.random() < 0.5:  # 50% de chance
+            chosen_type = random.choice(['rectangular', 'l_shaped'])
+    
+    print(f"   🎯 Type choisi: {chosen_type} (variété: {variety_level}, zone: {zone_type})")
+    return chosen_type
+
+def calculate_height_with_variation(base_height, max_floors, height_variation, zone_type, building_type):
+    """Calcule la hauteur d'un bâtiment avec variation intelligente"""
+    import random
+    
+    # Facteurs de base selon le type de zone
+    zone_factors = {
+        'COMMERCIAL': {'min_mult': 0.8, 'max_mult': 1.5, 'bonus': 6},
+        'RESIDENTIAL': {'min_mult': 0.6, 'max_mult': 1.2, 'bonus': 3},
+        'INDUSTRIAL': {'min_mult': 0.3, 'max_mult': 0.8, 'bonus': 0}
+    }
+    
+    # Facteurs selon le type de bâtiment
+    building_factors = {
+        'tower': {'min_mult': 1.5, 'max_mult': 2.5},
+        'stepped': {'min_mult': 1.2, 'max_mult': 1.8},
+        'complex': {'min_mult': 1.3, 'max_mult': 2.0},
+        'pyramid': {'min_mult': 1.0, 'max_mult': 1.6},
+        'cone': {'min_mult': 0.8, 'max_mult': 1.4}
+    }
+    
+    # Appliquer les facteurs de zone
+    zone_info = zone_factors.get(zone_type, zone_factors['RESIDENTIAL'])
+    min_height = max(3, int(base_height * zone_info['min_mult']))
+    max_height = min(max_floors * 3, int(base_height * zone_info['max_mult']) + zone_info['bonus'])
+    
+    # Appliquer les facteurs de bâtiment
+    if building_type in building_factors:
+        building_info = building_factors[building_type]
+        min_height = max(min_height, int(base_height * building_info['min_mult']))
+        max_height = max(max_height, int(base_height * building_info['max_mult']))
+    
+    # Appliquer la variation
+    if height_variation > 0:
+        variation_range = int((max_height - min_height) * height_variation)
+        if variation_range > 0:
+            height_offset = random.randint(-variation_range//2, variation_range//2)
+            final_height = base_height + height_offset
+        else:
+            final_height = base_height
+    else:
+        final_height = base_height
+    
+    # S'assurer que la hauteur reste dans les limites
+    final_height = max(min_height, min(max_height, final_height))
+    
+    print(f"   📏 Hauteur calculée: base={base_height}, final={final_height} (zone={zone_type}, type={building_type})")
+    return final_height
+
+def generate_building_with_type(x, y, width, depth, height, mat, zone_type='RESIDENTIAL', district_materials=None, building_type='rectangular'):
+    """Génère un bâtiment avec un type spécifique au lieu de AUTO"""
+    global building_counter
+    building_counter += 1
+    
+    try:
+        # Validation des paramètres
+        if width <= 0 or depth <= 0 or height <= 0:
+            print(f"❌ ERREUR: Paramètres de bâtiment invalides pour bâtiment {building_counter}: w={width}, d={depth}, h={height}")
+            return None
+            
+        if not mat:
+            print(f"❌ ERREUR: Matériau invalide pour le bâtiment {building_counter}")
+            return None
+        
+        print(f"🏗️ DÉBUT génération bâtiment {building_counter} (type: {building_type})")
+        print(f"   Paramètres: pos=({x:.1f},{y:.1f}), taille=({width:.1f}x{depth:.1f}x{height:.1f})")
+        print(f"   Matériau: {mat.name if mat else 'None'}, Zone: {zone_type}")
+        print(f"   🚨 DEBUG: ENTRÉE dans generate_building_with_type - FONCTION APPELÉE")
+        
+        # Choisir le matériau approprié en fonction du type de zone
+        final_mat = mat  # Matériau par défaut
+        if district_materials and zone_type in district_materials:
+            final_mat = district_materials[zone_type]
+            print(f"   Application du matériau de district {zone_type}: {final_mat.name}")
+        
+        print(f"   Type de bâtiment spécifié: {building_type}")
+        print(f"   🚨 DEBUG: Avant appel fonction de génération spécifique")
+        
+        result = None
+        if building_type == 'rectangular':
+            print(f"   ➡️ Appel generate_rectangular_building...")
+            result = generate_rectangular_building(x, y, width, depth, height, final_mat, building_counter)
+            print(f"   🚨 DEBUG: generate_rectangular_building retourné: {result}")
+        elif building_type == 'tower':
+            print(f"   ➡️ Appel generate_simple_tower_building...")
+            result = generate_simple_tower_building(x, y, width, depth, height, final_mat, building_counter)
+        elif building_type == 'stepped':
+            print(f"   ➡️ Appel generate_simple_stepped_building...")
+            result = generate_simple_stepped_building(x, y, width, depth, height, final_mat, building_counter)
+        elif building_type == 'l_shaped':
+            print(f"   ➡️ Appel generate_l_shaped_building...")
+            result = generate_l_shaped_building(x, y, width, depth, height, final_mat, building_counter)
+        elif building_type == 'u_shaped':
+            print(f"   ➡️ Appel generate_u_shaped_building...")
+            result = generate_u_shaped_building(x, y, width, depth, height, final_mat, building_counter)
+        elif building_type == 't_shaped':
+            print(f"   ➡️ T-shaped non implémenté, fallback vers L-shaped...")
+            result = generate_l_shaped_building(x, y, width, depth, height, final_mat, building_counter)
+        elif building_type == 'circular':
+            print(f"   ➡️ Circular non implémenté, fallback vers tower...")
+            result = generate_simple_tower_building(x, y, width, depth, height, final_mat, building_counter)
+        elif building_type == 'elliptical':
+            print(f"   ➡️ Elliptical non implémenté, fallback vers stepped...")
+            result = generate_simple_stepped_building(x, y, width, depth, height, final_mat, building_counter)
+        elif building_type in ['complex', 'pyramid', 'cone']:
+            print(f"   ➡️ Génération {building_type} (fallback vers rectangular)...")
+            result = generate_rectangular_building(x, y, width, depth, height, final_mat, building_counter)
+        else:
+            print(f"   ⚠️ Type de bâtiment non reconnu: {building_type}, utilisation du type rectangulaire")
+            result = generate_rectangular_building(x, y, width, depth, height, final_mat, building_counter)
+        
+        print(f"   🚨 DEBUG: Résultat final de génération: {result}")
+        
+        if result:
+            print(f"✅ Bâtiment {building_counter} créé avec succès: {result.name}")
+            return result
+        else:
+            print(f"❌ ÉCHEC: Bâtiment {building_counter} - Objet None retourné")
+            return None
+            
+    except Exception as e:
+        print(f"❌ EXCEPTION lors de génération bâtiment {building_counter}: {str(e)}")
+        return None
+
+def generate_building(x, y, width, depth, height, mat, zone_type='RESIDENTIAL', district_materials=None, shape_mode='AUTO', building_variety='MEDIUM'):
+    """Génère un bâtiment avec une forme selon le mode choisi et le système de variété intelligent"""
     global building_counter
     building_counter += 1
     
@@ -170,7 +440,7 @@ def generate_building(x, y, width, depth, height, mat, zone_type='RESIDENTIAL', 
         
         print(f"🏗️ DÉBUT génération bâtiment {building_counter}")
         print(f"   Paramètres: pos=({x:.1f},{y:.1f}), taille=({width:.1f}x{depth:.1f}x{height:.1f})")
-        print(f"   Matériau: {mat.name if mat else 'None'}, Zone: {zone_type}")
+        print(f"   Matériau: {mat.name if mat else 'None'}, Zone: {zone_type}, Variété: {building_variety}")
         
         # Choisir le matériau approprié en fonction du type de zone
         final_mat = mat  # Matériau par défaut
@@ -191,31 +461,13 @@ def generate_building(x, y, width, depth, height, mat, zone_type='RESIDENTIAL', 
             building_type = 'circular'
         elif shape_mode == 'ELLIPSE':
             building_type = 'elliptical'
-        else:  # shape_mode == 'AUTO'
-            building_type = random.choice(['rectangular', 'rectangular', 'rectangular', 'tower', 'stepped'])
+        else:  # shape_mode == 'AUTO' - Utiliser le système de variété intelligent
+            building_type = choose_building_type(building_variety, zone_type, width, depth, height)
         
         print(f"   Type de bâtiment sélectionné: {building_type} (mode: {shape_mode})")
         
-        result = None
-        if building_type == 'rectangular':
-            print(f"   ➡️ Appel generate_rectangular_building...")
-            result = generate_rectangular_building(x, y, width, depth, height, final_mat, building_counter)
-        elif building_type == 'tower':
-            print(f"   ➡️ Appel generate_simple_tower_building...")
-            result = generate_simple_tower_building(x, y, width, depth, height, final_mat, building_counter)
-        elif building_type == 'stepped':
-            print(f"   ➡️ Appel generate_simple_stepped_building...")
-            result = generate_simple_stepped_building(x, y, width, depth, height, final_mat, building_counter)
-        elif building_type == 'l_shaped':
-            print(f"   ➡️ Appel generate_l_shaped_building...")
-            result = generate_l_shaped_building(x, y, width, depth, height, final_mat, building_counter)
-        elif building_type == 'u_shaped':
-            print(f"   ➡️ Appel generate_u_shaped_building...")
-            result = generate_u_shaped_building(x, y, width, depth, height, final_mat, building_counter)
-        else:
-            # Fallback vers rectangulaire si type non reconnu
-            print(f"   ⚠️ Type de bâtiment non reconnu: {building_type}, utilisation du type rectangulaire")
-            result = generate_rectangular_building(x, y, width, depth, height, final_mat, building_counter)
+        # Utiliser le système amélioré de génération avec type
+        result = generate_building_with_type(x, y, width, depth, height, final_mat, zone_type, district_materials, building_type)
         
         if result:
             print(f"✅ Bâtiment {building_counter} créé avec succès: {result.name}")
@@ -223,8 +475,6 @@ def generate_building(x, y, width, depth, height, mat, zone_type='RESIDENTIAL', 
         else:
             print(f"❌ ÉCHEC: Bâtiment {building_counter} - Objet None retourné")
             return None
-            print(f"Type de bâtiment non reconnu: {building_type}, utilisation du type rectangulaire")
-            return generate_rectangular_building(x, y, width, depth, height, final_mat, building_counter)
             
     except Exception as e:
         print(f"Erreur critique lors de la génération du bâtiment {building_counter}: {str(e)}")
@@ -758,7 +1008,7 @@ def generate_diagonal_road(start_x, start_y, end_x, end_y, width, mat):
         print(f"Erreur création route diagonale: {str(e)}")
         return False
 
-def generate_unified_city_grid(block_sizes, road_width, road_mat, side_mat, build_mat, max_floors, regen_only, district_materials=None, sidewalk_width=1.0, shape_mode='AUTO', enable_diagonal_roads=False, diagonal_road_frequency=30.0, enable_intersections=True, intersection_size_factor=1.2):
+def generate_unified_city_grid(block_sizes, road_width, road_mat, side_mat, build_mat, max_floors, regen_only, district_materials=None, sidewalk_width=1.0, shape_mode='AUTO', enable_diagonal_roads=False, diagonal_road_frequency=30.0, enable_intersections=True, intersection_size_factor=1.2, buildings_per_block=1, seamless_roads=True, building_variety='MEDIUM', height_variation=0.5):
     """Génère une grille unifiée de ville avec blocs et routes parfaitement alignés et gestion d'erreurs"""
     
     try:
@@ -967,86 +1217,101 @@ def generate_unified_city_grid(block_sizes, road_width, road_mat, side_mat, buil
                     print(f"      zone_type = {zone_type}")
                     print(f"      zone_info = {zone_info}")
                     print(f"      🔍 DÉBOGAGE: Condition 'not regen_only' = {not regen_only}")
+                    print(f"      🔍 DÉBOGAGE: Type regen_only = {type(regen_only)}")
+                    print(f"      🔍 DÉBOGAGE: Valeur regen_only = '{regen_only}'")
                     
                     if not regen_only:
                         print(f"      ✅ ENTRÉE dans génération bâtiment (pas de régénération)")
                         try:
-                            # Calculer la hauteur selon le type de zone
-                            print(f"         📏 Calcul hauteur: max_floors={max_floors}")
-                            print(f"         📊 zone_info présent: {zone_info is not None and len(zone_info) > 0}")
+                            # Calculer la hauteur avec le nouveau système de variation
+                            print(f"         📏 Calcul hauteur avec variété: max_floors={max_floors}, variation={height_variation}")
                             
+                            # Hauteur de base selon la zone
                             if zone_info and len(zone_info) > 0:
-                                print(f"         ➡️ Utilisation zone_info pour hauteur")
+                                print(f"         ➡️ Utilisation zone_info pour hauteur de base")
                                 min_floors = zone_info.get('min_floors', 1)
                                 max_floors_multiplier = zone_info.get('max_floors_multiplier', 1.0)
                                 zone_max_floors = max(min_floors, int(max_floors * max_floors_multiplier))
-                                height = random.randint(min_floors, zone_max_floors) * 3
-                                print(f"         📐 Hauteur calculée via zone: {height}m (min={min_floors}, max={zone_max_floors})")
-                                
-                                # Type de zone affecte la variabilité
-                                if zone_type == 'COMMERCIAL':
-                                    height += random.randint(3, 8)  # Bâtiments commerciaux plus hauts
-                                elif zone_type == 'INDUSTRIAL':
-                                    height = random.randint(1, 2) * 3  # Bâtiments industriels bas
-                                elif zone_type == 'RESIDENTIAL':
-                                    if random.random() > 0.7:  # 30% de chance d'être plus haut
-                                        height += random.randint(2, 6)
+                                base_height = random.randint(min_floors, zone_max_floors) * 3
                             else:
-                                print(f"         ➡️ Utilisation logique par défaut pour hauteur")
-                                # Logique par défaut - S'ASSURER qu'une hauteur est toujours définie
-                                min_height = max(1, max_floors // 4)  # Au moins 1/4 de la hauteur max
-                                height = random.randint(min_height, max_floors) * 3
-                                if height < 3:  # S'assurer d'au moins 3 mètres de hauteur
-                                    height = 3
-                                print(f"  Hauteur par défaut: {height}m pour bloc [{i}][{j}]")
+                                print(f"         ➡️ Utilisation logique par défaut pour hauteur de base")
+                                min_height = max(1, max_floors // 4)
+                                base_height = random.randint(min_height, max_floors) * 3
+                                if base_height < 3:
+                                    base_height = 3
                             
-                            # S'assurer que la hauteur est positive
-                            if height <= 0:
-                                height = random.randint(1, 3) * 3
-                                print(f"  CORRECTION: Hauteur forcée à {height}m pour bloc [{i}][{j}]")
+                            print(f"         📐 Hauteur de base calculée: {base_height}m pour bloc [{i}][{j}]")
+                            
+                            # Appliquer la variation de hauteur
+                            height = calculate_height_with_variation(base_height, max_floors, height_variation, zone_type, building_variety)
+                            print(f"         🎯 Hauteur finale avec variation: {height}m")
                             
                             # Bâtiment légèrement plus petit que le bloc, en tenant compte de la largeur du trottoir
-                            building_width = block_width - (2 * sidewalk_width)
-                            building_depth = block_depth - (2 * sidewalk_width)
+                            total_building_width = block_width - (2 * sidewalk_width)
+                            total_building_depth = block_depth - (2 * sidewalk_width)
                             
                             # S'assurer que les dimensions du bâtiment sont positives
-                            if building_width <= 0 or building_depth <= 0:
-                                print(f"  AVERTISSEMENT: Dimensions bâtiment invalides [{i}][{j}]: {building_width}x{building_depth}")
-                                building_width = max(1, building_width)
-                                building_depth = max(1, building_depth)
+                            if total_building_width <= 0 or total_building_depth <= 0:
+                                print(f"  AVERTISSEMENT: Dimensions bloc invalides [{i}][{j}]: {total_building_width}x{total_building_depth}")
+                                total_building_width = max(1, total_building_width)
+                                total_building_depth = max(1, total_building_depth)
                             
-                            print(f"  📐 GÉNÉRATION BÂTIMENT [{i}][{j}]:")
-                            print(f"    Position: ({x_center:.1f}, {y_center:.1f})")
-                            print(f"    Dimensions: {building_width:.1f}x{building_depth:.1f}x{height:.1f}")
+                            # Calculer les subdivisions pour placer plusieurs bâtiments
+                            subdivisions = calculate_building_subdivisions(total_building_width, total_building_depth, buildings_per_block)
+                            
+                            print(f"  📐 GÉNÉRATION {len(subdivisions)} BÂTIMENT(S) dans le bloc [{i}][{j}]:")
                             print(f"    Zone: {zone_type}, Matériau: {build_mat.name if build_mat else 'None'}")
                             
-                            # DÉBOGAGE: Vérifier les paramètres avant génération
-                            if building_width <= 0 or building_depth <= 0 or height <= 0:
-                                print(f"    ❌ ERREUR: Paramètres invalides - bâtiment non créé")
-                                continue
-                            
-                            building_obj = generate_building(x_center, y_center, building_width, building_depth, height, build_mat, zone_type, district_materials, shape_mode)
-                            
-                            if building_obj:
-                                buildings_created += 1
-                                print(f"    ✅ Bâtiment [{i}][{j}] créé: {building_obj.name}")
-                                print(f"    📍 Position finale: ({building_obj.location.x:.1f}, {building_obj.location.y:.1f}, {building_obj.location.z:.1f})")
-                                print(f"    📏 Échelle finale: ({building_obj.scale.x:.1f}, {building_obj.scale.y:.1f}, {building_obj.scale.z:.1f})")
+                            # Générer chaque bâtiment dans ses subdivisions
+                            buildings_created_in_block = 0
+                            for sub_idx, (sub_x, sub_y, sub_width, sub_depth) in enumerate(subdivisions):
+                                # Position absolue de ce sous-bâtiment
+                                sub_x_center = x_center - total_building_width/2 + sub_x + sub_width/2
+                                sub_y_center = y_center - total_building_depth/2 + sub_y + sub_depth/2
                                 
-                                # Vérifier que l'objet est visible
-                                if hasattr(building_obj, 'hide_viewport'):
-                                    if building_obj.hide_viewport:
-                                        print(f"    ⚠️ AVERTISSEMENT: Bâtiment masqué dans viewport")
-                                        building_obj.hide_viewport = False
-                                if hasattr(building_obj, 'hide_render'):
-                                    if building_obj.hide_render:
-                                        print(f"    ⚠️ AVERTISSEMENT: Bâtiment masqué au rendu")
-                                        building_obj.hide_render = False
-                            else:
-                                print(f"    ❌ ÉCHEC génération bâtiment [{i}][{j}] - Objet None retourné")
+                                # Calculer une hauteur spécifique pour ce sous-bâtiment (avec variation)
+                                sub_height = calculate_height_with_variation(base_height, max_floors, height_variation, zone_type, building_variety)
                                 
+                                # Ajouter un petit espace entre les bâtiments s'il y en a plusieurs
+                                margin = 0.5 if buildings_per_block > 1 else 0.0
+                                final_width = max(0.5, sub_width - margin)
+                                final_depth = max(0.5, sub_depth - margin)
+                                
+                                print(f"    Sous-bâtiment {sub_idx + 1}: ({sub_x_center:.1f}, {sub_y_center:.1f}) - {final_width:.1f}x{final_depth:.1f}x{sub_height:.1f}")
+                                
+                                # DÉBOGAGE: Vérifier les paramètres avant génération
+                                if final_width <= 0 or final_depth <= 0 or sub_height <= 0:
+                                    print(f"    ❌ ERREUR: Paramètres invalides - sous-bâtiment {sub_idx + 1} non créé")
+                                    continue
+                                
+                                try:
+                                    building_obj = generate_building(sub_x_center, sub_y_center, final_width, final_depth, sub_height, build_mat, zone_type, district_materials, shape_mode, building_variety)
+                                    
+                                    if building_obj:
+                                        buildings_created += 1
+                                        buildings_created_in_block += 1
+                                        print(f"    ✅ Sous-bâtiment {sub_idx + 1} créé: {building_obj.name}")
+                                        print(f"    � Position finale: ({building_obj.location.x:.1f}, {building_obj.location.y:.1f}, {building_obj.location.z:.1f})")
+                                        
+                                        # Vérifier que l'objet est visible
+                                        if hasattr(building_obj, 'hide_viewport'):
+                                            if building_obj.hide_viewport:
+                                                print(f"    ⚠️ AVERTISSEMENT: Bâtiment masqué dans viewport")
+                                                building_obj.hide_viewport = False
+                                        if hasattr(building_obj, 'hide_render'):
+                                            if building_obj.hide_render:
+                                                print(f"    ⚠️ AVERTISSEMENT: Bâtiment masqué au rendu")
+                                                building_obj.hide_render = False
+                                    else:
+                                        print(f"    ❌ ÉCHEC génération sous-bâtiment {sub_idx + 1} - Objet None retourné")
+                                        
+                                except Exception as e:
+                                    print(f"❌ ERREUR lors de la création du sous-bâtiment {sub_idx + 1}: {e}")
+                            
+                            print(f"  📊 Bloc [{i}][{j}] terminé: {buildings_created_in_block}/{len(subdivisions)} bâtiments créés")
+                            
                         except Exception as e:
-                            print(f"❌ ERREUR lors de la création bâtiment à [{i}][{j}]: {e}")
+                            print(f"❌ ERREUR lors de la création des bâtiments du bloc [{i}][{j}]: {e}")
                     else:
                         print(f"      ❌ SKIP bâtiment [{i}][{j}] - Mode régénération activé (regen_only={regen_only})")
                         print(f"      ⚠️ ALERTE: Les bâtiments ne seront PAS générés car regen_only=True")
@@ -1267,6 +1532,12 @@ def generate_city(context, regen_only=False):
         max_floors = safe_int(getattr(scene, 'citygen_max_floors', 8), 8)
         shape_mode = "AUTO"  # Valeur par défaut pour l'instant
         
+        # Nouvelles propriétés pour bâtiments multiples et routes collées
+        buildings_per_block = safe_int(getattr(scene, 'citygen_buildings_per_block', 1), 1)
+        seamless_roads = getattr(scene, 'citygen_seamless_roads', True)
+        building_variety = getattr(scene, 'citygen_building_variety', 'MEDIUM')
+        height_variation = safe_float(getattr(scene, 'citygen_height_variation', 0.5), 0.5)
+        
         # Nouveaux paramètres pour la variété des blocs (valeurs par défaut)
         base_size = 10.0
         block_variety = "MEDIUM"
@@ -1278,7 +1549,7 @@ def generate_city(context, regen_only=False):
         
         # Nouveaux paramètres pour les largeurs des routes et trottoirs
         road_width = safe_float(getattr(scene, 'citygen_road_width', 4.0), 4.0)
-        sidewalk_width = 1.0  # Valeur par défaut pour l'instant
+        sidewalk_width = 0.0 if seamless_roads else 1.0  # Routes collées = pas de trottoirs
         
         # Nouveaux paramètres pour les routes diagonales et carrefours (valeurs par défaut)
         enable_diagonal_roads = False
@@ -1294,7 +1565,8 @@ def generate_city(context, regen_only=False):
             return False
         
         print(f"Paramètres validés: width={width}, length={length}, max_floors={max_floors}, shape={shape_mode}")
-        print(f"Infrastructure: road_width={road_width}, sidewalk_width={sidewalk_width}")
+        print(f"Infrastructure: road_width={road_width}, sidewalk_width={sidewalk_width}, seamless_roads={seamless_roads}")
+        print(f"Bâtiments: {buildings_per_block} par bloc, variété={building_variety}, variation_hauteur={height_variation}")
         print(f"Routes avancées: diagonales={enable_diagonal_roads} ({diagonal_road_frequency}%), carrefours={enable_intersections} (x{intersection_size_factor})")
 
         # Créer les matériaux avec gestion d'erreurs
@@ -1346,7 +1618,8 @@ def generate_city(context, regen_only=False):
             success = generate_unified_city_grid(
                 block_sizes, road_width, road_mat, side_mat, build_mat, max_floors, regen_only, 
                 district_materials, sidewalk_width, shape_mode, 
-                enable_diagonal_roads, diagonal_road_frequency, enable_intersections, intersection_size_factor
+                enable_diagonal_roads, diagonal_road_frequency, enable_intersections, intersection_size_factor,
+                buildings_per_block, seamless_roads, building_variety, height_variation
             )
             if not success:
                 print("ERREUR: Échec de génération de la grille de ville")

@@ -1,7 +1,7 @@
 bl_info = {
     "name": "City Block Generator",
     "author": "Shomaa", 
-    "version": (7, 0, 0),  # Version avec routes diagonales, carrefours et déploiement automatique
+    "version": (7, 1, 0),  # Version FINALE - erreur calculate_height_with_variation corrigée
     "blender": (4, 0, 0),
     "location": "View3D > Sidebar > CityGen Tab",
     "description": "Generate city blocks with diagonal roads, intersections, green apple buildings and pale pink roads. Includes auto-deployment tools.",

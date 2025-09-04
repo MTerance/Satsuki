@@ -26,6 +26,22 @@ def get_citygen_properties(context):
         @property
         def road_width(self):
             return getattr(self.scene, 'citygen_road_width', 4.0)
+        
+        @property
+        def buildings_per_block(self):
+            return getattr(self.scene, 'citygen_buildings_per_block', 1)
+        
+        @property
+        def seamless_roads(self):
+            return getattr(self.scene, 'citygen_seamless_roads', True)
+        
+        @property
+        def building_variety(self):
+            return getattr(self.scene, 'citygen_building_variety', 'MEDIUM')
+        
+        @property
+        def height_variation(self):
+            return getattr(self.scene, 'citygen_height_variation', 0.5)
     
     return PropertyAccessor(context.scene)
 
@@ -49,8 +65,9 @@ class CITYGEN_OT_Generate(bpy.types.Operator):
                 self.report({'ERROR'}, f"Impossible d'importer le générateur: {import_error}")
                 return {'CANCELLED'}
             
-            # Tentative de génération
-            success = generate_city(context)
+            # Tentative de génération AVEC BÂTIMENTS (regen_only=False explicite)
+            print("🚀 OPÉRATEUR: Appel generate_city avec regen_only=False EXPLICITE")
+            success = generate_city(context, regen_only=False)
             
             if success:
                 self.report({'INFO'}, "Quartier généré avec succès")
@@ -171,6 +188,37 @@ def get_city_properties():
             default=4.0,
             min=0.5,
             max=20.0
+        ),
+        'citygen_buildings_per_block': bpy.props.IntProperty(
+            name="Bâtiments par bloc",
+            description="Nombre de bâtiments à générer par bloc",
+            default=1,
+            min=1,
+            max=9
+        ),
+        'citygen_seamless_roads': bpy.props.BoolProperty(
+            name="Routes collées",
+            description="Coller les routes aux trottoirs (pas d'espace)",
+            default=True
+        ),
+        'citygen_building_variety': bpy.props.EnumProperty(
+            name="Variété des formes",
+            description="Niveau de variété des formes de bâtiments",
+            items=[
+                ('LOW', 'Faible', 'Principalement rectangulaires'),
+                ('MEDIUM', 'Moyenne', 'Mélange équilibré de formes'),
+                ('HIGH', 'Élevée', 'Maximum de variété et formes complexes'),
+                ('MODERN', 'Moderne', 'Tours et gratte-ciels'),
+                ('CREATIVE', 'Créatif', 'Formes artistiques et uniques')
+            ],
+            default='MEDIUM'
+        ),
+        'citygen_height_variation': bpy.props.FloatProperty(
+            name="Variation hauteur",
+            description="Facteur de variation des hauteurs (0.0 = uniforme, 1.0 = très varié)",
+            default=0.5,
+            min=0.0,
+            max=1.0
         )
     }
 

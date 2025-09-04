@@ -16,6 +16,8 @@ def debug_citygen_addon():
     print(f"  citygen_length: {getattr(scene, 'citygen_length', 'NON DÉFINI')}")
     print(f"  citygen_max_floors: {getattr(scene, 'citygen_max_floors', 'NON DÉFINI')}")
     print(f"  citygen_road_width: {getattr(scene, 'citygen_road_width', 'NON DÉFINI')}")
+    print(f"  citygen_buildings_per_block: {getattr(scene, 'citygen_buildings_per_block', 'NON DÉFINI')}")
+    print(f"  citygen_seamless_roads: {getattr(scene, 'citygen_seamless_roads', 'NON DÉFINI')}")
     
     # Vérifier si les anciennes propriétés existent encore
     if hasattr(scene, 'citygen_props'):
@@ -68,8 +70,10 @@ def debug_citygen_addon():
         scene.citygen_length = 2
         scene.citygen_max_floors = 4
         scene.citygen_road_width = 4.0
+        scene.citygen_buildings_per_block = 2
+        scene.citygen_seamless_roads = True
         
-        print("  Configuration de test appliquée (2x2, 4 étages max)")
+        print("  Configuration de test appliquée (2x2, 4 étages max, 2 bâtiments/bloc, routes collées)")
         print("  Lancez maintenant la génération depuis l'interface Blender")
         
     except Exception as e:

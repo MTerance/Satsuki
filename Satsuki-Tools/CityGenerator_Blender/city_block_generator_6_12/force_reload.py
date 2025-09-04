@@ -38,16 +38,18 @@ def force_reload_addon():
     # 4. Initialiser les nouvelles propriétés directes
     print("Initialisation des nouvelles propriétés...")
     scene.citygen_width = 5
-    scene.citygen_length = 5
+    scene.citygen_length = 5 
     scene.citygen_max_floors = 8
     scene.citygen_road_width = 4.0
+    scene.citygen_buildings_per_block = 1
+    scene.citygen_seamless_roads = True
     
     print(f"  citygen_width: {scene.citygen_width}")
     print(f"  citygen_length: {scene.citygen_length}")
     print(f"  citygen_max_floors: {scene.citygen_max_floors}")
     print(f"  citygen_road_width: {scene.citygen_road_width}")
-    
-    # 5. Réactiver l'addon
+    print(f"  citygen_buildings_per_block: {scene.citygen_buildings_per_block}")
+    print(f"  citygen_seamless_roads: {scene.citygen_seamless_roads}")    # 5. Réactiver l'addon
     print("Réactivation de l'addon...")
     try:
         bpy.ops.preferences.addon_enable(module=addon_name)
