@@ -10,6 +10,7 @@ echo.
 REM Configuration
 set "ZIP_NAME=city_block_generator_6_12.zip"
 set "ADDON_DIR=city_block_generator_6_12"
+set "INIT_FILE=%ADDON_DIR%\__init__.py"
 
 REM Vérifier si le dossier de l'addon existe
 if not exist "%ADDON_DIR%" (
@@ -20,6 +21,21 @@ if not exist "%ADDON_DIR%" (
 )
 
 echo [92mDossier source trouvé: %ADDON_DIR%[0m
+
+REM Lire la version depuis __init__.py
+set "ADDON_VERSION=version inconnue"
+if exist "%INIT_FILE%" (
+    for /f "delims=" %%i in ('powershell -Command "(Get-Content '%INIT_FILE%' | Select-String 'version.*(\d+),\s*(\d+),\s*(\d+)' | ForEach-Object {$_.Matches[0].Groups[1].Value + '.' + $_.Matches[0].Groups[2].Value + '.' + $_.Matches[0].Groups[3].Value})"') do (
+        set "ADDON_VERSION=%%i"
+    )
+    if not "!ADDON_VERSION!"=="version inconnue" (
+        echo [92mVersion détectée: !ADDON_VERSION![0m
+    ) else (
+        echo [93mAVERTISSEMENT: Version non trouvée dans __init__.py[0m
+    )
+) else (
+    echo [93mAVERTISSEMENT: Fichier __init__.py non trouvé[0m
+)
 
 REM Supprimer l'ancien fichier ZIP s'il existe
 if exist "%ZIP_NAME%" (
@@ -61,7 +77,7 @@ if !errorlevel! equ 0 (
     echo [97m   2. Edit ^> Preferences ^> Add-ons[0m
     echo [97m   3. Install ^> Sélectionnez %ZIP_NAME%[0m
     echo [97m   4. Activez 'City Block Generator'[0m
-    echo [93m   5. Version: 6.12.7 (corrigée)[0m
+    echo [93m   5. Version: !ADDON_VERSION![0m
 ) else (
     echo.
     echo [91mERREUR lors de la création du package![0m

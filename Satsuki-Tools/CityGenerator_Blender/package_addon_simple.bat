@@ -30,7 +30,7 @@ if %errorlevel% equ 0 (
     echo 2. Edit ^> Preferences ^> Add-ons
     echo 3. Install ^> Selectionnez le fichier ZIP
     echo 4. Activez 'City Block Generator'
-    echo 5. Version installee: 6.12.7
+    echo 5. Version installee: voir __init__.py pour la version actuelle
     echo.
     echo ===============================================
 ) else (

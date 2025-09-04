@@ -7,6 +7,7 @@ Write-Host ""
 # Configuration
 $ZipName = "city_block_generator_6_12.zip"
 $AddonDir = "city_block_generator_6_12"
+$InitFile = "$AddonDir\__init__.py"
 
 # Verifier si le dossier de l'addon existe
 if (-Not (Test-Path $AddonDir)) {
@@ -16,6 +17,27 @@ if (-Not (Test-Path $AddonDir)) {
 }
 
 Write-Host "Dossier source trouve: $AddonDir" -ForegroundColor Green
+
+# Lire la version depuis __init__.py
+$AddonVersion = "version inconnue"
+if (Test-Path $InitFile) {
+    try {
+        $InitContent = Get-Content $InitFile -Raw
+        if ($InitContent -match '"version":\s*\((\d+),\s*(\d+),\s*(\d+)\)') {
+            $AddonVersion = "$($matches[1]).$($matches[2]).$($matches[3])"
+            Write-Host "Version detectee: $AddonVersion" -ForegroundColor Green
+        }
+        else {
+            Write-Host "AVERTISSEMENT: Version non trouvee dans __init__.py" -ForegroundColor Yellow
+        }
+    }
+    catch {
+        Write-Host "AVERTISSEMENT: Erreur lecture version: $($_.Exception.Message)" -ForegroundColor Yellow
+    }
+}
+else {
+    Write-Host "AVERTISSEMENT: Fichier __init__.py non trouve" -ForegroundColor Yellow
+}
 
 # Supprimer l'ancien fichier ZIP s'il existe
 if (Test-Path $ZipName) {
@@ -66,7 +88,7 @@ try {
         Write-Host "   2. Edit > Preferences > Add-ons" -ForegroundColor White
         Write-Host "   3. Install > Selectionnez $ZipName" -ForegroundColor White
         Write-Host "   4. Activez 'City Block Generator'" -ForegroundColor White
-        Write-Host "   5. Version: 6.12.7 (corrigee)" -ForegroundColor Yellow
+        Write-Host "   5. Version: $AddonVersion" -ForegroundColor Yellow
     }
 }
 catch {

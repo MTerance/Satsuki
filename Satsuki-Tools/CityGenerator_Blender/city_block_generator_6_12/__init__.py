@@ -1,18 +1,23 @@
 bl_info = {
     "name": "City Block Generator",
-    "author": "Shomaa",
-    "version": (6, 13, 4),  # Version avec interface mode district améliorée
+    "author": "Shomaa", 
+    "version": (7, 0, 0),  # Version avec routes diagonales, carrefours et déploiement automatique
     "blender": (4, 0, 0),
-    "location": "View3D > Tool Shelf > CityGen",
-    "description": "Generate city blocks with streets, sidewalks, and variable building shapes.",
-    "category": "Object"
+    "location": "View3D > Sidebar > CityGen Tab",
+    "description": "Generate city blocks with diagonal roads, intersections, green apple buildings and pale pink roads. Includes auto-deployment tools.",
+    "category": "Add Mesh",
+    "doc_url": "",
+    "tracker_url": ""
 }
 
+import bpy
 import traceback
 
 try:
-    from . import operators, ui, generator
+    from . import operators, ui
+    # Ne pas importer generator.py automatiquement pour éviter les crashes
     modules_loaded = True
+    print("✅ Modules operators et ui chargés avec succès")
 except Exception as e:
     print(f"ERREUR CRITIQUE lors de l'import des modules: {str(e)}")
     print(f"Traceback: {traceback.format_exc()}")
