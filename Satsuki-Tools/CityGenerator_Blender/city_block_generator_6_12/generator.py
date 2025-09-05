@@ -235,44 +235,45 @@ def choose_building_type(variety_level, zone_type, width, depth, height, buildin
     
     # Types de bâtiments disponibles avec leurs conditions
     building_types = {
-        'rectangular': {'weight': 40, 'min_size': 2.0},
+        'rectangular': {'weight': 35, 'min_size': 2.0},
         'tower': {'weight': 15, 'min_size': 3.0, 'min_height': 15},
         'stepped': {'weight': 12, 'min_size': 4.0, 'min_height': 12},
-        'l_shaped': {'weight': 8, 'min_size': 5.0},
-        'u_shaped': {'weight': 6, 'min_size': 6.0},
-        't_shaped': {'weight': 5, 'min_size': 5.0},
+        'l_shaped': {'weight': 15, 'min_size': 5.0},  # Augmenté de 8 à 15
+        'u_shaped': {'weight': 10, 'min_size': 6.0},  # Augmenté de 6 à 10 (utilisé comme F-shaped)
+        't_shaped': {'weight': 12, 'min_size': 5.0},  # Augmenté de 5 à 12
         'circular': {'weight': 4, 'min_size': 4.0},
         'elliptical': {'weight': 3, 'min_size': 4.0},
         'complex': {'weight': 2, 'min_size': 6.0, 'min_height': 18},
-        'pyramid': {'weight': 3, 'min_size': 4.0, 'min_height': 12},
-        'cone': {'weight': 2, 'min_size': 3.0, 'min_height': 10}
+        'pyramid': {'weight': 2, 'min_size': 4.0, 'min_height': 12}
+        # cone supprimé comme demandé
     }
     
-    # Ajuster les poids selon le niveau de variété
+    # Ajuster les poids selon le niveau de variété avec plus de L, T et U shapes
     if variety_level == 'LOW':
-        # Principalement rectangulaires
-        weights = ['rectangular'] * 70 + ['tower'] * 20 + ['stepped'] * 10
+        # Principalement rectangulaires mais avec quelques L et T
+        weights = ['rectangular'] * 50 + ['tower'] * 20 + ['l_shaped'] * 20 + ['t_shaped'] * 10
     elif variety_level == 'MEDIUM':
-        # Équilibre
-        weights = (['rectangular'] * 35 + ['tower'] * 15 + ['stepped'] * 12 + 
-                  ['l_shaped'] * 8 + ['u_shaped'] * 6 + ['t_shaped'] * 5 + 
-                  ['circular'] * 4 + ['elliptical'] * 3 + ['pyramid'] * 2)
+        # Équilibre avec forte présence de L, T, U
+        weights = (['rectangular'] * 20 + ['tower'] * 15 + ['stepped'] * 10 + 
+                  ['l_shaped'] * 20 + ['u_shaped'] * 15 + ['t_shaped'] * 15 + 
+                  ['circular'] * 3 + ['elliptical'] * 2)
     elif variety_level == 'HIGH':
-        # Maximum de variété
-        weights = (['rectangular'] * 20 + ['tower'] * 15 + ['stepped'] * 12 + 
-                  ['l_shaped'] * 10 + ['u_shaped'] * 8 + ['t_shaped'] * 7 + 
-                  ['circular'] * 6 + ['elliptical'] * 5 + ['complex'] * 4 + 
-                  ['pyramid'] * 3 + ['cone'] * 2)
+        # Maximum de variété avec dominance L, T, U
+        weights = (['rectangular'] * 10 + ['tower'] * 10 + ['stepped'] * 10 + 
+                  ['l_shaped'] * 25 + ['u_shaped'] * 20 + ['t_shaped'] * 20 + 
+                  ['circular'] * 3 + ['elliptical'] * 2)
     elif variety_level == 'MODERN':
-        # Tours et gratte-ciels
-        weights = ['tower'] * 40 + ['stepped'] * 25 + ['rectangular'] * 20 + ['complex'] * 15
+        # Tours et formes modernes avec L et T
+        weights = (['tower'] * 30 + ['stepped'] * 20 + ['complex'] * 15 + 
+                  ['l_shaped'] * 15 + ['t_shaped'] * 15 + ['rectangular'] * 5)
     elif variety_level == 'CREATIVE':
-        # Formes artistiques
-        weights = (['circular'] * 20 + ['elliptical'] * 15 + ['pyramid'] * 12 + 
-                  ['cone'] * 10 + ['complex'] * 10 + ['l_shaped'] * 8 + 
-                  ['u_shaped'] * 8 + ['t_shaped'] * 7 + ['tower'] * 5 + ['rectangular'] * 5)
+        # Formes créatives avec L, T, U dominants
+        weights = (['l_shaped'] * 25 + ['t_shaped'] * 25 + ['u_shaped'] * 20 + 
+                  ['circular'] * 10 + ['elliptical'] * 8 + ['pyramid'] * 7 + 
+                  ['complex'] * 3 + ['tower'] * 2)
     else:
-        weights = ['rectangular'] * 50 + ['tower'] * 25 + ['stepped'] * 25
+        # Fallback avec forte présence de L et T
+        weights = ['rectangular'] * 25 + ['l_shaped'] * 25 + ['t_shaped'] * 20 + ['tower'] * 15 + ['u_shaped'] * 15
     
     # Choisir un type aléatoire
     chosen_type = random.choice(weights)
@@ -395,17 +396,20 @@ def generate_building_with_type(x, y, width, depth, height, mat, zone_type='RESI
             print(f"   ➡️ Appel generate_u_shaped_building...")
             result = generate_u_shaped_building(x, y, width, depth, height, final_mat, building_counter)
         elif building_type == 't_shaped':
-            print(f"   ➡️ T-shaped non implémenté, fallback vers L-shaped...")
-            result = generate_l_shaped_building(x, y, width, depth, height, final_mat, building_counter)
+            print(f"   ➡️ Appel generate_t_shaped_building...")
+            result = generate_t_shaped_building(x, y, width, depth, height, final_mat, building_counter)
         elif building_type == 'circular':
-            print(f"   ➡️ Circular non implémenté, fallback vers tower...")
-            result = generate_simple_tower_building(x, y, width, depth, height, final_mat, building_counter)
+            print(f"   ➡️ Appel generate_circular_building...")
+            result = generate_circular_building(x, y, width, depth, height, final_mat, building_counter)
         elif building_type == 'elliptical':
-            print(f"   ➡️ Elliptical non implémenté, fallback vers stepped...")
-            result = generate_simple_stepped_building(x, y, width, depth, height, final_mat, building_counter)
-        elif building_type in ['complex', 'pyramid', 'cone']:
-            print(f"   ➡️ Génération {building_type} (fallback vers rectangular)...")
-            result = generate_rectangular_building(x, y, width, depth, height, final_mat, building_counter)
+            print(f"   ➡️ Appel generate_elliptical_building...")
+            result = generate_elliptical_building(x, y, width, depth, height, final_mat, building_counter)
+        elif building_type == 'pyramid':
+            print(f"   ➡️ Appel generate_pyramid_building...")
+            result = generate_pyramid_building(x, y, width, depth, height, final_mat, building_counter)
+        elif building_type == 'complex':
+            print(f"   ➡️ Appel generate_complex_building...")
+            result = generate_complex_building(x, y, width, depth, height, final_mat, building_counter)
         else:
             print(f"   ⚠️ Type de bâtiment non reconnu: {building_type}, utilisation du type rectangulaire")
             result = generate_rectangular_building(x, y, width, depth, height, final_mat, building_counter)
@@ -604,71 +608,103 @@ def generate_l_shaped_building(x, y, width, depth, height, mat, building_num):
         return None
 
 def generate_u_shaped_building(x, y, width, depth, height, mat, building_num):
-    """Génère un bâtiment en forme de U"""
-    # Trois parties : gauche, droite, et arrière
-    part_width = width * 0.25
-    part_depth = depth * 0.8
-    back_width = width * 0.5
-    back_depth = depth * 0.2
+    """Génère un bâtiment en forme de U ou F (variant aléatoire)"""
+    import random
     
-    parts = []
+    # 40% de chance de créer un F-shaped au lieu d'un U-shaped
+    is_f_shaped = random.random() < 0.4
     
-    # Partie gauche
-    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, 0))
-    left_obj = bpy.context.object
-    left_obj.scale = (part_width/2, part_depth/2, height/2)
-    bpy.context.view_layer.objects.active = left_obj
-    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
-    
-    # Ajuster la position Z des sommets
-    mesh = left_obj.data
-    z_min = min(v.co.z for v in mesh.vertices)
-    for v in mesh.vertices:
-        v.co.z -= z_min
-    
-    left_obj.location = (x - width/2 + part_width/2, y, 0.02)  # Hauteur ajustée
-    parts.append(left_obj)
-    
-    # Partie droite
-    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, 0))
-    right_obj = bpy.context.object
-    right_obj.scale = (part_width/2, part_depth/2, height/2)
-    bpy.context.view_layer.objects.active = right_obj
-    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
-    
-    # Ajuster la position Z des sommets
-    mesh = right_obj.data
-    z_min = min(v.co.z for v in mesh.vertices)
-    for v in mesh.vertices:
-        v.co.z -= z_min
-    
-    right_obj.location = (x + width/2 - part_width/2, y, 0.02)  # Hauteur ajustée
-    parts.append(right_obj)
-    
-    # Partie arrière
-    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, 0))
-    back_obj = bpy.context.object
-    back_obj.scale = (back_width/2, back_depth/2, height/2)
-    bpy.context.view_layer.objects.active = back_obj
-    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
-    
-    # Ajuster la position Z des sommets
-    mesh = back_obj.data
-    z_min = min(v.co.z for v in mesh.vertices)
-    for v in mesh.vertices:
-        v.co.z -= z_min
-    
-    back_obj.location = (x, y + depth/2 - back_depth/2, 0.02)  # Hauteur ajustée
-    parts.append(back_obj)
+    if is_f_shaped:
+        print(f"🅵 Génération bâtiment F-shaped #{building_num}")
+        # Créer un F : partie principale + barre haute + barre milieu
+        main_width = width * 0.3
+        main_depth = depth
+        bar_width = width * 0.7
+        bar_depth = depth * 0.2
+        
+        parts = []
+        
+        # Partie principale verticale (gauche)
+        main = create_cube_with_center_bottom_origin(
+            main_width, main_depth, height, 
+            (x - width/2 + main_width/2, y, 0.02)
+        )
+        if main:
+            parts.append(main)
+        
+        # Barre horizontale haute
+        top_bar = create_cube_with_center_bottom_origin(
+            bar_width, bar_depth, height*0.3, 
+            (x - width/2 + main_width + bar_width/2, y + depth/2 - bar_depth/2, height*0.7)
+        )
+        if top_bar:
+            parts.append(top_bar)
+        
+        # Barre horizontale milieu
+        mid_bar = create_cube_with_center_bottom_origin(
+            bar_width*0.6, bar_depth, height*0.25, 
+            (x - width/2 + main_width + bar_width*0.3, y, height*0.35)
+        )
+        if mid_bar:
+            parts.append(mid_bar)
+    else:
+        print(f"🅿 Génération bâtiment U-shaped #{building_num}")
+        # Forme U traditionnelle
+        part_width = width * 0.25
+        part_depth = depth * 0.8
+        back_width = width * 0.5
+        back_depth = depth * 0.2
+        
+        parts = []
+        
+        # Partie gauche
+        left_part = create_cube_with_center_bottom_origin(
+            part_width, part_depth, height, 
+            (x - width/2 + part_width/2, y, 0.02)
+        )
+        if left_part:
+            parts.append(left_part)
+        
+        # Partie droite
+        right_part = create_cube_with_center_bottom_origin(
+            part_width, part_depth, height, 
+            (x + width/2 - part_width/2, y, 0.02)
+        )
+        if right_part:
+            parts.append(right_part)
+        
+        # Partie arrière
+        back_part = create_cube_with_center_bottom_origin(
+            back_width, back_depth, height, 
+            (x, y + depth/2 - back_depth/2, 0.02)
+        )
+        if back_part:
+            parts.append(back_part)
     
     # Joindre toutes les parties
-    bpy.context.view_layer.objects.active = parts[0]
-    for part in parts:
-        part.select_set(True)
-    bpy.ops.object.join()
-    
-    # Appliquer le matériau
-    parts[0].data.materials.append(mat)
+    if len(parts) > 1:
+        bpy.context.view_layer.objects.active = parts[0]
+        for part in parts:
+            part.select_set(True)
+        try:
+            bpy.ops.object.join()
+            obj = bpy.context.active_object
+            obj.name = f"batiment_u_shaped_{building_num}"
+            
+            # Appliquer le matériau
+            obj.data.materials.append(mat)
+            return obj
+        except Exception as e:
+            print(f"Erreur jointure U/F {building_num}: {e}")
+            return parts[0]
+    elif len(parts) == 1:
+        obj = parts[0]
+        obj.name = f"batiment_u_shaped_{building_num}"
+        obj.data.materials.append(mat)
+        return obj
+    else:
+        print(f"Échec création bâtiment U/F {building_num}")
+        return None
 
 def generate_tower_building(x, y, width, depth, height, mat):
     """Génère un bâtiment tour avec plusieurs niveaux"""
@@ -847,6 +883,200 @@ def generate_simple_stepped_building(x, y, width, depth, height, mat, building_n
         
     except Exception as e:
         print(f"Erreur critique lors de la génération du bâtiment étagé {building_num}: {str(e)}")
+        return None
+
+def generate_circular_building(x, y, width, depth, height, mat, building_num):
+    """Génère un bâtiment circulaire"""
+    try:
+        print(f"🔵 Génération bâtiment circulaire #{building_num}")
+        
+        # Utiliser le diamètre moyen pour le rayon
+        radius = min(width, depth) / 2
+        
+        # Créer le cylindre avec origine au bottom-center
+        result = safe_object_creation(bpy.ops.mesh.primitive_cylinder_add, 
+                                    radius=radius, depth=height, location=(x, y, 0))
+        if not bpy.context.object:
+            print(f"Échec création cylindre pour bâtiment circulaire {building_num}")
+            return None
+            
+        obj = bpy.context.object
+        obj.name = f"batiment_circular_{building_num}"
+        obj.location.z = height/2  # Placer le centre du cylindre à mi-hauteur (bottom à z=0)
+        
+        # Appliquer le matériau
+        try:
+            obj.data.materials.append(mat)
+        except Exception as e:
+            print(f"Erreur matériau bâtiment circulaire {building_num}: {e}")
+        
+        return obj
+        
+    except Exception as e:
+        print(f"Erreur bâtiment circulaire {building_num}: {str(e)}")
+        return None
+
+def generate_elliptical_building(x, y, width, depth, height, mat, building_num):
+    """Génère un bâtiment elliptique (cylindre écrasé)"""
+    try:
+        print(f"🥚 Génération bâtiment elliptique #{building_num}")
+        
+        # Créer un cylindre avec origine au bottom-center
+        result = safe_object_creation(bpy.ops.mesh.primitive_cylinder_add, 
+                                    radius=1, depth=height, location=(x, y, 0))
+        if not bpy.context.object:
+            print(f"Échec création cylindre pour bâtiment elliptique {building_num}")
+            return None
+            
+        obj = bpy.context.object
+        obj.name = f"batiment_elliptical_{building_num}"
+        
+        # Écraser pour faire une ellipse et positionner correctement
+        obj.scale.x = width / 2
+        obj.scale.y = depth / 2
+        obj.location.z = height/2  # Placer le centre à mi-hauteur (bottom à z=0)
+        
+        # Appliquer le matériau
+        try:
+            obj.data.materials.append(mat)
+        except Exception as e:
+            print(f"Erreur matériau bâtiment elliptique {building_num}: {e}")
+        
+        return obj
+        
+    except Exception as e:
+        print(f"Erreur bâtiment elliptique {building_num}: {str(e)}")
+        return None
+
+def generate_pyramid_building(x, y, width, depth, height, mat, building_num):
+    """Génère un bâtiment en forme de pyramide"""
+    try:
+        print(f"🔺 Génération bâtiment pyramide #{building_num}")
+        
+        # Créer un cône avec origine au bottom-center
+        result = safe_object_creation(bpy.ops.mesh.primitive_cone_add, 
+                                    radius1=max(width, depth)/2, radius2=0, 
+                                    depth=height, location=(x, y, 0))
+        if not bpy.context.object:
+            print(f"Échec création cône pour bâtiment pyramide {building_num}")
+            return None
+            
+        obj = bpy.context.object
+        obj.name = f"batiment_pyramid_{building_num}"
+        obj.location.z = height/2  # Placer le centre à mi-hauteur (bottom à z=0)
+        
+        # Appliquer le matériau
+        try:
+            obj.data.materials.append(mat)
+        except Exception as e:
+            print(f"Erreur matériau bâtiment pyramide {building_num}: {e}")
+        
+        return obj
+        
+    except Exception as e:
+        print(f"Erreur bâtiment pyramide {building_num}: {str(e)}")
+        return None
+
+def generate_t_shaped_building(x, y, width, depth, height, mat, building_num):
+    """Génère un bâtiment en forme de T"""
+    try:
+        print(f"🅃 Génération bâtiment T #{building_num}")
+        
+        # Créer la barre horizontale du T
+        horizontal_width = width
+        horizontal_depth = depth * 0.3
+        horizontal = create_cube_with_center_bottom_origin(
+            horizontal_width, horizontal_depth, height, 
+            (x, y + depth*0.35, 0.02)
+        )
+        
+        if not horizontal:
+            print(f"Échec création partie horizontale T {building_num}")
+            return None
+            
+        # Créer la barre verticale du T
+        vertical_width = width * 0.3
+        vertical_depth = depth * 0.7
+        vertical = create_cube_with_center_bottom_origin(
+            vertical_width, vertical_depth, height, 
+            (x, y - depth*0.15, 0.02)
+        )
+        
+        if not vertical:
+            print(f"Échec création partie verticale T {building_num}")
+            if horizontal:
+                bpy.data.objects.remove(horizontal, do_unlink=True)
+            return None
+        
+        # Joindre les deux parties
+        bpy.context.view_layer.objects.active = horizontal
+        horizontal.select_set(True)
+        vertical.select_set(True)
+        
+        try:
+            bpy.ops.object.join()
+            obj = bpy.context.active_object
+            obj.name = f"batiment_t_shaped_{building_num}"
+            
+            # Appliquer le matériau
+            obj.data.materials.append(mat)
+            return obj
+            
+        except Exception as e:
+            print(f"Erreur jointure T {building_num}: {e}")
+            return horizontal  # Retourner au moins une partie
+        
+    except Exception as e:
+        print(f"Erreur bâtiment T {building_num}: {str(e)}")
+        return None
+
+def generate_complex_building(x, y, width, depth, height, mat, building_num):
+    """Génère un bâtiment complexe avec plusieurs éléments"""
+    try:
+        print(f"🏗️ Génération bâtiment complexe #{building_num}")
+        
+        # Base principale
+        base_height = height * 0.6
+        base = create_cube_with_center_bottom_origin(
+            width, depth, base_height, (x, y, 0.02)
+        )
+        
+        if not base:
+            print(f"Échec création base complexe {building_num}")
+            return None
+        
+        # Tour centrale plus haute
+        tower_width = width * 0.4
+        tower_depth = depth * 0.4
+        tower_height = height * 0.8
+        tower = create_cube_with_center_bottom_origin(
+            tower_width, tower_depth, tower_height, 
+            (x, y, base_height + 0.01)
+        )
+        
+        if tower:
+            # Joindre base et tour
+            bpy.context.view_layer.objects.active = base
+            base.select_set(True)
+            tower.select_set(True)
+            
+            try:
+                bpy.ops.object.join()
+                obj = bpy.context.active_object
+                obj.name = f"batiment_complex_{building_num}"
+                
+                # Appliquer le matériau
+                obj.data.materials.append(mat)
+                return obj
+                
+            except Exception as e:
+                print(f"Erreur jointure complexe {building_num}: {e}")
+                return base
+        
+        return base
+        
+    except Exception as e:
+        print(f"Erreur bâtiment complexe {building_num}: {str(e)}")
         return None
 
 def generate_sidewalk(x, y, width, depth, mat, sidewalk_width=1.0):
