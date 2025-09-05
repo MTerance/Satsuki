@@ -2335,3 +2335,1856 @@ def create_cube_with_center_bottom_origin(size_x, size_y, size_z, location=(0, 0
     except Exception as e:
         print(f"❌ Erreur lors de la création du cube avec origine centre bas: {e}")
         return None
+
+def generate_polygonal_block(center_x, center_y, vertices, width, depth, mat):
+    """Génère un bloc polygonal avec un nombre variable d'arêtes"""
+    import random
+    import math
+    
+    try:
+        print(f"🔷 Génération bloc polygonal {vertices} côtés au centre ({center_x:.1f}, {center_y:.1f})")
+        
+        # Créer le mesh polygonal avec une hauteur visible
+        bpy.ops.mesh.primitive_cylinder_add(
+            vertices=vertices, 
+            radius=min(width, depth)/2, 
+            depth=0.5,  # Hauteur plus visible pour le bloc
+            location=(center_x, center_y, 0.25)  # Centré sur Z
+        )
+        
+        obj = bpy.context.object
+        if not obj:
+            return None
+        
+        # Adapter les dimensions
+        obj.scale.x = width / min(width, depth)
+        obj.scale.y = depth / min(width, depth)
+        obj.name = f"PolygonalBlock_{vertices}sides_{center_x:.1f}_{center_y:.1f}"
+        
+        # Stocker les informations du bloc pour l'orientation des bâtiments
+        obj["block_sides"] = vertices
+        obj["block_width"] = width
+        obj["block_depth"] = depth
+        obj["block_center_x"] = center_x
+        obj["block_center_y"] = center_y
+        
+        # Appliquer le matériau de trottoir
+        if mat and obj.data:
+            obj.data.materials.clear()
+            obj.data.materials.append(mat)
+        
+        print(f"✅ Bloc polygonal créé: {vertices} côtés, dimensions {width:.1f}x{depth:.1f}")
+        return obj
+        
+    except Exception as e:
+        print(f"Erreur création bloc polygonal: {e}")
+        return None
+
+def calculate_building_orientation_for_polygon(block_sides, building_x, building_y, block_center_x, block_center_y):
+    """Calcule l'orientation optimale d'un bâtiment pour s'aligner avec un bloc polygonal"""
+    import math
+    
+    try:
+        # Pour les polygones réguliers, calculer l'angle de l'arête la plus proche
+        if block_sides >= 3:
+            # Angle entre le centre du bloc et la position du bâtiment
+            dx = building_x - block_center_x
+            dy = building_y - block_center_y
+            angle_to_building = math.atan2(dy, dx)
+            
+            # Angle d'une arête du polygone
+            edge_angle = (2 * math.pi) / block_sides
+            
+            # Trouver l'arête la plus proche
+            closest_edge_index = round(angle_to_building / edge_angle) % block_sides
+            closest_edge_angle = closest_edge_index * edge_angle
+            
+            # Orienter le bâtiment parallèlement à cette arête
+            # Ajouter 90 degrés pour que la face soit parallèle (et non perpendiculaire)
+            building_rotation = closest_edge_angle + math.pi/2
+            
+            return building_rotation
+        else:
+            return 0.0
+            
+    except Exception as e:
+        print(f"Erreur calcul orientation: {e}")
+        return 0.0
+
+def generate_oriented_building(x, y, width, depth, height, mat, block_sides, block_center_x, block_center_y, variety='MEDIUM'):
+    """Génère un bâtiment orienté selon un bloc polygonal"""
+    import math
+    
+    try:
+        # Calculer l'orientation optimale
+        rotation = calculate_building_orientation_for_polygon(
+            block_sides, x, y, block_center_x, block_center_y
+        )
+        
+        print(f"🏢 Bâtiment orienté: rotation {math.degrees(rotation):.1f}° pour bloc {block_sides} côtés")
+        
+        # Créer le bâtiment standard
+        building = generate_building(x, y, width, depth, height, mat, building_variety=variety)
+        
+        if building:
+            # Appliquer la rotation
+            building.rotation_euler.z = rotation
+            building.name = f"OrientedBuilding_{block_sides}sides_{x:.1f}_{y:.1f}"
+            
+        return building
+        
+    except Exception as e:
+        print(f"Erreur génération bâtiment orienté: {e}")
+        return None
+
+def generate_organic_road_network(block_zones, road_width, road_mat, curve_intensity):
+    """Génère un réseau de routes organiques qui épousent les formes des blocs"""
+    import math
+    
+    try:
+        roads_created = 0
+        print(f"🛣️ Génération réseau de routes organiques pour {len(block_zones)} blocs...")
+        
+        # Créer des routes qui contournent les blocs polygonaux
+        for i, zone in enumerate(block_zones):
+            # Rayon du bloc polygonal
+            block_radius = min(zone['width'], zone['depth']) / 2
+            
+            # Créer un anneau de route autour du bloc
+            if random.random() < 0.7:  # 70% de chance d'avoir une route périphérique
+                road_ring = generate_polygonal_road_ring(
+                    zone['x'], zone['y'], zone['sides'], 
+                    block_radius + road_width, road_width, road_mat
+                )
+                if road_ring:
+                    roads_created += 1
+            
+            # Connecter aux blocs voisins avec des routes courbes
+            for j, other_zone in enumerate(block_zones[i+1:], i+1):
+                distance = math.sqrt((zone['x'] - other_zone['x'])**2 + (zone['y'] - other_zone['y'])**2)
+                
+                # Connecter seulement les blocs proches
+                if distance < 20:  # Distance augmentée
+                    if random.random() < curve_intensity:
+                        # Route courbe adaptative
+                        roads = generate_adaptive_curved_road(
+                            zone, other_zone, road_width, road_mat
+                        )
+                        if roads:
+                            roads_created += len(roads)
+                    else:
+                        # Route droite simple
+                        road = generate_diagonal_road(
+                            zone['x'], zone['y'], other_zone['x'], other_zone['y'], 
+                            road_width, road_mat
+                        )
+                        if road:
+                            roads_created += 1
+        
+        return roads_created
+        
+    except Exception as e:
+        print(f"Erreur génération réseau organique: {e}")
+        return 0
+
+def generate_polygonal_road_ring(center_x, center_y, sides, radius, width, mat):
+    """Génère un anneau de route polygonal autour d'un bloc"""
+    import math
+    
+    try:
+        # Créer un cylindre polygonal pour l'anneau de route
+        bpy.ops.mesh.primitive_cylinder_add(
+            vertices=sides,
+            radius=radius,
+            depth=0.1,  # Hauteur fine pour la route
+            location=(center_x, center_y, 0.05)
+        )
+        
+        road_ring = bpy.context.object
+        if not road_ring:
+            return None
+        
+        # Passer en mode édition pour créer l'anneau
+        bpy.context.view_layer.objects.active = road_ring
+        bpy.ops.object.mode_set(mode='EDIT')
+        
+        # Sélectionner tout et faire un inset pour créer l'anneau
+        bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.mesh.inset_faces(thickness=width/radius, depth=0)
+        
+        # Supprimer les faces intérieures pour créer l'anneau
+        bpy.ops.mesh.select_all(action='DESELECT')
+        bpy.ops.mesh.select_face_by_sides(number=sides, type='EQUAL')
+        bpy.ops.mesh.delete(type='FACE')
+        
+        bpy.ops.object.mode_set(mode='OBJECT')
+        
+        # Nommer et matériau
+        road_ring.name = f"PolygonalRoadRing_{sides}sides_{center_x:.1f}_{center_y:.1f}"
+        if mat and road_ring.data:
+            road_ring.data.materials.clear()
+            road_ring.data.materials.append(mat)
+        
+        print(f"✅ Anneau de route polygonal créé: {sides} côtés")
+        return road_ring
+        
+    except Exception as e:
+        print(f"Erreur création anneau de route: {e}")
+        # Retourner en mode objet si erreur
+        try:
+            bpy.ops.object.mode_set(mode='OBJECT')
+        except:
+            pass
+        return None
+
+def generate_adaptive_curved_road(zone1, zone2, width, mat):
+    """Génère une route courbe qui s'adapte aux formes des blocs connectés"""
+    import math
+    import random
+    
+    try:
+        # Points de départ et d'arrivée
+        start_x, start_y = zone1['x'], zone1['y']
+        end_x, end_y = zone2['x'], zone2['y']
+        
+        # Calculer les points de courbe en évitant les centres des blocs
+        mid_x = (start_x + end_x) / 2
+        mid_y = (start_y + end_y) / 2
+        
+        # Ajouter une déviation perpendiculaire pour la courbe
+        dx = end_x - start_x
+        dy = end_y - start_y
+        distance = math.sqrt(dx*dx + dy*dy)
+        
+        if distance > 0:
+            # Vecteur perpendiculaire normalisé
+            perp_x = -dy / distance
+            perp_y = dx / distance
+            
+            # Déviation aléatoire pour la courbe
+            deviation = random.uniform(-distance*0.3, distance*0.3)
+            curve_x = mid_x + perp_x * deviation
+            curve_y = mid_y + perp_y * deviation
+            
+            # Générer la route courbe
+            return generate_angled_road(start_x, start_y, end_x, end_y, width, mat, 
+                                      curve_points=[(curve_x, curve_y)])
+        
+        return []
+        
+    except Exception as e:
+        print(f"Erreur route courbe adaptative: {e}")
+        return []
+
+def generate_angled_road(start_x, start_y, end_x, end_y, width, mat, curve_points=None):
+    """Génère une route avec angles variables et courbes optionnelles"""
+    import random
+    import math
+    
+    try:
+        print(f"🛣️ Génération route angulaire de ({start_x:.1f},{start_y:.1f}) à ({end_x:.1f},{end_y:.1f})")
+        
+        # Si pas de points de courbe spécifiés, créer une route avec angle aléatoire
+        if not curve_points:
+            # Créer un point de courbe intermédiaire
+            mid_x = (start_x + end_x) / 2
+            mid_y = (start_y + end_y) / 2
+            
+            # Ajouter une déviation aléatoire
+            deviation = random.uniform(-5, 5)
+            perpendicular_angle = math.atan2(end_y - start_y, end_x - start_x) + math.pi/2
+            mid_x += deviation * math.cos(perpendicular_angle)
+            mid_y += deviation * math.sin(perpendicular_angle)
+            
+            curve_points = [(start_x, start_y), (mid_x, mid_y), (end_x, end_y)]
+        
+        # Créer les segments de route
+        road_objects = []
+        for i in range(len(curve_points) - 1):
+            x1, y1 = curve_points[i]
+            x2, y2 = curve_points[i + 1]
+            
+            # Calculer position et angle du segment
+            seg_x = (x1 + x2) / 2
+            seg_y = (y1 + y2) / 2
+            length = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+            angle = math.atan2(y2 - y1, x2 - x1)
+            
+            # Créer le segment
+            result = generate_road(seg_x, seg_y, width, length, mat, True, angle)
+            if result:
+                obj = bpy.context.object
+                if obj:
+                    obj.name = f"angled_road_seg_{i}_{seg_x:.1f}_{seg_y:.1f}"
+                    road_objects.append(obj)
+        
+        return road_objects
+        
+    except Exception as e:
+        print(f"Erreur création route angulaire: {e}")
+        return []
+
+def generate_organic_city_layout(context):
+    """Génère un layout de ville organique avec blocs polygonaux et routes angulaires"""
+    import random
+    import math
+    
+    try:
+        print("🌿 Début génération layout organique")
+        
+        # Nettoyage de la scène avant génération
+        safe_delete_objects()
+        
+        # Récupérer les paramètres depuis la scène
+        scene = context.scene
+        width = safe_int(getattr(scene, 'citygen_width', 5), 5)
+        length = safe_int(getattr(scene, 'citygen_length', 5), 5)
+        road_width = getattr(scene, 'citygen_road_width', 4.0)
+        
+        # Récupérer les paramètres organiques
+        polygon_min_sides = safe_int(getattr(scene, 'citygen_polygon_min_sides', 4), 4)
+        polygon_max_sides = safe_int(getattr(scene, 'citygen_polygon_max_sides', 6), 6)
+        road_curve_intensity = getattr(scene, 'citygen_road_curve_intensity', 0.5)
+        block_size_variation = getattr(scene, 'citygen_block_size_variation', 0.3)
+        
+        print(f"🌿 Paramètres organiques: {width}x{length}, sides:{polygon_min_sides}-{polygon_max_sides}, curves:{road_curve_intensity}")
+        
+        # Créer les matériaux nécessaires
+        road_mat = create_material("RoadMat_Organic", (1.0, 0.75, 0.8))  # Rose pâle pour les routes
+        side_mat = create_material("SidewalkMat_Organic", (0.6, 0.6, 0.6))  # Gris pour les trottoirs
+        build_mat = create_material("BuildingMat_Organic", (0.5, 1.0, 0.0))  # Vert pomme pour les bâtiments
+        
+        # Définir les zones de blocs avec formes variées - logique améliorée
+        block_zones = []
+        block_size = 8.0  # Taille de base d'un bloc
+        
+        print(f"🌿 Grille {width}x{length} -> Génération blocs organiques")
+        
+        # Créer une grille de blocs organiques
+        for i in range(width):
+            for j in range(length):
+                # Position du centre du bloc
+                center_x = (i - width/2) * block_size
+                center_y = (j - length/2) * block_size
+                
+                # Choisir aléatoirement le nombre de côtés selon les paramètres
+                sides = random.randint(polygon_min_sides, polygon_max_sides)
+                
+                # Taille variable des blocs selon le paramètre
+                base_size = block_size * 0.8  # 80% de la grille pour laisser de l'espace
+                variation = base_size * block_size_variation
+                block_width = random.uniform(base_size - variation, base_size + variation)
+                block_depth = random.uniform(base_size - variation, base_size + variation)
+                
+                # Nombre de bâtiments par défaut
+                default_buildings = safe_int(getattr(scene, 'citygen_buildings_per_block', 1), 1)
+                
+                block_zones.append({
+                    'x': center_x,
+                    'y': center_y,
+                    'width': block_width,
+                    'depth': block_depth,
+                    'sides': sides,
+                    'buildings_count': default_buildings  # Nombre de base qui sera modifié par la densité
+                })
+        
+        print(f"🌿 Génération de {len(block_zones)} blocs organiques")
+        
+        # === APPLIQUER LE RÉALISME URBAIN (VERSION SÉCURISÉE) ===
+        # Récupérer les paramètres de réalisme avec valeurs par défaut sécurisées
+        try:
+            density_variation = getattr(scene, 'citygen_density_variation', 0.4)
+            age_variation = getattr(scene, 'citygen_age_variation', True)
+            mixed_use = getattr(scene, 'citygen_mixed_use', True)
+            landmark_frequency = getattr(scene, 'citygen_landmark_frequency', 0.15)
+            plaza_frequency = getattr(scene, 'citygen_plaza_frequency', 0.1)
+            street_life = getattr(scene, 'citygen_street_life', False)
+            weathering = getattr(scene, 'citygen_weathering', 0.3)
+            irregular_lots = getattr(scene, 'citygen_irregular_lots', False)
+            growth_pattern = getattr(scene, 'citygen_growth_pattern', 'ORGANIC')
+            
+            print(f"🎨 Paramètres réalisme chargés avec succès")
+        except Exception as param_error:
+            print(f"⚠️ Erreur paramètres réalisme, utilisation valeurs par défaut: {param_error}")
+            density_variation = 0.4
+            age_variation = True
+            mixed_use = True
+            landmark_frequency = 0.15
+            plaza_frequency = 0.1
+            street_life = False
+            weathering = 0.3
+            irregular_lots = False
+            growth_pattern = 'ORGANIC'
+        
+        # Appliquer la densité réaliste (version sécurisée)
+        try:
+            if density_variation > 0:
+                block_zones = generate_realistic_city_density(block_zones, density_variation)
+                print(f"✅ Densité réaliste appliquée")
+            else:
+                print(f"⏩ Densité réaliste désactivée")
+        except Exception as density_error:
+            print(f"⚠️ Erreur densité réaliste, mode standard: {density_error}")
+        
+        # Créer matériaux supplémentaires pour le réalisme (version sécurisée)
+        try:
+            plaza_mat = create_material("PlazaMat_Realistic", (0.8, 0.9, 0.7))  # Vert pâle pour places
+            tree_mat = create_material("TreeMat_Realistic", (0.2, 0.8, 0.2))   # Vert pour végétation
+            landmark_mat = create_material("LandmarkMat_Realistic", (0.9, 0.8, 0.6))  # Doré pour monuments
+        except Exception as mat_error:
+            print(f"⚠️ Erreur création matériaux réalisme: {mat_error}")
+            plaza_mat = side_mat  # Fallback
+            tree_mat = build_mat  # Fallback
+            landmark_mat = build_mat  # Fallback
+        
+        # Créer les blocs polygonaux avec bâtiments
+        buildings_created = 0
+        blocks_created = 0
+        all_buildings = []  # Pour le vieillissement final
+        
+        for zone in block_zones:
+            # Créer le bloc polygonal (fondation)
+            block = generate_polygonal_block(
+                zone['x'], zone['y'], zone['sides'], 
+                zone['width'], zone['depth'], side_mat
+            )
+            if block:
+                blocks_created += 1
+                
+                # Probabilité de place publique au lieu de bloc (version sécurisée)
+                try:
+                    if plaza_frequency > 0 and random.random() < plaza_frequency:
+                        plaza = create_public_plaza(
+                            zone['x'], zone['y'], 
+                            min(zone['width'], zone['depth']) * 0.8, 
+                            plaza_mat, tree_mat
+                        )
+                        if plaza:
+                            print(f"🌳 Place publique créée à la place du bloc")
+                            continue  # Passer au bloc suivant
+                except Exception as plaza_error:
+                    print(f"⚠️ Erreur création place publique: {plaza_error}")
+                
+                # Ajouter des bâtiments dans le bloc (utiliser la densité calculée avec sécurité)
+                try:
+                    buildings_in_block = zone.get('buildings_count', 1)
+                    if buildings_in_block <= 0:  # Sécurité
+                        buildings_in_block = 1
+                except Exception:
+                    buildings_in_block = 1  # Valeur par défaut sécurisée
+                
+                for b in range(buildings_in_block):
+                    try:
+                        # Position aléatoire dans le bloc (plus centrée)
+                        offset_range = min(zone['width'], zone['depth']) * 0.3  # 30% de la taille du bloc
+                        building_x = zone['x'] + random.uniform(-offset_range, offset_range)
+                        building_y = zone['y'] + random.uniform(-offset_range, offset_range)
+                        
+                        # Vérifier si c'est un monument (version sécurisée)
+                        is_landmark = False
+                        try:
+                            if landmark_frequency > 0:
+                                is_landmark = random.random() < landmark_frequency
+                        except Exception:
+                            is_landmark = False
+                        
+                        if is_landmark:
+                            # Créer un monument (version sécurisée)
+                            try:
+                                building = create_landmark_building(
+                                    building_x, building_y, 1.5, landmark_mat
+                                )
+                            except Exception as landmark_error:
+                                print(f"⚠️ Erreur création monument, bâtiment standard: {landmark_error}")
+                                building = None
+                        else:
+                            building = None
+                        
+                        # Si pas de monument ou erreur, créer un bâtiment normal
+                        if not building:
+                            # Bâtiment normal avec variations d'âge (version sécurisée)
+                            floors = safe_int(getattr(scene, 'citygen_max_floors', 8), 8)
+                            variety = getattr(scene, 'citygen_building_variety', 'MEDIUM')
+                            
+                            # Variation d'âge - bâtiments plus anciens sont plus bas (version sécurisée)
+                            try:
+                                if age_variation and random.random() < 0.4:  # 40% de bâtiments "anciens"
+                                    floors = max(1, int(floors * random.uniform(0.3, 0.7)))
+                                    variety = random.choice(['LOW', 'MEDIUM'])  # Styles plus simples
+                            except Exception:
+                                pass  # Garder les valeurs par défaut
+                            
+                            # Usage mixte - varier les hauteurs dans un même bloc (version sécurisée)
+                            try:
+                                if mixed_use and b > 0:  # Pas le premier bâtiment
+                                    floors = max(1, int(floors * random.uniform(0.5, 1.5)))
+                            except Exception:
+                                pass  # Garder les valeurs par défaut
+                            
+                            # Dimensions du bâtiment (adaptées au bloc)
+                            base_width = min(zone['width'], zone['depth']) * 0.4
+                            
+                            # Parcelles irrégulières (version sécurisée)
+                            try:
+                                if irregular_lots:
+                                    width_variation = random.uniform(0.7, 1.3)
+                                    depth_variation = random.uniform(0.7, 1.3)
+                                    build_width = base_width * width_variation
+                                    build_depth = base_width * depth_variation
+                                else:
+                                    build_width = base_width
+                                    build_depth = base_width
+                            except Exception:
+                                build_width = base_width
+                                build_depth = base_width
+                            
+                            # Générer un bâtiment orienté selon le bloc polygonal
+                            building = generate_oriented_building(
+                                building_x, building_y, build_width, build_depth, floors,
+                                build_mat, zone['sides'], zone['x'], zone['y'], variety
+                            )
+                        
+                        if building:
+                            buildings_created += 1
+                            all_buildings.append(building)
+                            # Stocker la référence au bloc parent
+                            building["parent_block_sides"] = zone['sides']
+                            building["parent_block_center"] = (zone['x'], zone['y'])
+                            
+                    except Exception as building_error:
+                        print(f"⚠️ Erreur création bâtiment {b}: {building_error}")
+                        continue  # Passer au bâtiment suivant
+        
+        # Créer un réseau de routes organiques connectant les blocs
+        roads_created = 0
+        print(f"🛣️ Génération de routes organiques entre {len(block_zones)} blocs...")
+        
+        # Utiliser le nouveau système de routes organiques qui épousent les blocs
+        organic_roads_count = generate_organic_road_network(
+            block_zones, road_width, road_mat, road_curve_intensity
+        )
+        roads_created += organic_roads_count
+        
+        # Ajouter quelques routes principales droites pour connecter le tout
+        block_size = 8.0
+        main_roads_created = 0
+        
+        # Routes principales verticales (réduites)
+        for i in range(0, width + 1, 2):  # Une route sur deux seulement
+            start_y = -length/2 * block_size
+            end_y = length/2 * block_size
+            road_x = (i - width/2) * block_size - block_size/2
+            
+            road = generate_road(road_x, (start_y + end_y)/2, road_width, abs(end_y - start_y), road_mat, is_horizontal=False)
+            if road:
+                main_roads_created += 1
+        
+        # Routes principales horizontales (réduites)
+        for j in range(0, length + 1, 2):  # Une route sur deux seulement
+            start_x = -width/2 * block_size
+            end_x = width/2 * block_size
+            road_y = (j - length/2) * block_size - block_size/2
+            
+            road = generate_road((start_x + end_x)/2, road_y, abs(end_x - start_x), road_width, road_mat, is_horizontal=True)
+            if road:
+                main_roads_created += 1
+        
+        roads_created += main_roads_created
+        
+        # === APPLIQUER LES EFFETS FINAUX DE RÉALISME (VERSION SÉCURISÉE) ===
+        print(f"🎨 Application des effets de réalisme urbain...")
+        
+        # Ajouter le mobilier urbain (version sécurisée)
+        try:
+            if street_life:
+                add_street_furniture(block_zones, street_life)
+            else:
+                print(f"⏩ Mobilier urbain désactivé")
+        except Exception as furniture_error:
+            print(f"⚠️ Erreur mobilier urbain: {furniture_error}")
+        
+        # Appliquer le vieillissement aux bâtiments (version sécurisée)
+        try:
+            if weathering > 0 and all_buildings:
+                apply_building_aging(all_buildings, weathering)
+            else:
+                print(f"⏩ Vieillissement désactivé ou pas de bâtiments")
+        except Exception as aging_error:
+            print(f"⚠️ Erreur vieillissement: {aging_error}")
+        
+        # Statistiques finales avec réalisme (version sécurisée)
+        try:
+            landmarks_count = len([b for b in all_buildings if b and 'Landmark_' in b.name])
+            plazas_count = len([obj for obj in bpy.context.scene.objects if 'Plaza_' in obj.name])
+            furniture_count = len([obj for obj in bpy.context.scene.objects if any(furniture in obj.name for furniture in ['Lamppost_', 'Bench_', 'TrashBin_', 'Sign_'])])
+        except Exception as stats_error:
+            print(f"⚠️ Erreur calcul statistiques: {stats_error}")
+            landmarks_count = 0
+            plazas_count = 0 
+            furniture_count = 0
+        
+        print(f"✅ Ville organique réaliste créée:")
+        print(f"   📐 {blocks_created} blocs polygonaux")
+        print(f"   🏢 {buildings_created} bâtiments (dont {landmarks_count} monuments)")
+        print(f"   🛣️ {roads_created} segments de routes organiques")
+        print(f"   🌳 {plazas_count} places publiques")
+        print(f"   🪑 {furniture_count} éléments de mobilier urbain")
+        print(f"   🎨 Densité variable, vieillissement, zones mixtes appliqués")
+        
+        return True
+        
+    except Exception as e:
+        print(f"❌ Erreur génération layout organique: {e}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        return False
+
+# =============================================
+# FONCTIONS DE RÉALISME URBAIN
+# =============================================
+
+def generate_realistic_city_density(zones, density_variation):
+    """Calcule des densités réalistes pour chaque zone selon les patterns urbains"""
+    import random
+    import math
+    
+    if not zones:
+        return zones
+    
+    try:
+        # Trouver le centre approximatif de la ville
+        center_x = sum(zone['x'] for zone in zones) / len(zones)
+        center_y = sum(zone['y'] for zone in zones) / len(zones)
+        
+        for zone in zones:
+            # Distance au centre
+            distance_to_center = math.sqrt((zone['x'] - center_x)**2 + (zone['y'] - center_y)**2)
+            max_distance = max(abs(zone['x'] - center_x), abs(zone['y'] - center_y)) + 1
+            
+            # Densité de base selon la distance (centre plus dense)
+            normalized_distance = distance_to_center / max_distance if max_distance > 0 else 0
+            base_density = 1.0 - (normalized_distance * 0.6)  # Centre à 100%, périphérie à 40%
+            
+            # Ajouter variation aléatoire
+            variation = random.uniform(-density_variation, density_variation)
+            final_density = max(0.1, min(1.0, base_density + variation))
+            
+            zone['density'] = final_density
+            
+            # Calculer le nombre de bâtiments selon la densité
+            base_buildings = zone.get('buildings_count', 1)
+            zone['buildings_count'] = max(1, int(base_buildings * final_density))
+            
+        print(f"✅ Densités réalistes calculées pour {len(zones)} zones")
+        return zones
+        
+    except Exception as e:
+        print(f"Erreur calcul densité réaliste: {e}")
+        return zones
+
+def create_landmark_building(x, y, size_multiplier, mat, variety='LANDMARK'):
+    """Crée un bâtiment remarquable (version sécurisée)"""
+    import random
+    
+    try:
+        # Version simplifiée et sécurisée - utilise les fonctions existantes
+        base_size = 4.0 * size_multiplier
+        
+        # Choisir un type de bâtiment spécial
+        landmark_varieties = ['TOWER', 'COMPLEX', 'T_SHAPED', 'U_SHAPED', 'ELLIPTICAL']
+        selected_variety = random.choice(landmark_varieties)
+        
+        # Dimensions plus grandes pour un monument
+        width = base_size * random.uniform(1.2, 2.0)
+        depth = width * random.uniform(0.8, 1.2)
+        height = base_size * random.uniform(2, 4)  # Plus haut
+        
+        # Utiliser la fonction generate_building existante
+        building = generate_building(x, y, width, depth, height, mat, building_variety=selected_variety)
+        
+        if building:
+            building.name = f"Landmark_{selected_variety}_{x:.1f}_{y:.1f}"
+            print(f"🏛️ Monument {selected_variety} créé en ({x:.1f}, {y:.1f})")
+            
+        return building
+        
+    except Exception as e:
+        print(f"Erreur création monument (fallback standard): {e}")
+        # Fallback - créer un bâtiment normal mais plus grand
+        try:
+            width = 6.0
+            depth = 6.0
+            height = 12.0
+            return generate_building(x, y, width, depth, height, mat, building_variety='TOWER')
+        except Exception as fallback_error:
+            print(f"Erreur fallback monument: {fallback_error}")
+            return None
+
+def create_public_plaza(x, y, size, plaza_mat, tree_mat=None):
+    """Crée une place publique avec verdure (version sécurisée)"""
+    import random
+    
+    try:
+        # Créer la place (surface plate) - version simplifiée
+        bpy.ops.mesh.primitive_cube_add(
+            size=size,
+            location=(x, y, 0.02)  # Légèrement surélevée
+        )
+        
+        plaza = bpy.context.object
+        if not plaza:
+            return None
+        
+        # Aplatir pour faire une place
+        plaza.scale = (1, 1, 0.05)
+        bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+        
+        # Matériau et nom
+        plaza.name = f"Plaza_{x:.1f}_{y:.1f}"
+        if plaza_mat and plaza.data:
+            plaza.data.materials.clear()
+            plaza.data.materials.append(plaza_mat)
+        
+        # Ajouter quelques arbres/végétation de façon simplifiée
+        if tree_mat:
+            try:
+                tree_count = random.randint(1, 3)  # Moins d'arbres pour éviter les erreurs
+                for i in range(tree_count):
+                    # Position aléatoire dans la place
+                    tree_x = x + random.uniform(-size/4, size/4)  # Zone plus petite
+                    tree_y = y + random.uniform(-size/4, size/4)
+                    
+                    # Créer un "arbre" simple (sphère verte)
+                    bpy.ops.mesh.primitive_uv_sphere_add(
+                        radius=1.0,
+                        location=(tree_x, tree_y, 1.0)
+                    )
+                    tree = bpy.context.object
+                    if tree:
+                        tree.name = f"Tree_{i}_{x:.1f}_{y:.1f}"
+                        if tree_mat and tree.data:
+                            tree.data.materials.clear()
+                            tree.data.materials.append(tree_mat)
+            except Exception as tree_error:
+                print(f"⚠️ Erreur création arbres: {tree_error}")
+        
+        print(f"🌳 Place publique créée en ({x:.1f}, {y:.1f})")
+        return plaza
+        
+    except Exception as e:
+        print(f"Erreur création place publique: {e}")
+        return None
+
+def add_street_furniture(zones, street_life_enabled):
+    """Ajoute des éléments de mobilier urbain (lampadaires, bancs, etc.)"""
+    import random
+    
+    if not street_life_enabled:
+        return
+        
+    try:
+        furniture_count = 0
+        
+        for zone in zones:
+            # Densité de mobilier selon la densité de la zone
+            density = zone.get('density', 0.5)
+            furniture_per_zone = int(density * random.randint(2, 6))
+            
+            for i in range(furniture_per_zone):
+                # Position aléatoire près des bords de la zone
+                edge_offset = min(zone['width'], zone['depth']) * 0.4
+                furniture_x = zone['x'] + random.uniform(-edge_offset, edge_offset)
+                furniture_y = zone['y'] + random.uniform(-edge_offset, edge_offset)
+                
+                # Types de mobilier
+                furniture_type = random.choice(['LAMPPOST', 'BENCH', 'TRASH_BIN', 'SIGN'])
+                
+                if furniture_type == 'LAMPPOST':
+                    # Lampadaire
+                    bpy.ops.mesh.primitive_cylinder_add(
+                        radius=0.1,
+                        depth=3.5,
+                        location=(furniture_x, furniture_y, 1.75)
+                    )
+                    obj = bpy.context.object
+                    if obj:
+                        obj.name = f"Lamppost_{furniture_x:.1f}_{furniture_y:.1f}"
+                        
+                elif furniture_type == 'BENCH':
+                    # Banc
+                    bpy.ops.mesh.primitive_cube_add(
+                        size=2.0,
+                        location=(furniture_x, furniture_y, 0.4)
+                    )
+                    obj = bpy.context.object
+                    if obj:
+                        obj.scale = (1, 0.3, 0.2)
+                        bpy.ops.object.transform_apply(scale=True)
+                        obj.name = f"Bench_{furniture_x:.1f}_{furniture_y:.1f}"
+                        
+                elif furniture_type == 'TRASH_BIN':
+                    # Poubelle
+                    bpy.ops.mesh.primitive_cylinder_add(
+                        radius=0.3,
+                        depth=0.8,
+                        location=(furniture_x, furniture_y, 0.4)
+                    )
+                    obj = bpy.context.object
+                    if obj:
+                        obj.name = f"TrashBin_{furniture_x:.1f}_{furniture_y:.1f}"
+                        
+                else:  # SIGN
+                    # Panneau
+                    bpy.ops.mesh.primitive_cube_add(
+                        size=1.0,
+                        location=(furniture_x, furniture_y, 1.5)
+                    )
+                    obj = bpy.context.object
+                    if obj:
+                        obj.scale = (0.1, 1, 0.6)
+                        bpy.ops.object.transform_apply(scale=True)
+                        obj.name = f"Sign_{furniture_x:.1f}_{furniture_y:.1f}"
+                
+                furniture_count += 1
+        
+        print(f"🪑 {furniture_count} éléments de mobilier urbain ajoutés")
+        
+    except Exception as e:
+        print(f"Erreur ajout mobilier urbain: {e}")
+
+def apply_building_aging(buildings, weathering_factor):
+    """Applique des effets de vieillissement aux bâtiments"""
+    import random
+    
+    if weathering_factor <= 0:
+        return
+        
+    try:
+        aged_count = 0
+        
+        for building in buildings:
+            if not building or random.random() > weathering_factor:
+                continue
+                
+            # Variation de hauteur pour simuler l'usure
+            age_factor = random.uniform(0.85, 0.98)
+            if hasattr(building, 'scale'):
+                building.scale.z *= age_factor
+                bpy.context.view_layer.objects.active = building
+                bpy.ops.object.transform_apply(scale=True)
+                
+            # Légère rotation aléatoire pour les vieux bâtiments
+            if random.random() < 0.3:  # 30% des bâtiments vieillis
+                small_rotation = random.uniform(-0.02, 0.02)  # Très petit angle
+                building.rotation_euler.z += small_rotation
+                
+            aged_count += 1
+        
+        print(f"🏚️ {aged_count} bâtiments vieillis (facteur: {weathering_factor:.2f})")
+        
+    except Exception as e:
+        print(f"Erreur vieillissement bâtiments: {e}")
+
+# =============================================
+# NOUVEAU GÉNÉRATEUR : ROUTES D'ABORD
+# =============================================
+
+def generate_road_network_first(context):
+    """Nouvelle approche : générer d'abord le réseau de routes, puis remplir les espaces"""
+    print("🔥🔥🔥 V6.13.0 FONCTION ANTI-CRASH APPELÉE ! 🔥🔥🔥")
+    
+    try:
+        print("✅ V6.13.0 Étape 1/10: Récupération contexte...")
+        scene = context.scene
+        
+        print("✅ V6.13.0 Étape 2/10: Récupération paramètres...")
+        # Récupérer les paramètres avec protection
+        width = safe_int(getattr(scene, 'citygen_width', 3), 3)  # 3x3 plus sûr
+        length = safe_int(getattr(scene, 'citygen_length', 3), 3)
+        road_width = getattr(scene, 'citygen_road_width', 2.0)  # Plus petit
+        
+        print("✅ V6.13.0 Étape 3/10: Paramètres organiques...")
+        # Paramètres organiques
+        organic_mode = getattr(scene, 'citygen_organic_mode', False)
+        road_curve_intensity = getattr(scene, 'citygen_road_curve_intensity', 0.2)  # Plus faible
+        
+        print(f"🛣️ V6.13.0 SYSTÈME SÉCURISÉ: Génération routes d'abord ({width}x{length})")
+        
+        print("✅ V6.13.0 Étape 4/10: Création matériaux...")
+        # Créer les matériaux avec protection
+        try:
+            road_mat = create_material("RoadMat_First", (0.3, 0.3, 0.3))
+            block_mat = create_material("BlockMat_First", (0.7, 0.7, 0.7))
+            build_mat = create_material("BuildingMat_First", (0.8, 0.6, 0.4))
+            print("✅ V6.13.0 Matériaux créés avec succès")
+        except Exception as e:
+            print(f"❌ V6.13.0 Erreur matériaux: {e}")
+            return False
+        
+        # ÉTAPE 1: Créer le réseau de routes
+        print(f"✅ V6.13.0 Étape 5/10: Début création routes...")
+        try:
+            road_network = create_primary_road_network_rf(width, length, road_width, road_mat, organic_mode, road_curve_intensity)
+            print(f"✅ V6.13.0 Étape 6/10: {len(road_network)} routes créées - CONTINUONS...")
+        except Exception as e:
+            print(f"❌ V6.13.0 CRASH dans création routes: {e}")
+            import traceback
+            print(f"🔥 TRACEBACK ROUTES: {traceback.format_exc()}")
+            return False
+        
+        # ÉTAPE 2: Identifier les zones entre les routes
+        print(f"�🔥🔥 V6.12.8 ÉTAPE 2 DÉBUT: IDENTIFICATION ZONES ===")
+        try:
+            print(f"   🔥 Appel identify_block_zones_from_roads_rf...")
+            block_zones = identify_block_zones_from_roads_rf(road_network, width, length, road_width)
+            print(f"🔥🔥� V6.12.8 ZONES IDENTIFIÉES: {len(block_zones)} ===")
+        except Exception as e:
+            print(f"❌ ERREUR identification zones: {e}")
+            import traceback
+            print(f"Traceback zones: {traceback.format_exc()}")
+            block_zones = []
+        
+        # ÉTAPE 3: Créer les blocs dans ces zones
+        print(f"🏗️ === DÉBUT CRÉATION BLOCS ===")
+        try:
+            blocks_created = create_blocks_in_zones_rf(block_zones, block_mat)
+            print(f"🏗️ === BLOCS CRÉÉS: {blocks_created} ===")
+        except Exception as e:
+            print(f"❌ ERREUR création blocs: {e}")
+            blocks_created = 0
+        
+        # ÉTAPE 4: Ajouter les bâtiments dans les blocs
+        print(f"🏢 === DÉBUT CRÉATION BÂTIMENTS ===")
+        try:
+            buildings_created = add_buildings_to_blocks_rf(block_zones, build_mat, scene)
+            print(f"🏢 === BÂTIMENTS CRÉÉS: {buildings_created} ===")
+        except Exception as e:
+            print(f"❌ ERREUR création bâtiments: {e}")
+            buildings_created = 0
+        
+        print(f"✅ Système routes-first complété:")
+        print(f"   🛣️ {len(road_network)} segments de routes")
+        print(f"   📐 {len(block_zones)} zones de blocs identifiées") 
+        print(f"   🏗️ {blocks_created} blocs créés")
+        print(f"   🏢 {buildings_created} bâtiments générés")
+        
+        print(f"🔥 V6.12.8 SUCCÈS COMPLET - TOUTES ÉTAPES TERMINÉES !")
+        return True
+        
+    except Exception as e:
+        print(f"❌ CRASH V6.12.8 génération routes-first: {e}")
+        import traceback
+        print(f"🔥 TRACEBACK COMPLET V6.12.8:")
+        print(f"{traceback.format_exc()}")
+        return False
+
+def create_primary_road_network_rf(width, length, road_width, road_mat, organic_mode, curve_intensity):
+    """Crée le réseau principal de routes"""
+    road_network = []
+    block_size = 12.0  # Taille d'un bloc avec sa route
+    
+    try:
+        print(f"🛣️ Création réseau de routes principal...")
+        
+        # FORCER TOUJOURS LE SYSTÈME ULTRA-ORGANIQUE pour résultats satisfaisants
+        print(f"� ACTIVATION FORCÉE du système ULTRA-ORGANIQUE (intensité: {curve_intensity})")
+        road_network = create_organic_road_grid_rf(width, length, block_size, road_width, road_mat, curve_intensity)
+        
+        print(f"✅ {len(road_network)} segments de routes créés")
+        return road_network
+        
+    except Exception as e:
+        print(f"Erreur création réseau routes: {e}")
+        return []
+
+def create_rectangular_road_grid_rf(width, length, block_size, road_width, road_mat):
+    """Crée une grille rectangulaire de routes"""
+    road_network = []
+    
+    try:
+        # Routes verticales
+        for i in range(width + 1):
+            road_x = (i - width/2) * block_size
+            road_y = 0
+            road_length = length * block_size
+            
+            # Créer route verticale
+            bpy.ops.mesh.primitive_cube_add(
+                size=2.0,
+                location=(road_x, road_y, 0.05)
+            )
+            road = bpy.context.object
+            if road:
+                road.scale = (road_width/2, road_length/2, 0.05)
+                bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+                road.name = f"Road_Vertical_{i}_{road_x:.1f}"
+                
+                # Matériau
+                if road_mat and road.data:
+                    road.data.materials.clear()
+                    road.data.materials.append(road_mat)
+                
+                road_network.append({
+                    'object': road,
+                    'type': 'vertical',
+                    'x': road_x,
+                    'y': road_y,
+                    'width': road_width,
+                    'length': road_length
+                })
+        
+        # Routes horizontales
+        for j in range(length + 1):
+            road_y = (j - length/2) * block_size
+            road_x = 0
+            road_length = width * block_size
+            
+            # Créer route horizontale
+            bpy.ops.mesh.primitive_cube_add(
+                size=2.0,
+                location=(road_x, road_y, 0.05)
+            )
+            road = bpy.context.object
+            if road:
+                road.scale = (road_length/2, road_width/2, 0.05)
+                bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+                road.name = f"Road_Horizontal_{j}_{road_y:.1f}"
+                
+                # Matériau
+                if road_mat and road.data:
+                    road.data.materials.clear()
+                    road.data.materials.append(road_mat)
+                
+                road_network.append({
+                    'object': road,
+                    'type': 'horizontal',
+                    'x': road_x,
+                    'y': road_y,
+                    'width': road_length,
+                    'length': road_width
+                })
+        
+        return road_network
+        
+    except Exception as e:
+        print(f"Erreur grille rectangulaire: {e}")
+        return []
+
+def create_highway_road(x, y, direction, width, length, road_mat, index):
+    """Crée une autoroute large et droite"""
+    import math
+    try:
+        bpy.ops.mesh.primitive_cube_add(size=2.0, location=(x, y, 0.05))
+        road = bpy.context.object
+        if road:
+            if direction == 'vertical':
+                road.scale = (width/2, length/2, 0.05)
+            else:
+                road.scale = (length/2, width/2, 0.05)
+            
+            bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+            road.name = f"Highway_{direction}_{index}"
+            
+            # Matériau autoroute plus sombre
+            highway_mat = create_material(f"HighwayMat_{index}", (0.15, 0.15, 0.15))
+            if road.data:
+                road.data.materials.clear()
+                road.data.materials.append(highway_mat)
+            
+            return {
+                'object': road,
+                'type': direction,
+                'road_type': 'highway',
+                'x': x,
+                'y': y,
+                'width': width if direction == 'vertical' else length,
+                'length': length if direction == 'vertical' else width
+            }
+    except Exception as e:
+        print(f"Erreur création autoroute: {e}")
+        return None
+
+def create_sinusoidal_road(x, y, direction, width, length, road_mat, curve_intensity, index):
+    """Crée une route avec des courbes sinusoïdales organiques"""
+    import math
+    try:
+        # Créer plusieurs segments pour faire une courbe
+        segments = []
+        num_segments = max(5, int(length / 20))  # Plus de segments = plus fluide
+        
+        for i in range(num_segments):
+            segment_length = length / num_segments
+            
+            if direction == 'vertical':
+                segment_y = y + (i - num_segments/2) * segment_length
+                # Courbe sinusoïdale
+                curve_offset = math.sin(i * 0.8) * curve_intensity * 3
+                segment_x = x + curve_offset
+                
+                bpy.ops.mesh.primitive_cube_add(size=2.0, location=(segment_x, segment_y, 0.05))
+                segment = bpy.context.object
+                if segment:
+                    segment.scale = (width/2, segment_length/2, 0.05)
+                    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+                    segment.name = f"Avenue_Sin_V_{index}_{i}"
+                    
+                    # Matériau avenue
+                    avenue_mat = create_material(f"AvenueMat_{index}_{i}", (0.25, 0.25, 0.25))
+                    if segment.data:
+                        segment.data.materials.clear()
+                        segment.data.materials.append(avenue_mat)
+                    
+                    segments.append({
+                        'object': segment,
+                        'type': 'vertical',
+                        'road_type': 'avenue',
+                        'x': segment_x,
+                        'y': segment_y,
+                        'width': width,
+                        'length': segment_length
+                    })
+            else:  # horizontal
+                segment_x = x + (i - num_segments/2) * segment_length
+                curve_offset = math.sin(i * 0.8) * curve_intensity * 3
+                segment_y = y + curve_offset
+                
+                bpy.ops.mesh.primitive_cube_add(size=2.0, location=(segment_x, segment_y, 0.05))
+                segment = bpy.context.object
+                if segment:
+                    segment.scale = (segment_length/2, width/2, 0.05)
+                    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+                    segment.name = f"Avenue_Sin_H_{index}_{i}"
+                    
+                    avenue_mat = create_material(f"AvenueMat_{index}_{i}", (0.25, 0.25, 0.25))
+                    if segment.data:
+                        segment.data.materials.clear()
+                        segment.data.materials.append(avenue_mat)
+                    
+                    segments.append({
+                        'object': segment,
+                        'type': 'horizontal',
+                        'road_type': 'avenue',
+                        'x': segment_x,
+                        'y': segment_y,
+                        'width': segment_length,
+                        'length': width
+                    })
+        
+        # Retourner le premier segment comme représentant
+        return segments[0] if segments else None
+        
+    except Exception as e:
+        print(f"Erreur route sinusoïdale: {e}")
+        return None
+
+def create_broken_road(start_x, start_y, end_x, end_y, direction, width, road_mat, index):
+    """Crée une route brisée avec plusieurs segments"""
+    import math
+    try:
+        # Points de brisure aléatoires
+        num_breaks = random.randint(2, 4)
+        points = [(start_x, start_y)]
+        
+        for i in range(1, num_breaks):
+            if direction == 'vertical':
+                break_y = start_y + (end_y - start_y) * (i / num_breaks)
+                break_x = start_x + random.uniform(-3, 3)
+                points.append((break_x, break_y))
+            else:
+                break_x = start_x + (end_x - start_x) * (i / num_breaks)
+                break_y = start_y + random.uniform(-3, 3)
+                points.append((break_x, break_y))
+        
+        points.append((end_x, end_y))
+        
+        # Créer des segments entre les points
+        for i in range(len(points) - 1):
+            p1, p2 = points[i], points[i + 1]
+            segment_x = (p1[0] + p2[0]) / 2
+            segment_y = (p1[1] + p2[1]) / 2
+            
+            segment_length = math.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
+            
+            bpy.ops.mesh.primitive_cube_add(size=2.0, location=(segment_x, segment_y, 0.05))
+            segment = bpy.context.object
+            if segment:
+                if direction == 'vertical':
+                    segment.scale = (width/2, segment_length/2, 0.05)
+                else:
+                    segment.scale = (segment_length/2, width/2, 0.05)
+                
+                # Rotation pour aligner avec la direction
+                angle = math.atan2(p2[1] - p1[1], p2[0] - p1[0])
+                if direction == 'vertical':
+                    segment.rotation_euler[2] = angle
+                
+                bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+                segment.name = f"Street_Broken_{direction}_{index}_{i}"
+                
+                street_mat = create_material(f"StreetMat_{index}_{i}", (0.35, 0.35, 0.35))
+                if segment.data:
+                    segment.data.materials.clear()
+                    segment.data.materials.append(street_mat)
+        
+        # Retourner une info basique
+        return {
+            'object': None,  # Segments multiples
+            'type': direction,
+            'road_type': 'street',
+            'x': segment_x,
+            'y': segment_y,
+            'width': width,
+            'length': segment_length
+        }
+        
+    except Exception as e:
+        print(f"Erreur route brisée: {e}")
+        return None
+
+def create_serpentine_lane(start_x, start_y, direction, width, road_mat, curve_intensity, index):
+    """Crée une ruelle qui serpente de manière organique"""
+    import math
+    try:
+        current_x, current_y = start_x, start_y
+        segments = []
+        
+        for i in range(random.randint(3, 6)):  # 3-6 segments de ruelle
+            # Avancer dans la direction avec déviation
+            if direction in ['north', 'south']:
+                step = 15 if direction == 'north' else -15
+                next_y = current_y + step
+                next_x = current_x + random.uniform(-8, 8) * curve_intensity
+            elif direction in ['east', 'west']:
+                step = 15 if direction == 'east' else -15
+                next_x = current_x + step
+                next_y = current_y + random.uniform(-8, 8) * curve_intensity
+            else:  # diagonal
+                next_x = current_x + random.uniform(-10, 10)
+                next_y = current_y + random.uniform(-10, 10)
+            
+            # Créer le segment
+            segment_x = (current_x + next_x) / 2
+            segment_y = (current_y + next_y) / 2
+            segment_length = math.sqrt((next_x - current_x)**2 + (next_y - current_y)**2)
+            
+            bpy.ops.mesh.primitive_cube_add(size=2.0, location=(segment_x, segment_y, 0.05))
+            segment = bpy.context.object
+            if segment:
+                segment.scale = (width/2, segment_length/2, 0.05)
+                
+                # Rotation pour suivre la direction
+                angle = math.atan2(next_y - current_y, next_x - current_x)
+                segment.rotation_euler[2] = angle
+                
+                bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+                segment.name = f"Lane_Serpent_{index}_{i}"
+                
+                lane_mat = create_material(f"LaneMat_{index}_{i}", (0.45, 0.45, 0.45))
+                if segment.data:
+                    segment.data.materials.clear()
+                    segment.data.materials.append(lane_mat)
+                
+                segments.append(segment)
+            
+            current_x, current_y = next_x, next_y
+        
+        return {
+            'object': segments[0] if segments else None,
+            'type': 'serpentine',
+            'road_type': 'lane',
+            'x': start_x,
+            'y': start_y,
+            'width': width,
+            'length': 10
+        }
+        
+    except Exception as e:
+        print(f"Erreur ruelle serpentante: {e}")
+        return None
+
+def create_diagonal_curved_road(start_x, start_y, end_x, end_y, width, road_mat, curve_intensity, index):
+    """Crée une route diagonale avec courbe"""
+    import math
+    try:
+        # Point de contrôle pour la courbe
+        mid_x = (start_x + end_x) / 2 + random.uniform(-5, 5) * curve_intensity
+        mid_y = (start_y + end_y) / 2 + random.uniform(-5, 5) * curve_intensity
+        
+        # Créer plusieurs segments pour la courbe
+        num_segments = 5
+        for i in range(num_segments):
+            t = i / (num_segments - 1)
+            
+            # Courbe de Bézier quadratique
+            x = (1-t)**2 * start_x + 2*(1-t)*t * mid_x + t**2 * end_x
+            y = (1-t)**2 * start_y + 2*(1-t)*t * mid_y + t**2 * end_y
+            
+            bpy.ops.mesh.primitive_cube_add(size=2.0, location=(x, y, 0.05))
+            segment = bpy.context.object
+            if segment:
+                segment_length = math.sqrt((end_x - start_x)**2 + (end_y - start_y)**2) / num_segments
+                segment.scale = (width/2, segment_length/2, 0.05)
+                
+                # Rotation selon la direction locale
+                if i < num_segments - 1:
+                    t_next = (i + 1) / (num_segments - 1)
+                    x_next = (1-t_next)**2 * start_x + 2*(1-t_next)*t_next * mid_x + t_next**2 * end_x
+                    y_next = (1-t_next)**2 * start_y + 2*(1-t_next)*t_next * mid_y + t_next**2 * end_y
+                    
+                    angle = math.atan2(y_next - y, x_next - x)
+                    segment.rotation_euler[2] = angle
+                
+                bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+                segment.name = f"Diagonal_Curved_{index}_{i}"
+                
+                diag_mat = create_material(f"DiagonalMat_{index}_{i}", (0.3, 0.3, 0.3))
+                if segment.data:
+                    segment.data.materials.clear()
+                    segment.data.materials.append(diag_mat)
+        
+        return {
+            'object': None,
+            'type': 'diagonal',
+            'road_type': 'diagonal',
+            'x': mid_x,
+            'y': mid_y,
+            'width': width,
+            'length': math.sqrt((end_x - start_x)**2 + (end_y - start_y)**2)
+        }
+        
+    except Exception as e:
+        print(f"Erreur route diagonale: {e}")
+        return None
+
+def create_cul_de_sac(center_x, center_y, width, road_mat, index):
+    """Crée un cul-de-sac avec route d'accès"""
+    try:
+        cul_roads = []
+        
+        # Route d'accès (droite)
+        access_length = random.uniform(20, 40)
+        access_direction = random.choice(['north', 'south', 'east', 'west'])
+        
+        if access_direction == 'north':
+            access_x, access_y = center_x, center_y - access_length/2
+            road_scale = (width/2, access_length/2, 0.05)
+        elif access_direction == 'south':
+            access_x, access_y = center_x, center_y + access_length/2
+            road_scale = (width/2, access_length/2, 0.05)
+        elif access_direction == 'east':
+            access_x, access_y = center_x - access_length/2, center_y
+            road_scale = (access_length/2, width/2, 0.05)
+        else:  # west
+            access_x, access_y = center_x + access_length/2, center_y
+            road_scale = (access_length/2, width/2, 0.05)
+        
+        # Route d'accès
+        bpy.ops.mesh.primitive_cube_add(size=2.0, location=(access_x, access_y, 0.05))
+        access_road = bpy.context.object
+        if access_road:
+            access_road.scale = road_scale
+            bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+            access_road.name = f"CulDeSac_Access_{index}"
+            
+            access_mat = create_material(f"CulDeSacAccessMat_{index}", (0.4, 0.4, 0.4))
+            if access_road.data:
+                access_road.data.materials.clear()
+                access_road.data.materials.append(access_mat)
+            
+            cul_roads.append({
+                'object': access_road,
+                'type': access_direction,
+                'road_type': 'cul_de_sac_access',
+                'x': access_x,
+                'y': access_y,
+                'width': width,
+                'length': access_length
+            })
+        
+        # Cercle du cul-de-sac
+        bpy.ops.mesh.primitive_cylinder_add(radius=width*1.5, depth=0.1, location=(center_x, center_y, 0.05))
+        circle = bpy.context.object
+        if circle:
+            circle.name = f"CulDeSac_Circle_{index}"
+            
+            circle_mat = create_material(f"CulDeSacCircleMat_{index}", (0.35, 0.35, 0.35))
+            if circle.data:
+                circle.data.materials.clear()
+                circle.data.materials.append(circle_mat)
+            
+            cul_roads.append({
+                'object': circle,
+                'type': 'circle',
+                'road_type': 'cul_de_sac_circle',
+                'x': center_x,
+                'y': center_y,
+                'width': width*3,
+                'length': width*3
+            })
+        
+        return cul_roads
+        
+    except Exception as e:
+        print(f"Erreur cul-de-sac: {e}")
+        return []
+
+def create_organic_road_grid_rf(width, length, block_size, road_width, road_mat, curve_intensity):
+    """Crée une grille organique de routes - VRAIES COURBES CONTINUES"""
+    road_network = []
+    import math
+    import bmesh
+    
+    try:
+        print(f"🛣️ === GÉNÉRATION VRAIES COURBES ORGANIQUES ===")
+        print(f"   Paramètres: width={width}, length={length}, block_size={block_size}")
+        print(f"   road_width={road_width}, curve_intensity={curve_intensity}")
+        
+        # Forcer une intensité visible
+        curve_intensity = max(0.8, curve_intensity)
+        print(f"   🔧 COURBE INTENSITÉ: {curve_intensity}")
+        
+        # === CRÉATION DE VRAIES ROUTES COURBES CONTINUES ===
+        
+        # Routes verticales - COURBES CONTINUES
+        print(f"   🔨 Génération routes verticales COURBES CONTINUES...")
+        for i in range(width + 1):
+            base_x = (i - width/2) * block_size
+            
+            # Créer une route courbe continue avec bmesh
+            mesh = bpy.data.meshes.new(f"OrganicRoad_V_{i}")
+            obj = bpy.data.objects.new(f"OrganicRoad_V_{i}", mesh)
+            bpy.context.collection.objects.link(obj)
+            
+            # Utiliser bmesh pour créer la géométrie courbe
+            bm = bmesh.new()
+            
+            # Paramètres de la courbe
+            total_length = length * block_size
+            resolution = 50  # Points sur la courbe
+            
+            # Générer les points de la courbe
+            curve_points = []
+            for p in range(resolution + 1):
+                t = p / resolution
+                y = (t - 0.5) * total_length
+                
+                # Courbe complexe avec plusieurs fréquences
+                curve1 = math.sin(t * 4 * math.pi) * curve_intensity * block_size * 0.8
+                curve2 = math.sin(t * 7 * math.pi + 1.5) * curve_intensity * block_size * 0.4
+                curve3 = math.sin(t * 2 * math.pi + 3) * curve_intensity * block_size * 0.6
+                
+                # Variation random subtile
+                random_var = random.uniform(-0.5, 0.5) * curve_intensity * block_size * 0.3
+                
+                # Position finale X avec courbes multiples
+                final_x = base_x + curve1 + curve2 + curve3 + random_var
+                
+                curve_points.append((final_x, y))
+                
+                if p % 10 == 0:  # Debug tous les 10 points
+                    print(f"      Point {p}: ({final_x:.1f}, {y:.1f})")
+            
+            # Créer la géométrie de route à partir des points courbes
+            road_width_half = road_width / 2
+            
+            # Vertices pour les deux côtés de la route
+            for i_pt, (x, y) in enumerate(curve_points):
+                # Calculer la direction perpendiculaire pour la largeur
+                if i_pt < len(curve_points) - 1:
+                    next_x, next_y = curve_points[i_pt + 1]
+                    dx = next_x - x
+                    dy = next_y - y
+                else:
+                    prev_x, prev_y = curve_points[i_pt - 1]
+                    dx = x - prev_x
+                    dy = y - prev_y
+                
+                # Normaliser et perpendiculaire
+                length_vec = math.sqrt(dx*dx + dy*dy)
+                if length_vec > 0:
+                    dx /= length_vec
+                    dy /= length_vec
+                    
+                    # Perpendiculaire
+                    perp_x = -dy
+                    perp_y = dx
+                    
+                    # Créer les vertices des deux côtés
+                    left_x = x + perp_x * road_width_half
+                    left_y = y + perp_y * road_width_half
+                    right_x = x - perp_x * road_width_half
+                    right_y = y - perp_y * road_width_half
+                    
+                    bm.verts.new((left_x, left_y, 0))
+                    bm.verts.new((right_x, right_y, 0))
+            
+            # Créer les faces
+            bm.verts.ensure_lookup_table()
+            for i in range(0, len(bm.verts) - 3, 2):
+                if i + 3 < len(bm.verts):
+                    # Face entre deux paires de vertices
+                    face_verts = [bm.verts[i], bm.verts[i+1], bm.verts[i+3], bm.verts[i+2]]
+                    bm.faces.new(face_verts)
+            
+            # Appliquer au mesh
+            bm.to_mesh(mesh)
+            bm.free()
+            
+            # Matériau selon la position
+            color_intensity = 0.3 + (i % 4) * 0.2
+            road_color = (color_intensity, 0.2, 0.8 - color_intensity)  # Violet à Cyan
+            
+            road_material = create_material(f"OrganicMat_V_{i}", road_color)
+            if obj.data:
+                obj.data.materials.clear()
+                obj.data.materials.append(road_material)
+            
+            print(f"         ✅ Route courbe continue V_{i} créée avec {len(curve_points)} points")
+            
+            road_network.append({
+                'object': obj,
+                'type': 'vertical_curved',
+                'road_type': f'curved_vertical',
+                'x': base_x,
+                'y': 0,
+                'width': road_width,
+                'length': total_length,
+                'curve_points': len(curve_points)
+            })
+        
+        # Routes horizontales - COURBES CONTINUES
+        print(f"   🔨 Génération routes horizontales COURBES CONTINUES...")
+        for j in range(length + 1):
+            base_y = (j - length/2) * block_size
+            
+            # Créer une route courbe continue avec bmesh
+            mesh = bpy.data.meshes.new(f"OrganicRoad_H_{j}")
+            obj = bpy.data.objects.new(f"OrganicRoad_H_{j}", mesh)
+            bpy.context.collection.objects.link(obj)
+            
+            # Utiliser bmesh pour créer la géométrie courbe
+            bm = bmesh.new()
+            
+            # Paramètres de la courbe
+            total_length = width * block_size
+            resolution = 50  # Points sur la courbe
+            
+            # Générer les points de la courbe
+            curve_points = []
+            for p in range(resolution + 1):
+                t = p / resolution
+                x = (t - 0.5) * total_length
+                
+                # Courbe complexe avec plusieurs fréquences
+                curve1 = math.sin(t * 3 * math.pi + 0.5) * curve_intensity * block_size * 0.7
+                curve2 = math.sin(t * 6 * math.pi + 2) * curve_intensity * block_size * 0.3
+                curve3 = math.sin(t * 1.5 * math.pi + 4) * curve_intensity * block_size * 0.5
+                
+                # Variation random subtile
+                random_var = random.uniform(-0.5, 0.5) * curve_intensity * block_size * 0.2
+                
+                # Position finale Y avec courbes multiples
+                final_y = base_y + curve1 + curve2 + curve3 + random_var
+                
+                curve_points.append((x, final_y))
+            
+            # Créer la géométrie de route à partir des points courbes
+            road_width_half = road_width / 2
+            
+            # Vertices pour les deux côtés de la route
+            for i_pt, (x, y) in enumerate(curve_points):
+                # Calculer la direction perpendiculaire pour la largeur
+                if i_pt < len(curve_points) - 1:
+                    next_x, next_y = curve_points[i_pt + 1]
+                    dx = next_x - x
+                    dy = next_y - y
+                else:
+                    prev_x, prev_y = curve_points[i_pt - 1]
+                    dx = x - prev_x
+                    dy = y - prev_y
+                
+                # Normaliser et perpendiculaire
+                length_vec = math.sqrt(dx*dx + dy*dy)
+                if length_vec > 0:
+                    dx /= length_vec
+                    dy /= length_vec
+                    
+                    # Perpendiculaire
+                    perp_x = -dy
+                    perp_y = dx
+                    
+                    # Créer les vertices des deux côtés
+                    left_x = x + perp_x * road_width_half
+                    left_y = y + perp_y * road_width_half
+                    right_x = x - perp_x * road_width_half
+                    right_y = y - perp_y * road_width_half
+                    
+                    bm.verts.new((left_x, left_y, 0))
+                    bm.verts.new((right_x, right_y, 0))
+            
+            # Créer les faces
+            bm.verts.ensure_lookup_table()
+            for i in range(0, len(bm.verts) - 3, 2):
+                if i + 3 < len(bm.verts):
+                    # Face entre deux paires de vertices
+                    face_verts = [bm.verts[i], bm.verts[i+1], bm.verts[i+3], bm.verts[i+2]]
+                    bm.faces.new(face_verts)
+            
+            # Appliquer au mesh
+            bm.to_mesh(mesh)
+            bm.free()
+            
+            # Matériau selon la position
+            color_intensity = 0.8 - (j % 4) * 0.15
+            road_color = (color_intensity, 0.8, 0.2)  # Jaune à Orange
+            
+            road_material = create_material(f"OrganicMat_H_{j}", road_color)
+            if obj.data:
+                obj.data.materials.clear()
+                obj.data.materials.append(road_material)
+            
+            print(f"         ✅ Route courbe continue H_{j} créée avec {len(curve_points)} points")
+            
+            road_network.append({
+                'object': obj,
+                'type': 'horizontal_curved',
+                'road_type': f'curved_horizontal',
+                'x': 0,
+                'y': base_y,
+                'width': total_length,
+                'length': road_width,
+                'curve_points': len(curve_points)
+            })
+        
+        print(f"🎯 === RÉSUMÉ VRAIES COURBES ===")
+        print(f"   ✅ {len(road_network)} routes courbes continues créées")
+        print(f"   🌊 Chaque route utilise 50+ points pour courbes fluides")
+        print(f"   🎨 Couleurs: Violet→Cyan (verticales), Jaune→Orange (horizontales)")
+        print(f"   📐 Courbes multi-fréquences avec variations random")
+        print(f"   🛣️ Les courbes devraient être PARFAITEMENT visibles!")
+        
+        return road_network
+        
+    except Exception as e:
+        print(f"❌ Erreur génération courbes continues: {e}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        # Fallback vers système basique
+        return create_rectangular_road_grid_rf(width, length, block_size, road_width, road_mat)
+
+def identify_block_zones_from_roads_rf(road_network, width, length, road_width):
+    """Identifie les zones de blocs entre les routes - GRILLE COMPLÈTE CORRIGÉE V6.12.7"""
+    block_zones = []
+    block_size = 12.0
+    
+    try:
+        print(f"🔥🔥🔥 FONCTION CORRIGÉE V6.12.7 APPELÉE ! 🔥🔥🔥")
+        print(f"🔍 Identification zones bâtiments entre routes courbes...")
+        print(f"   Paramètres: grille {width}x{length}, block_size={block_size}")
+        print(f"   📊 CALCUL ATTENDU: {width} × {length} = {width * length} zones")
+        
+        # CRÉER UNE GRILLE COMPLÈTE DE ZONES
+        # Au lieu d'essayer de détecter entre les routes courbes, 
+        # on crée une grille régulière adaptée à nos routes
+        
+        print(f"   🏗️ Création grille complète {width}x{length} zones...")
+        
+        for i in range(width):
+            for j in range(length):
+                # Position de base de cette zone (centre de chaque cellule de grille)
+                base_x = (i - width/2 + 0.5) * block_size
+                base_y = (j - length/2 + 0.5) * block_size
+                
+                # Dimensions de la zone (plus petites que le bloc pour éviter les routes)
+                zone_width = block_size * 0.6   # 60% du bloc pour éviter les routes
+                zone_height = block_size * 0.6
+                
+                print(f"      🎯 Zone [{i},{j}]: centre=({base_x:.1f}, {base_y:.1f}), taille={zone_width:.1f}x{zone_height:.1f}")
+                
+                # Déterminer le type de zone selon la position
+                if i == 0 or i == width-1 or j == 0 or j == length-1:
+                    zone_type = 'commercial'  # Bordures = commercial
+                elif (i + j) % 3 == 0:
+                    zone_type = 'industrial'  # Quelques zones industrielles
+                else:
+                    zone_type = 'residential'  # Majorité résidentiel
+                
+                block_zones.append({
+                    'x': base_x,
+                    'y': base_y,
+                    'width': zone_width,
+                    'height': zone_height,
+                    'grid_i': i,
+                    'grid_j': j,
+                    'zone_type': zone_type
+                })
+        
+        print(f"   ✅🔥🔥 {len(block_zones)} zones de bâtiments créées ! 🔥🔥")
+        print(f"   📊 Répartition: {width} x {length} = {width*length} zones au total")
+        print(f"   🎉 SUCCÈS - Notre fonction corrigée fonctionne !")
+        
+        # Afficher quelques exemples pour debug
+        if len(block_zones) >= 3:
+            print(f"   🔍 Exemples de zones créées:")
+            for idx in [0, len(block_zones)//2, -1]:
+                zone = block_zones[idx]
+                print(f"      Zone {idx}: ({zone['x']:.1f}, {zone['y']:.1f}) - {zone['zone_type']}")
+        
+        return block_zones
+        
+    except Exception as e:
+        print(f"❌ Erreur identification zones: {e}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        return []
+
+def create_blocks_in_zones_rf(block_zones, block_mat):
+    """Crée les blocs dans les zones identifiées"""
+    blocks_created = 0
+    
+    try:
+        for i, zone in enumerate(block_zones):
+            # Créer un bloc qui remplit exactement la zone
+            bpy.ops.mesh.primitive_cube_add(
+                size=2.0,
+                location=(zone['x'], zone['y'], 0.1)
+            )
+            
+            block = bpy.context.object
+            if block:
+                # Ajuster les dimensions pour remplir la zone
+                block.scale = (zone['width']/2, zone['height']/2, 0.1)
+                bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+                block.name = f"Block_Zone_{i}_{zone['x']:.1f}_{zone['y']:.1f}"
+                
+                # Matériau
+                if block_mat and block.data:
+                    block.data.materials.clear()
+                    block.data.materials.append(block_mat)
+                
+                blocks_created += 1
+                
+                # Stocker les informations dans la zone
+                zone['block_object'] = block
+        
+        return blocks_created
+        
+    except Exception as e:
+        print(f"Erreur création blocs: {e}")
+        return 0
+
+def add_buildings_to_blocks_rf(block_zones, build_mat, scene):
+    """Ajoute des bâtiments dans chaque bloc - VERSION ÉNORME POUR DEBUG"""
+    buildings_created = 0
+    
+    try:
+        print(f"🏢 === CRÉATION BÂTIMENTS ÉNORMES DEBUG ===")
+        print(f"🏢 Création bâtiments dans {len(block_zones)} zones...")
+        
+        # Paramètres des bâtiments
+        buildings_per_block = safe_int(getattr(scene, 'citygen_buildings_per_block', 2), 2)
+        max_floors = safe_int(getattr(scene, 'citygen_max_floors', 8), 8)
+        
+        print(f"   Paramètres: {buildings_per_block} bâtiments/bloc, {max_floors} étages max")
+        print(f"   🔍 Zones reçues: {len(block_zones)}")
+        
+        # FORCER AU MOINS UN BÂTIMENT GÉANT POUR TEST
+        if len(block_zones) == 0:
+            print("   🚨 AUCUNE ZONE - Création bâtiment de test au centre")
+            # Créer un bâtiment géant au centre pour test
+            bpy.ops.mesh.primitive_cube_add(size=2.0, location=(0, 0, 25))
+            giant_building = bpy.context.object
+            if giant_building:
+                giant_building.scale = (10, 10, 25)  # ÉNORME !
+                bpy.ops.object.transform_apply(scale=True)
+                giant_building.name = "GIANT_DEBUG_BUILDING"
+                buildings_created = 1
+                print(f"   ✅ Bâtiment géant de test créé: {giant_building.name}")
+        
+        for zone_idx, zone in enumerate(block_zones):
+            print(f"   🏗️ ZONE {zone_idx}: centre=({zone['x']:.1f}, {zone['y']:.1f}), taille={zone['width']:.1f}x{zone['height']:.1f}")
+            
+            # FORCER 2 BÂTIMENTS ÉNORMES PAR ZONE
+            for b in range(2):  # Toujours 2 bâtiments
+                # Position dans la zone
+                building_x = zone['x'] + (b-0.5) * zone['width'] * 0.3  # Espacer les 2 bâtiments
+                building_y = zone['y']
+                
+                # DIMENSIONS ÉNORMES POUR ÊTRE VISIBLE
+                building_width = min(15, zone['width'] * 0.8)   # Large !
+                building_depth = min(15, zone['height'] * 0.8)  # Profond !
+                
+                # HAUTEUR ÉNORME
+                floors = random.randint(8, 20)  # 8-20 étages !
+                building_height = floors * 4.0  # 4m par étage = 32-80m !
+                
+                print(f"      🏢 Bâtiment {b}: pos=({building_x:.1f}, {building_y:.1f}), taille={building_width:.1f}x{building_depth:.1f}x{building_height:.1f}")
+                
+                # Créer le bâtiment ÉNORME
+                bpy.ops.mesh.primitive_cube_add(
+                    size=2.0, 
+                    location=(building_x, building_y, building_height/2)
+                )
+                building = bpy.context.object
+                
+                if building:
+                    # Échelle ÉNORME
+                    building.scale = (building_width/2, building_depth/2, building_height/2)
+                    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+                    
+                    # Nom distinctif
+                    building.name = f"MEGA_Building_Z{zone_idx}_B{b}_{floors}floors"
+                    
+                    # Couleur TRÈS contrastée selon hauteur
+                    if floors < 12:
+                        building_color = (1.0, 0.5, 0.5)  # ROUGE vif (bas)
+                    elif floors < 16:
+                        building_color = (0.5, 1.0, 0.5)  # VERT vif (moyen)  
+                    else:
+                        building_color = (0.5, 0.5, 1.0)  # BLEU vif (haut)
+                    
+                    building_material = create_material(f"MEGA_BuildingMat_{zone_idx}_{b}", building_color)
+                    if building.data:
+                        building.data.materials.clear()
+                        building.data.materials.append(building_material)
+                    
+                    buildings_created += 1
+                    
+                    print(f"         ✅ MEGA BÂTIMENT créé: {building.name}")
+                    print(f"         📍 Position: ({building_x:.1f}, {building_y:.1f}, {building_height/2:.1f})")
+                    print(f"         📐 Échelle: ({building_width/2:.1f}, {building_depth/2:.1f}, {building_height/2:.1f})")
+                    print(f"         🎨 Couleur: {building_color}")
+        
+        print(f"   🎯 === RÉSUMÉ CRÉATION BÂTIMENTS ===")
+        print(f"   ✅ Total: {buildings_created} MEGA bâtiments créés!")
+        print(f"   🏗️ Zones traitées: {len(block_zones)}")
+        print(f"   🎨 Couleurs: ROUGE (bas), VERT (moyen), BLEU (haut)")
+        print(f"   📏 Tailles: 15x15x32-80m (ÉNORMES !)")
+        print(f"   👀 Les bâtiments DOIVENT être visibles maintenant !")
+        
+        return buildings_created
+        
+    except Exception as e:
+        print(f"❌ Erreur création MEGA bâtiments: {e}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        return 0
+                building_width = random.uniform(max_building_size*0.6, max_building_size)
+                building_depth = random.uniform(max_building_size*0.6, max_building_size)
+                building_height = random.randint(1, max_floors) * 3.0
+                
+                # Créer le bâtiment
+                building = generate_building(
+                    building_x, building_y, building_width, building_depth, 
+                    building_height, build_mat, building_variety=variety
+                )
+                
+                if building:
+                    building.name = f"Building_Block_{zone['x']:.1f}_{zone['y']:.1f}_{b}"
+                    buildings_created += 1
+        
+        return buildings_created
+        
+    except Exception as e:
+        print(f"Erreur ajout bâtiments: {e}")
+        return 0

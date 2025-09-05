@@ -34,6 +34,53 @@ function Write-ColorText {
     Write-Host $Text -ForegroundColor $colors[$Color]
 }
 
+function Get-AddonVersion {
+    param([string]$InitFilePath)
+    
+    try {
+        if (Test-Path $InitFilePath) {
+            $content = Get-Content $InitFilePath -Raw
+            # Rechercher le pattern "version": (x, y, z)
+            if ($content -match '"version"\s*:\s*\(\s*(\d+),\s*(\d+),\s*(\d+)\s*\)') {
+                $version = "$($matches[1]).$($matches[2]).$($matches[3])"
+                return $version
+            }
+        }
+        return "Version inconnue"
+    }
+    catch {
+        return "Erreur lecture version"
+    }
+}
+
+function Show-VersionInfo {
+    # Version source (nouvelle)
+    $SourceInitFile = Join-Path $SourceDir "__init__.py"
+    $SourceVersion = Get-AddonVersion $SourceInitFile
+    Write-ColorText "VERSION A DEPLOYER: $SourceVersion" "Green"
+    
+    # Version destination (existante)
+    if (Test-Path $TargetDir) {
+        $TargetInitFile = Join-Path $TargetDir "__init__.py"
+        if (Test-Path $TargetInitFile) {
+            $TargetVersion = Get-AddonVersion $TargetInitFile
+            Write-ColorText "VERSION EXISTANTE A REMPLACER: $TargetVersion" "Yellow"
+            
+            if ($SourceVersion -eq $TargetVersion) {
+                Write-ColorText "⚠️  ATTENTION: Meme version detectee!" "Yellow"
+            } else {
+                Write-ColorText "✅ Mise a jour: $TargetVersion → $SourceVersion" "Cyan"
+            }
+        } else {
+            Write-ColorText "VERSION EXISTANTE: Fichier __init__.py introuvable" "Yellow"
+        }
+    } else {
+        Write-ColorText "INSTALLATION INITIALE (aucune version existante)" "Cyan"
+    }
+    
+    Write-ColorText "" # Ligne vide
+}
+
 function Ensure-TargetDirectory {
     try {
         if (-not (Test-Path $TargetDir)) {
@@ -153,6 +200,9 @@ if (-not (Test-Path $SourceDir)) {
     exit 1
 }
 
+# Afficher les informations de version
+Show-VersionInfo
+
 # Creer une sauvegarde si demande
 if ($Backup) {
     if (-not (Backup-ExistingAddon)) {
@@ -178,6 +228,12 @@ $Success = Verify-Installation
 
 # Resume
 Write-ColorText "=== RESUME DU DEPLOIEMENT ===" "Magenta"
+
+# Afficher à nouveau la version déployée
+$SourceInitFile = Join-Path $SourceDir "__init__.py"
+$DeployedVersion = Get-AddonVersion $SourceInitFile
+Write-ColorText "VERSION DEPLOYEE: $DeployedVersion" "Green"
+
 Write-ColorText "Fichiers copies avec succes: $CopiedFiles" "Green"
 Write-ColorText "Fichiers en echec: $FailedFiles" "Red"
 

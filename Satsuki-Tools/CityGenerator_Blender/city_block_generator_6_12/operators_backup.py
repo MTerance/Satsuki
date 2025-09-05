@@ -69,38 +69,6 @@ def get_citygen_properties(context):
         @property
         def block_size_variation(self):
             return getattr(self.scene, 'citygen_block_size_variation', 0.3)
-            
-        @property
-        def seamless_roads(self):
-            return getattr(self.scene, 'citygen_seamless_roads', True)
-            
-        @property
-        def height_variation(self):
-            return getattr(self.scene, 'citygen_height_variation', 0.5)
-            
-        @property
-        def age_variation(self):
-            return getattr(self.scene, 'citygen_age_variation', 0.3)
-            
-        @property
-        def mixed_use(self):
-            return getattr(self.scene, 'citygen_mixed_use', True)
-            
-        @property
-        def street_life(self):
-            return getattr(self.scene, 'citygen_street_life', True)
-            
-        @property
-        def weathering(self):
-            return getattr(self.scene, 'citygen_weathering', 0.2)
-            
-        @property
-        def irregular_lots(self):
-            return getattr(self.scene, 'citygen_irregular_lots', False)
-            
-        @property
-        def growth_pattern(self):
-            return getattr(self.scene, 'citygen_growth_pattern', 'ORGANIC')
     
     return PropertyAccessor(context.scene)
 
@@ -241,112 +209,6 @@ class CITYGEN_OT_RegenerateBuildings(bpy.types.Operator):
             self.report({'ERROR'}, error_msg)
             return {'CANCELLED'}
 
-class CITYGEN_OT_RegenerateRoadsSidewalks(bpy.types.Operator):
-    bl_idname = "citygen.regenerate_roads_sidewalks"
-    bl_label = "Régénérer Routes et Trottoirs"
-    bl_description = "Régénère uniquement les routes et trottoirs en gardant les bâtiments"
-    bl_options = {'REGISTER', 'UNDO'}
-    
-    def execute(self, context):
-        try:
-            # Supprimer les routes et trottoirs existants
-            prefixes_roads = ["Road_", "Sidewalk_", "OrganicRoad_"]
-            removed_count = 0
-            
-            # Collecter les objets à supprimer
-            objects_to_remove = []
-            for obj in bpy.data.objects:
-                if any(obj.name.startswith(prefix) for prefix in prefixes_roads):
-                    objects_to_remove.append(obj)
-            
-            # Supprimer les objets
-            for obj in objects_to_remove:
-                try:
-                    bpy.data.objects.remove(obj, do_unlink=True)
-                    removed_count += 1
-                except Exception as e:
-                    print(f"Erreur lors de la suppression de {obj.name}: {e}")
-            
-            print(f"🛣️ {removed_count} routes/trottoirs supprimés")
-            
-            # Régénérer complètement (pas de paramètre roads_only disponible)
-            from .generator import generate_city
-            success = generate_city(context, regen_only=False)
-            
-            if success:
-                self.report({'INFO'}, f"Routes et trottoirs régénérés! ({removed_count} supprimés)")
-                return {'FINISHED'}
-            else:
-                self.report({'ERROR'}, "Échec de la régénération des routes")
-                return {'CANCELLED'}
-                
-        except Exception as e:
-            error_msg = f"Erreur lors de la régénération des routes: {str(e)}"
-            print(f"❌ {error_msg}")
-            print(f"Traceback: {traceback.format_exc()}")
-            self.report({'ERROR'}, error_msg)
-            return {'CANCELLED'}
-
-class CITYGEN_OT_Diagnostic(bpy.types.Operator):
-    bl_idname = "citygen.diagnostic"
-    bl_label = "Diagnostic Système"
-    bl_description = "Affiche des informations de diagnostic sur l'addon"
-    bl_options = {'REGISTER'}
-    
-    def execute(self, context):
-        try:
-            print("=== DIAGNOSTIC CITY BLOCK GENERATOR ===")
-            
-            # Vérifier les propriétés
-            scene = context.scene
-            required_props = [
-                'citygen_width', 'citygen_length', 'citygen_max_floors', 'citygen_road_width', 
-                'citygen_buildings_per_block', 'citygen_seamless_roads', 'citygen_building_variety', 
-                'citygen_height_variation', 'citygen_organic_mode', 'citygen_road_first_method'
-            ]
-            
-            missing_props = [prop for prop in required_props if not hasattr(scene, prop)]
-            
-            if missing_props:
-                print(f"❌ Propriétés manquantes: {missing_props}")
-                self.report({'ERROR'}, f"Propriétés manquantes: {len(missing_props)}")
-            else:
-                print("✅ Toutes les propriétés principales sont présentes")
-            
-            # Vérifier les objets existants
-            city_objects = []
-            prefixes = ["Building_", "Road_", "Sidewalk_", "Block_", "OrganicRoad_", "Block_Zone_"]
-            
-            for obj in bpy.data.objects:
-                if any(obj.name.startswith(prefix) for prefix in prefixes):
-                    city_objects.append(obj)
-            
-            print(f"🏙️ Objets de ville trouvés: {len(city_objects)}")
-            
-            # Statistiques par type
-            for prefix in prefixes:
-                count = len([obj for obj in city_objects if obj.name.startswith(prefix)])
-                if count > 0:
-                    print(f"   {prefix}: {count}")
-            
-            # Paramètres actuels
-            print("📊 Paramètres actuels:")
-            print(f"   Grille: {getattr(scene, 'citygen_width', 'N/A')}x{getattr(scene, 'citygen_length', 'N/A')}")
-            print(f"   Mode organique: {getattr(scene, 'citygen_organic_mode', 'N/A')}")
-            print(f"   Routes d'abord: {getattr(scene, 'citygen_road_first_method', 'N/A')}")
-            
-            message = f"Diagnostic terminé. {len(city_objects)} objets trouvés"
-            print(f"✅ {message}")
-            self.report({'INFO'}, message)
-            return {'FINISHED'}
-            
-        except Exception as e:
-            error_msg = f"Erreur diagnostic: {str(e)}"
-            print(f"❌ {error_msg}")
-            print(f"Traceback: {traceback.format_exc()}")
-            self.report({'ERROR'}, error_msg)
-            return {'CANCELLED'}
-
 # Propriétés principales
 def get_city_properties():
     """Retourne un dictionnaire avec toutes les propriétés du city generator"""
@@ -396,7 +258,7 @@ def get_city_properties():
         'citygen_organic_mode': bpy.props.BoolProperty(
             name="Mode Organique",
             description="Active la génération organique avec formes irrégulières",
-            default=True  # ACTIVÉ PAR DÉFAUT pour le système ultra-organique
+            default=False
         ),
         'citygen_road_first_method': bpy.props.BoolProperty(
             name="Méthode Routes d'Abord",
@@ -458,58 +320,6 @@ def get_city_properties():
             default=0.3,
             min=0.0,
             max=1.0
-        ),
-        # Propriétés supplémentaires pour l'interface utilisateur
-        'citygen_seamless_roads': bpy.props.BoolProperty(
-            name="Routes Collées",
-            description="Routes parfaitement collées aux blocs sans espaces",
-            default=True
-        ),
-        'citygen_height_variation': bpy.props.FloatProperty(
-            name="Variation Hauteur",
-            description="Variation de hauteur des bâtiments",
-            default=0.5,
-            min=0.0,
-            max=1.0
-        ),
-        'citygen_age_variation': bpy.props.FloatProperty(
-            name="Variation Âge",
-            description="Variation d'âge des bâtiments",
-            default=0.3,
-            min=0.0,
-            max=1.0
-        ),
-        'citygen_mixed_use': bpy.props.BoolProperty(
-            name="Usage Mixte",
-            description="Mélange résidentiel et commercial",
-            default=True
-        ),
-        'citygen_street_life': bpy.props.BoolProperty(
-            name="Vie de Rue",
-            description="Ajoute de la vie dans les rues (voitures, piétons)",
-            default=True
-        ),
-        'citygen_weathering': bpy.props.FloatProperty(
-            name="Vieillissement",
-            description="Niveau de vieillissement des bâtiments",
-            default=0.2,
-            min=0.0,
-            max=1.0
-        ),
-        'citygen_irregular_lots': bpy.props.BoolProperty(
-            name="Lots Irréguliers",
-            description="Utilise des formes de lots irrégulières",
-            default=False
-        ),
-        'citygen_growth_pattern': bpy.props.EnumProperty(
-            name="Modèle de Croissance",
-            description="Modèle de croissance urbaine",
-            items=[
-                ('ORGANIC', "Organique", "Croissance naturelle"),
-                ('PLANNED', "Planifié", "Développement planifié"),
-                ('MIXED', "Mixte", "Combinaison des deux")
-            ],
-            default='ORGANIC'
         )
     }
 
@@ -518,8 +328,6 @@ classes = [
     CITYGEN_OT_Generate,
     CITYGEN_OT_Clear,
     CITYGEN_OT_RegenerateBuildings,
-    CITYGEN_OT_RegenerateRoadsSidewalks,
-    CITYGEN_OT_Diagnostic,
 ]
 
 def register():
