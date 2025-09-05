@@ -317,8 +317,8 @@ def calculate_height_with_variation(base_height, max_floors, height_variation, z
         'tower': {'min_mult': 1.5, 'max_mult': 2.5},
         'stepped': {'min_mult': 1.2, 'max_mult': 1.8},
         'complex': {'min_mult': 1.3, 'max_mult': 2.0},
-        'pyramid': {'min_mult': 1.0, 'max_mult': 1.6},
-        'cone': {'min_mult': 0.8, 'max_mult': 1.4}
+        'pyramid': {'min_mult': 1.0, 'max_mult': 1.6}
+        # cone supprimé définitivement de la base de code
     }
     
     # Appliquer les facteurs de zone
@@ -541,169 +541,166 @@ def generate_rectangular_building(x, y, width, depth, height, mat, building_num)
         return None
 
 def generate_l_shaped_building(x, y, width, depth, height, mat, building_num):
-    """Génère un bâtiment en forme de L avec origine au centre bas"""
+    """Génère un bâtiment en forme de L - seulement orientation verticale (axe Z)"""
     try:
-        # Dimensions des parties
+        print(f"🅻 Génération bâtiment L #{building_num} - Orientation verticale uniquement")
+        
+        # Dimensions des parties - L classique vertical
         main_width = width * 0.7
         main_depth = depth * 0.6
         secondary_width = width * 0.5  
         secondary_depth = depth * 0.4
-        secondary_height = height * random.uniform(0.6, 0.9)
+        secondary_height = height * random.uniform(0.7, 1.0)
         
-        # Créer la partie principale (plus grande)
+        parts = []
+        
+        # Partie principale (verticale du L)
         main_obj = create_cube_with_center_bottom_origin(
             main_width, main_depth, height,
-            (x - width/4, y - depth/4, 0.02)
+            (x - width*0.15, y - depth*0.2, 0.02)
         )
-        if not main_obj:
-            return None
-            
-        main_obj.name = f"batiment_L_main_{building_num}"
+        if main_obj:
+            parts.append(main_obj)
         
-        # Créer la partie secondaire  
+        # Partie secondaire (horizontale du L)
         secondary_obj = create_cube_with_center_bottom_origin(
             secondary_width, secondary_depth, secondary_height,
-            (x + width/4, y + depth/4, 0.02)
+            (x + width*0.25, y + depth*0.3, 0.02)
         )
-        if not secondary_obj:
-            if main_obj:
-                bpy.data.objects.remove(main_obj, do_unlink=True)
+        if secondary_obj:
+            parts.append(secondary_obj)
+        
+        # Joindre les parties si nous en avons plusieurs
+        if len(parts) >= 2:
+            bpy.context.view_layer.objects.active = parts[0]
+            bpy.ops.object.select_all(action='DESELECT')
+            for part in parts:
+                part.select_set(True)
+            
+            try:
+                bpy.ops.object.join()
+                final_obj = bpy.context.object
+                final_obj.name = f"batiment_L_{building_num}_vertical"
+                
+                # Appliquer le matériau
+                if mat and final_obj.data:
+                    final_obj.data.materials.append(mat)
+                    
+                print(f"L-shaped building {final_obj.name} created at: x={x}, y={y}")
+                return final_obj
+                
+            except Exception as e:
+                print(f"Erreur jointure L {building_num}: {e}")
+                return parts[0]
+                
+        elif len(parts) == 1:
+            obj = parts[0]
+            obj.name = f"batiment_L_{building_num}_vertical"
+            obj.data.materials.append(mat)
+            return obj
+        else:
+            print(f"Échec création bâtiment L {building_num}")
             return None
-            
-        secondary_obj.name = f"batiment_L_secondary_{building_num}"
-        
-        # Joindre les deux parties
-        bpy.context.view_layer.objects.active = main_obj
-        
-        # Sélectionner toutes les parties
-        bpy.ops.object.select_all(action='DESELECT')
-        main_obj.select_set(True)
-        secondary_obj.select_set(True)
-        
-        # Joindre les objets
-        bpy.ops.object.join()
-        
-        # L'objet résultant est l'objet actif
-        final_obj = bpy.context.object
-        final_obj.name = f"batiment_L_{building_num}"
-        
-        # Réajuster l'origine après la jointure
-        set_origin_to_center_bottom(final_obj)
-        
-        # Repositionner au centre du bâtiment en L
-        final_obj.location.x = x
-        final_obj.location.y = y
-        final_obj.location.z = 0.02
-        
-        # Appliquer le matériau
-        if mat and final_obj.data:
-            final_obj.data.materials.append(mat)
-            
-        print(f"L-shaped building {final_obj.name} created at: x={x}, y={y} (origin: center bottom)")
-        return final_obj
         
     except Exception as e:
         print(f"Erreur lors de la création du bâtiment en L {building_num}: {str(e)}")
-        print(f"Traceback: {traceback.format_exc()}")
         return None
 
 def generate_u_shaped_building(x, y, width, depth, height, mat, building_num):
-    """Génère un bâtiment en forme de U ou F (variant aléatoire)"""
+    """Génère un bâtiment en forme de U ou F - seulement orientation verticale (axe Z)"""
     import random
     
     # 40% de chance de créer un F-shaped au lieu d'un U-shaped
     is_f_shaped = random.random() < 0.4
     
-    if is_f_shaped:
-        print(f"🅵 Génération bâtiment F-shaped #{building_num}")
-        # Créer un F : partie principale + barre haute + barre milieu
-        main_width = width * 0.3
-        main_depth = depth
-        bar_width = width * 0.7
-        bar_depth = depth * 0.2
-        
+    try:
         parts = []
         
-        # Partie principale verticale (gauche)
-        main = create_cube_with_center_bottom_origin(
-            main_width, main_depth, height, 
-            (x - width/2 + main_width/2, y, 0.02)
-        )
-        if main:
-            parts.append(main)
-        
-        # Barre horizontale haute
-        top_bar = create_cube_with_center_bottom_origin(
-            bar_width, bar_depth, height*0.3, 
-            (x - width/2 + main_width + bar_width/2, y + depth/2 - bar_depth/2, height*0.7)
-        )
-        if top_bar:
-            parts.append(top_bar)
-        
-        # Barre horizontale milieu
-        mid_bar = create_cube_with_center_bottom_origin(
-            bar_width*0.6, bar_depth, height*0.25, 
-            (x - width/2 + main_width + bar_width*0.3, y, height*0.35)
-        )
-        if mid_bar:
-            parts.append(mid_bar)
-    else:
-        print(f"🅿 Génération bâtiment U-shaped #{building_num}")
-        # Forme U traditionnelle
-        part_width = width * 0.25
-        part_depth = depth * 0.8
-        back_width = width * 0.5
-        back_depth = depth * 0.2
-        
-        parts = []
-        
-        # Partie gauche
-        left_part = create_cube_with_center_bottom_origin(
-            part_width, part_depth, height, 
-            (x - width/2 + part_width/2, y, 0.02)
-        )
-        if left_part:
-            parts.append(left_part)
-        
-        # Partie droite
-        right_part = create_cube_with_center_bottom_origin(
-            part_width, part_depth, height, 
-            (x + width/2 - part_width/2, y, 0.02)
-        )
-        if right_part:
-            parts.append(right_part)
-        
-        # Partie arrière
-        back_part = create_cube_with_center_bottom_origin(
-            back_width, back_depth, height, 
-            (x, y + depth/2 - back_depth/2, 0.02)
-        )
-        if back_part:
-            parts.append(back_part)
-    
-    # Joindre toutes les parties
-    if len(parts) > 1:
-        bpy.context.view_layer.objects.active = parts[0]
-        for part in parts:
-            part.select_set(True)
-        try:
-            bpy.ops.object.join()
-            obj = bpy.context.active_object
-            obj.name = f"batiment_u_shaped_{building_num}"
+        if is_f_shaped:
+            print(f"🅵 Génération bâtiment F-shaped #{building_num} - Orientation verticale")
+            # F vertical classique : tige verticale + 2 barres horizontales
             
-            # Appliquer le matériau
+            # Tige principale verticale (gauche)
+            main_width = width * 0.3
+            main = create_cube_with_center_bottom_origin(
+                main_width, depth, height, 
+                (x - width*0.35, y, 0.02)
+            )
+            if main:
+                parts.append(main)
+            
+            # Barre horizontale haute
+            top_bar = create_cube_with_center_bottom_origin(
+                width * 0.7, depth * 0.2, height * 0.3, 
+                (x + width*0.15, y + depth*0.4, height*0.7)
+            )
+            if top_bar:
+                parts.append(top_bar)
+            
+            # Barre horizontale milieu
+            mid_bar = create_cube_with_center_bottom_origin(
+                width * 0.5, depth * 0.2, height * 0.25, 
+                (x + width*0.05, y + depth*0.4, height*0.375)
+            )
+            if mid_bar:
+                parts.append(mid_bar)
+                
+        else:
+            print(f"� Génération bâtiment U-shaped #{building_num} - Orientation verticale")
+            # U vertical classique : 2 tiges + barre de liaison
+            
+            # Tige gauche
+            left_width = width * 0.25
+            left_part = create_cube_with_center_bottom_origin(
+                left_width, depth * 0.8, height, 
+                (x - width*0.375, y, 0.02)
+            )
+            if left_part:
+                parts.append(left_part)
+            
+            # Tige droite
+            right_part = create_cube_with_center_bottom_origin(
+                left_width, depth * 0.8, height, 
+                (x + width*0.375, y, 0.02)
+            )
+            if right_part:
+                parts.append(right_part)
+            
+            # Barre de liaison (arrière)
+            back_part = create_cube_with_center_bottom_origin(
+                width * 0.5, depth * 0.2, height, 
+                (x, y + depth*0.4, 0.02)
+            )
+            if back_part:
+                parts.append(back_part)
+        
+        # Joindre toutes les parties
+        if len(parts) > 1:
+            bpy.context.view_layer.objects.active = parts[0]
+            for part in parts:
+                part.select_set(True)
+            try:
+                bpy.ops.object.join()
+                obj = bpy.context.active_object
+                obj.name = f"batiment_u_shaped_{building_num}_vertical"
+                
+                # Appliquer le matériau
+                obj.data.materials.append(mat)
+                return obj
+            except Exception as e:
+                print(f"Erreur jointure U/F {building_num}: {e}")
+                return parts[0]
+        elif len(parts) == 1:
+            obj = parts[0]
+            obj.name = f"batiment_u_shaped_{building_num}_vertical"
             obj.data.materials.append(mat)
             return obj
-        except Exception as e:
-            print(f"Erreur jointure U/F {building_num}: {e}")
-            return parts[0]
-    elif len(parts) == 1:
-        obj = parts[0]
-        obj.name = f"batiment_u_shaped_{building_num}"
-        obj.data.materials.append(mat)
-        return obj
-    else:
-        print(f"Échec création bâtiment U/F {building_num}")
+        else:
+            print(f"Échec création bâtiment U/F {building_num}")
+            return None
+            
+    except Exception as e:
+        print(f"Erreur création bâtiment U/F {building_num}: {str(e)}")
         return None
 
 def generate_tower_building(x, y, width, depth, height, mat):
@@ -978,53 +975,63 @@ def generate_pyramid_building(x, y, width, depth, height, mat, building_num):
         return None
 
 def generate_t_shaped_building(x, y, width, depth, height, mat, building_num):
-    """Génère un bâtiment en forme de T"""
+    """Génère un bâtiment en forme de T - seulement orientation verticale (axe Z)"""
+    import random
+    
     try:
-        print(f"🅃 Génération bâtiment T #{building_num}")
+        print(f"🅃 Génération bâtiment T #{building_num} - Orientation verticale uniquement")
         
-        # Créer la barre horizontale du T
+        parts = []
+        
+        # T classique vertical : barre horizontale en haut, tige verticale en bas
+        # Barre horizontale (partie supérieure du T)
         horizontal_width = width
         horizontal_depth = depth * 0.3
         horizontal = create_cube_with_center_bottom_origin(
-            horizontal_width, horizontal_depth, height, 
-            (x, y + depth*0.35, 0.02)
+            horizontal_width, horizontal_depth, height * 0.4, 
+            (x, y + depth * 0.35, height * 0.6)  # Placée en haut
         )
         
-        if not horizontal:
-            print(f"Échec création partie horizontale T {building_num}")
-            return None
-            
-        # Créer la barre verticale du T
+        # Tige verticale (partie inférieure du T)
         vertical_width = width * 0.3
         vertical_depth = depth * 0.7
         vertical = create_cube_with_center_bottom_origin(
             vertical_width, vertical_depth, height, 
-            (x, y - depth*0.15, 0.02)
+            (x, y - depth * 0.15, 0.02)  # Base au sol
         )
         
-        if not vertical:
-            print(f"Échec création partie verticale T {building_num}")
-            if horizontal:
-                bpy.data.objects.remove(horizontal, do_unlink=True)
-            return None
+        # Collecter les parties créées
+        if horizontal:
+            parts.append(horizontal)
+        if vertical:
+            parts.append(vertical)
         
-        # Joindre les deux parties
-        bpy.context.view_layer.objects.active = horizontal
-        horizontal.select_set(True)
-        vertical.select_set(True)
-        
-        try:
-            bpy.ops.object.join()
-            obj = bpy.context.active_object
-            obj.name = f"batiment_t_shaped_{building_num}"
+        # Joindre les parties si nous en avons plusieurs
+        if len(parts) >= 2:
+            bpy.context.view_layer.objects.active = parts[0]
+            for part in parts:
+                part.select_set(True)
             
-            # Appliquer le matériau
+            try:
+                bpy.ops.object.join()
+                obj = bpy.context.active_object
+                obj.name = f"batiment_t_shaped_{building_num}_vertical"
+                
+                # Appliquer le matériau
+                obj.data.materials.append(mat)
+                return obj
+                
+            except Exception as e:
+                print(f"Erreur jointure T {building_num}: {e}")
+                return parts[0]  # Retourner au moins une partie
+        elif len(parts) == 1:
+            obj = parts[0]
+            obj.name = f"batiment_t_shaped_{building_num}_vertical"
             obj.data.materials.append(mat)
             return obj
-            
-        except Exception as e:
-            print(f"Erreur jointure T {building_num}: {e}")
-            return horizontal  # Retourner au moins une partie
+        else:
+            print(f"Échec création bâtiment T {building_num}")
+            return None
         
     except Exception as e:
         print(f"Erreur bâtiment T {building_num}: {str(e)}")

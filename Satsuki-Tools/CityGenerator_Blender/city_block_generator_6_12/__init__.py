@@ -1,10 +1,10 @@
 bl_info = {
     "name": "City Block Generator",
     "author": "Shomaa", 
-    "version": (7, 3, 0),  # Version CORRIGÉE - Origin bottom-center, plus de cônes, plus de L/T/F shapes
+    "version": (7, 7, 0),  # Version CLEAN - Cônes complètement supprimés, tous shapes verticaux Z-axis
     "blender": (4, 0, 0),
     "location": "View3D > Sidebar > CityGen Tab",
-    "description": "Generate city blocks with diagonal roads, intersections, green apple buildings and pale pink roads. NOW WITH 10 BUILDING TYPES: rectangular, tower, stepped, L-shaped, U/F-shaped, T-shaped, circular, elliptical, pyramid, complex. Bottom-center origin fixed!",
+    "description": "Generate city blocks with diagonal roads, intersections, green apple buildings and pale pink roads. 10 BUILDING TYPES: rectangular, tower, stepped, L, T, U, F, circular, elliptical, pyramid, complex. NO MORE CONES!",
     "category": "Add Mesh",
     "doc_url": "",
     "tracker_url": ""
