@@ -1,7 +1,7 @@
 bl_info = {
     "name": "City Block Generator",
     "author": "Assistant",
-    "version": (6, 13, 1),
+    "version": (6, 13, 7),
     "blender": (4, 0, 0),
     "location": "View3D > Sidebar > CityGen Tab",
     "description": "REVOLUTIONARY: Roads-first city generation! Create road network first, then blocks in spaces, then buildings. No gaps, perfect adjacency. Standard + Organic modes.",
