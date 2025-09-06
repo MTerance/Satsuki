@@ -1,0 +1,621 @@
+bl_info = {
+    "name": "Tokyo City Generator 1.0",
+    "author": "Tokyo Urban Designer", 
+    "version": (1, 0, 3),
+    "blender": (4, 0, 0),
+    "location": "View3D > Sidebar > Tokyo Tab",
+    "description": "Generate realistic Tokyo-style districts with skyscrapers, commercial centers, and residential areas",
+    "category": "Add Mesh",
+    "doc_url": "",
+    "tracker_url": ""
+}
+
+import bpy
+from bpy.props import IntProperty, FloatProperty, EnumProperty
+from bpy.types import Ope        # Boîte pour les paramètres
+        box = layout.box()
+        box.label(text="⚙️ Configuration", icon='PREFERENCES')
+        
+        # District Size
+        row = box.row()
+        row.label(text="District Size:")
+        row.prop(context.scene, "tokyo_size", text="")
+        
+        # Block Density  
+        row = box.row()
+        row.label(text="Block Density:")
+        row.prop(context.scene, "tokyo_density", text="", slider=True)
+        
+        # Building Variety
+        row = box.row()
+        row.label(text="Building Variety:")
+        row.prop(context.scene, "tokyo_variety", text="")
+        
+        # Organic Factor
+        row = box.row()
+        row.label(text="Organic Streets:")
+        row.prop(context.scene, "tokyo_organic", text="", slider=True)
+        
+        layout.separator()
+        
+        # Bouton de génération
+        layout.operator("tokyo.generate_district", text="🚀 Generate Tokyo District", icon='MESH_CUBE')
+        
+        layout.separator()
+        
+        # Informations
+        box2 = layout.box()
+        box2.label(text="📊 Building Types", icon='INFO')
+        box2.label(text="• Business: Skyscrapers 15-40 floors")
+        box2.label(text="• Commercial: Centers 3-8 floors") 
+        box2.label(text="• Residential: Houses 1-5 floors")port bmesh
+import mathutils
+import random
+
+# TOKYO 1.0.3 - SIMPLE ET EFFICACE
+# Objectif: Quartiers Tokyo réalistes en 300 lignes MAX
+# 
+# CHANGELOG:
+# v1.0.0 - Version initiale avec zones, routes organiques, bâtiments
+# v1.0.1 - Fix bug positions: tous les bâtiments apparaissent maintenant
+# v1.0.2 - Ajout contrôles: densité de blocs et variété de bâtiments
+# v1.0.3 - Interface Blender 4.x: paramètres visibles dans le panneau
+
+class TOKYO_OT_generate_district(Operator):
+    """Generate Tokyo-style district"""
+    bl_idname = "tokyo.generate_district"
+    bl_label = "Generate Tokyo District"
+    bl_options = {'REGISTER', 'UNDO'}
+    
+    # Note: Les paramètres sont maintenant dans les propriétés de scène
+    # pour une meilleure interface utilisateur
+    
+    def execute(self, context):
+        # Récupérer les paramètres depuis la scène
+        size = context.scene.tokyo_size
+        density = context.scene.tokyo_density
+        variety = context.scene.tokyo_variety
+        organic = context.scene.tokyo_organic
+        
+        # Nettoyer la scène
+        self.clear_scene()
+        
+        # Créer le district Tokyo
+        self.create_tokyo_district(size, organic, density, variety)
+        
+        blocks_count = int(size * size * density)
+        self.report({'INFO'}, f"Tokyo district {size}x{size} with {blocks_count} blocks generated!")
+        return {'FINISHED'}
+    
+    def clear_scene(self):
+        """Nettoie la scène des anciens objets"""
+        # Supprimer les objets du générateur précédent
+        for obj in bpy.context.scene.objects:
+            if obj.name.startswith(('Road', 'Block', 'Building', 'Tokyo')):
+                bpy.data.objects.remove(obj, do_unlink=True)
+    
+    def create_tokyo_district(self, size, organic_factor, block_density, building_variety):
+        """Crée un district Tokyo complet"""
+        
+        print(f"🗾 Création district Tokyo {size}x{size}")
+        
+        # 1. DÉFINIR LES ZONES
+        zones = self.define_tokyo_zones(size, block_density, building_variety)
+        
+        # 2. CRÉER LES ROUTES ORGANIQUES
+        roads = self.create_organic_roads(size, organic_factor)
+        
+        # 3. CRÉER LES BLOCS
+        blocks = self.create_district_blocks(size, zones, roads)
+        
+        # 4. CRÉER LES BÂTIMENTS PAR ZONE
+        buildings = self.create_tokyo_buildings(blocks, zones, size)
+        
+        print(f"✅ District créé: {len(roads)} routes, {len(blocks)} blocs, {len(buildings)} bâtiments")
+    
+    def define_tokyo_zones(self, size, block_density, building_variety):
+        """Définit les zones du district Tokyo avec contrôle de densité"""
+        zones = {}
+        center = size // 2
+        total_blocks = size * size
+        blocks_to_generate = int(total_blocks * block_density)
+        
+        # Créer liste de toutes les positions
+        all_positions = [(x, y) for x in range(size) for y in range(size)]
+        
+        # Trier par priorité (centre d'abord, puis proche centre, puis périphérie)
+        def priority_score(pos):
+            x, y = pos
+            dist_from_center = abs(x - center) + abs(y - center)
+            return dist_from_center
+        
+        all_positions.sort(key=priority_score)
+        
+        # Sélectionner les blocs à générer selon la densité
+        selected_positions = all_positions[:blocks_to_generate]
+        
+        # Assigner les zones selon le type de bâtiments voulu
+        for x, y in selected_positions:
+            dist_from_center = abs(x - center) + abs(y - center)
+            
+            if building_variety == 'RESIDENTIAL_ONLY':
+                zones[(x, y)] = 'residential'
+            elif building_variety == 'BUSINESS_ONLY':
+                zones[(x, y)] = 'business'
+            elif building_variety == 'NO_BUSINESS':
+                if dist_from_center <= 1:
+                    zones[(x, y)] = 'commercial'
+                else:
+                    zones[(x, y)] = 'residential'
+            else:  # ALL
+                if dist_from_center == 0:
+                    zones[(x, y)] = 'business'
+                elif dist_from_center == 1:
+                    zones[(x, y)] = 'commercial'
+                else:
+                    zones[(x, y)] = 'residential'
+        
+        business_count = sum(1 for z in zones.values() if z == 'business')
+        commercial_count = sum(1 for z in zones.values() if z == 'commercial')
+        residential_count = sum(1 for z in zones.values() if z == 'residential')
+        
+        print(f"🏗️ Blocs générés: {len(zones)}/{total_blocks} ({block_density*100:.0f}%)")
+        print(f"🏢 Business: {business_count}, 🏬 Commercial: {commercial_count}, 🏠 Résidentiel: {residential_count}")
+        return zones
+    
+    def create_organic_roads(self, size, organic_factor):
+        """Crée des routes organiques style Tokyo"""
+        roads = []
+        block_size = 20.0
+        
+        # Routes horizontales
+        for y in range(size + 1):
+            road_y = (y - size/2) * block_size
+            
+            # Points de la route avec courbes organiques
+            points = []
+            for x in range(size + 1):
+                road_x = (x - size/2) * block_size
+                
+                # Ajouter variation organique
+                curve_offset_x = random.uniform(-1, 1) * organic_factor * 2
+                curve_offset_y = random.uniform(-1, 1) * organic_factor * 2
+                
+                points.append((road_x + curve_offset_x, road_y + curve_offset_y, 0))
+            
+            # Créer la route avec courbe
+            road_obj = self.create_curved_road(points, f"TokyoRoad_H_{y}", 4.0)
+            if road_obj:
+                roads.append(road_obj)
+        
+        # Routes verticales  
+        for x in range(size + 1):
+            road_x = (x - size/2) * block_size
+            
+            points = []
+            for y in range(size + 1):
+                road_y = (y - size/2) * block_size
+                
+                # Variation organique
+                curve_offset_x = random.uniform(-1, 1) * organic_factor * 2
+                curve_offset_y = random.uniform(-1, 1) * organic_factor * 2
+                
+                points.append((road_x + curve_offset_x, road_y + curve_offset_y, 0))
+            
+            road_obj = self.create_curved_road(points, f"TokyoRoad_V_{x}", 4.0)
+            if road_obj:
+                roads.append(road_obj)
+        
+        print(f"🛣️ {len(roads)} routes organiques créées")
+        return roads
+    
+    def create_curved_road(self, points, name, width):
+        """Crée une route courbe entre les points"""
+        try:
+            # Créer mesh route
+            mesh = bpy.data.meshes.new(name)
+            obj = bpy.data.objects.new(name, mesh)
+            bpy.context.collection.objects.link(obj)
+            
+            # Utiliser bmesh pour créer la route
+            bm = bmesh.new()
+            
+            # Créer une route simple mais courbe
+            prev_verts = None
+            for i, point in enumerate(points[:-1]):
+                next_point = points[i + 1]
+                
+                # Direction de la route
+                direction = mathutils.Vector(next_point) - mathutils.Vector(point)
+                direction.normalize()
+                
+                # Perpendiculaire pour la largeur
+                perp = mathutils.Vector((-direction.y, direction.x, 0)) * (width / 2)
+                
+                # 4 coins du segment
+                v1 = bm.verts.new((point[0] + perp.x, point[1] + perp.y, 0))
+                v2 = bm.verts.new((point[0] - perp.x, point[1] - perp.y, 0))
+                v3 = bm.verts.new((next_point[0] - perp.x, next_point[1] - perp.y, 0))
+                v4 = bm.verts.new((next_point[0] + perp.x, next_point[1] + perp.y, 0))
+                
+                # Face du segment
+                bm.faces.new([v1, v2, v3, v4])
+                
+                # Connecter avec segment précédent
+                if prev_verts:
+                    bm.faces.new([prev_verts[1], prev_verts[0], v1, v2])
+                
+                prev_verts = [v4, v3]
+            
+            # Appliquer le mesh
+            bm.to_mesh(mesh)
+            bm.free()
+            
+            # Matériau route
+            mat = self.create_road_material()
+            obj.data.materials.append(mat)
+            
+            return obj
+            
+        except Exception as e:
+            print(f"❌ Erreur création route {name}: {e}")
+            return None
+    
+    def create_district_blocks(self, size, zones, roads):
+        """Crée les blocs du district"""
+        blocks = []
+        block_size = 20.0
+        
+        for x in range(size):
+            for y in range(size):
+                # Position du bloc
+                block_x = (x - size/2 + 0.5) * block_size
+                block_y = (y - size/2 + 0.5) * block_size
+                
+                # Zone du bloc
+                zone_type = zones.get((x, y), 'residential')
+                
+                # Créer le bloc
+                block_obj = self.create_block(block_x, block_y, block_size * 0.8, zone_type, f"TokyoBlock_{x}_{y}")
+                if block_obj:
+                    blocks.append({'object': block_obj, 'zone': zone_type, 'pos': (x, y)})
+        
+        print(f"🏘️ {len(blocks)} blocs créés")
+        return blocks
+    
+    def create_block(self, x, y, size, zone_type, name):
+        """Crée un bloc de terrain"""
+        try:
+            # Créer mesh bloc
+            mesh = bpy.data.meshes.new(name)
+            obj = bpy.data.objects.new(name, mesh)
+            bpy.context.collection.objects.link(obj)
+            
+            bm = bmesh.new()
+            
+            # Créer un carré simple
+            half_size = size / 2
+            v1 = bm.verts.new((x - half_size, y - half_size, 0))
+            v2 = bm.verts.new((x + half_size, y - half_size, 0))
+            v3 = bm.verts.new((x + half_size, y + half_size, 0))
+            v4 = bm.verts.new((x - half_size, y + half_size, 0))
+            
+            bm.faces.new([v1, v2, v3, v4])
+            
+            bm.to_mesh(mesh)
+            bm.free()
+            
+            # Matériau selon la zone
+            mat = self.create_zone_material(zone_type)
+            obj.data.materials.append(mat)
+            
+            return obj
+            
+        except Exception as e:
+            print(f"❌ Erreur création bloc {name}: {e}")
+            return None
+    
+    def create_tokyo_buildings(self, blocks, zones, size):
+        """Crée les bâtiments Tokyo selon les zones"""
+        buildings = []
+        
+        for block in blocks:
+            zone_type = block['zone']
+            pos = block['pos']
+            block_obj = block['object']
+            
+            # CORRECTION: Utiliser la même logique de calcul que pour les blocs
+            block_size = 20.0
+            block_x = (pos[0] - size/2 + 0.5) * block_size  # Même calcul que create_district_blocks
+            block_y = (pos[1] - size/2 + 0.5) * block_size  # Même calcul que create_district_blocks
+            
+            print(f"🏗️ Création bâtiment {zone_type} en ({block_x:.1f}, {block_y:.1f}) pour bloc {pos}")
+            
+            if zone_type == 'business':
+                # GRATTE-CIELS (15-40 étages)
+                building_height = random.uniform(60, 160)  # 15-40 étages * 4m
+                building = self.create_skyscraper(block_x, block_y, building_height, f"TokyoSkyscraper_{pos[0]}_{pos[1]}")
+                
+            elif zone_type == 'commercial':
+                # CENTRES COMMERCIAUX (3-8 étages)
+                building_height = random.uniform(12, 32)  # 3-8 étages * 4m
+                building = self.create_commercial_center(block_x, block_y, building_height, f"TokyoCommercial_{pos[0]}_{pos[1]}")
+                
+            else:  # residential
+                # MAISONS/IMMEUBLES (1-5 étages)
+                building_height = random.uniform(4, 20)  # 1-5 étages * 4m
+                building = self.create_residential_building(block_x, block_y, building_height, f"TokyoResidential_{pos[0]}_{pos[1]}")
+            
+            if building:
+                buildings.append(building)
+        
+        print(f"🏢 {len(buildings)} bâtiments Tokyo créés")
+        return buildings
+    
+    def create_skyscraper(self, x, y, height, name):
+        """Crée un gratte-ciel style Tokyo"""
+        try:
+            # Ajouter un cube et l'extruder
+            bpy.ops.mesh.primitive_cube_add(location=(x, y, height/2))
+            building = bpy.context.object
+            building.name = name
+            
+            # Redimensionner pour faire un gratte-ciel
+            building.scale = (
+                random.uniform(6, 10),    # Largeur
+                random.uniform(6, 10),    # Profondeur  
+                height / 2               # Hauteur
+            )
+            
+            # Matériau gratte-ciel (vitré)
+            mat = self.create_skyscraper_material()
+            building.data.materials.append(mat)
+            
+            print(f"🏢 Gratte-ciel créé: {height:.1f}m")
+            return building
+            
+        except Exception as e:
+            print(f"❌ Erreur gratte-ciel {name}: {e}")
+            return None
+    
+    def create_commercial_center(self, x, y, height, name):
+        """Crée un centre commercial"""
+        try:
+            bpy.ops.mesh.primitive_cube_add(location=(x, y, height/2))
+            building = bpy.context.object
+            building.name = name
+            
+            # Plus large que haut (centre commercial)
+            building.scale = (
+                random.uniform(8, 12),    # Large
+                random.uniform(6, 10),    # Profond
+                height / 2               # Modérément haut
+            )
+            
+            # Matériau commercial (coloré)
+            mat = self.create_commercial_material()
+            building.data.materials.append(mat)
+            
+            print(f"🏬 Centre commercial créé: {height:.1f}m")
+            return building
+            
+        except Exception as e:
+            print(f"❌ Erreur centre commercial {name}: {e}")
+            return None
+    
+    def create_residential_building(self, x, y, height, name):
+        """Crée un bâtiment résidentiel"""
+        try:
+            bpy.ops.mesh.primitive_cube_add(location=(x, y, height/2))
+            building = bpy.context.object
+            building.name = name
+            
+            # Plus petit et carré (résidentiel)
+            building.scale = (
+                random.uniform(4, 7),     # Modeste largeur
+                random.uniform(4, 7),     # Modeste profondeur
+                height / 2               # Bas
+            )
+            
+            # Matériau résidentiel
+            mat = self.create_residential_material()
+            building.data.materials.append(mat)
+            
+            print(f"🏠 Bâtiment résidentiel créé: {height:.1f}m")
+            return building
+            
+        except Exception as e:
+            print(f"❌ Erreur résidentiel {name}: {e}")
+            return None
+    
+    # MATÉRIAUX TOKYO
+    def create_road_material(self):
+        """Matériau route asphaltée"""
+        mat = bpy.data.materials.new(name="TokyoRoad")
+        mat.use_nodes = True
+        mat.node_tree.nodes.clear()
+        
+        # Couleur asphalte foncé
+        bsdf = mat.node_tree.nodes.new(type="ShaderNodeBsdfPrincipled")
+        bsdf.inputs[0].default_value = (0.1, 0.1, 0.1, 1.0)  # Gris très foncé
+        bsdf.inputs[7].default_value = 0.8  # Rugosité
+        
+        output = mat.node_tree.nodes.new(type="ShaderNodeOutputMaterial")
+        mat.node_tree.links.new(bsdf.outputs[0], output.inputs[0])
+        
+        return mat
+    
+    def create_zone_material(self, zone_type):
+        """Matériau terrain selon zone"""
+        mat = bpy.data.materials.new(name=f"TokyoZone_{zone_type}")
+        mat.use_nodes = True
+        mat.node_tree.nodes.clear()
+        
+        bsdf = mat.node_tree.nodes.new(type="ShaderNodeBsdfPrincipled")
+        
+        if zone_type == 'business':
+            bsdf.inputs[0].default_value = (0.2, 0.2, 0.3, 1.0)  # Bleu foncé business
+        elif zone_type == 'commercial':
+            bsdf.inputs[0].default_value = (0.3, 0.2, 0.2, 1.0)  # Rouge commercial
+        else:  # residential
+            bsdf.inputs[0].default_value = (0.2, 0.3, 0.2, 1.0)  # Vert résidentiel
+        
+        output = mat.node_tree.nodes.new(type="ShaderNodeOutputMaterial")
+        mat.node_tree.links.new(bsdf.outputs[0], output.inputs[0])
+        
+        return mat
+    
+    def create_skyscraper_material(self):
+        """Matériau gratte-ciel vitré"""
+        mat = bpy.data.materials.new(name="TokyoSkyscraper")
+        mat.use_nodes = True
+        mat.node_tree.nodes.clear()
+        
+        bsdf = mat.node_tree.nodes.new(type="ShaderNodeBsdfPrincipled")
+        bsdf.inputs[0].default_value = (0.7, 0.8, 0.9, 1.0)  # Bleu vitré
+        bsdf.inputs[4].default_value = 0.9  # Metallic
+        bsdf.inputs[7].default_value = 0.1  # Très lisse
+        
+        output = mat.node_tree.nodes.new(type="ShaderNodeOutputMaterial")
+        mat.node_tree.links.new(bsdf.outputs[0], output.inputs[0])
+        
+        return mat
+    
+    def create_commercial_material(self):
+        """Matériau centre commercial coloré"""
+        mat = bpy.data.materials.new(name="TokyoCommercial")
+        mat.use_nodes = True
+        mat.node_tree.nodes.clear()
+        
+        bsdf = mat.node_tree.nodes.new(type="ShaderNodeBsdfPrincipled")
+        # Couleurs vives commerciales
+        colors = [
+            (0.9, 0.3, 0.3, 1.0),  # Rouge
+            (0.3, 0.9, 0.3, 1.0),  # Vert
+            (0.3, 0.3, 0.9, 1.0),  # Bleu
+            (0.9, 0.9, 0.3, 1.0),  # Jaune
+        ]
+        bsdf.inputs[0].default_value = random.choice(colors)
+        
+        output = mat.node_tree.nodes.new(type="ShaderNodeOutputMaterial")
+        mat.node_tree.links.new(bsdf.outputs[0], output.inputs[0])
+        
+        return mat
+    
+    def create_residential_material(self):
+        """Matériau résidentiel"""
+        mat = bpy.data.materials.new(name="TokyoResidential")
+        mat.use_nodes = True
+        mat.node_tree.nodes.clear()
+        
+        bsdf = mat.node_tree.nodes.new(type="ShaderNodeBsdfPrincipled")
+        bsdf.inputs[0].default_value = (0.8, 0.7, 0.6, 1.0)  # Beige résidentiel
+        
+        output = mat.node_tree.nodes.new(type="ShaderNodeOutputMaterial")
+        mat.node_tree.links.new(bsdf.outputs[0], output.inputs[0])
+        
+        return mat
+
+
+# INTERFACE UTILISATEUR SIMPLE
+class TOKYO_PT_main_panel(Panel):
+    """Panneau principal Tokyo"""
+    bl_label = "Tokyo City Generator 1.0.3"
+    bl_idname = "TOKYO_PT_main_panel"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = 'Tokyo'
+    
+    def draw(self, context):
+        layout = self.layout
+        
+        # Titre
+        layout.label(text="🗾 Tokyo District Generator", icon='WORLD')
+        layout.separator()
+        
+        # Paramètres d'opérateur
+        op = layout.operator("tokyo.generate_district", text="Generate Tokyo District", icon='MESH_CUBE')
+        
+        # Note: Les propriétés sont automatiquement affichées dans le panneau d'opérateur
+        layout.separator()
+        layout.label(text="�️ Configuration:")
+        layout.label(text="• District Size: Grid dimensions")
+        layout.label(text="• Block Density: % of blocks with buildings")
+        layout.label(text="• Building Variety: Types to generate")
+        layout.label(text="• Organic Streets: Curve amount")
+        
+        layout.separator()
+        layout.label(text="🏢 Building Types:")
+        layout.label(text="• Business: Skyscrapers 15-40 floors")
+        layout.label(text="• Commercial: Centers 3-8 floors") 
+        layout.label(text="• Residential: Houses 1-5 floors")
+
+
+# ENREGISTREMENT BLENDER
+classes = [
+    TOKYO_OT_generate_district,
+    TOKYO_PT_main_panel,
+]
+
+# PROPRIÉTÉS DE SCÈNE pour l'interface
+def init_scene_properties():
+    """Initialise les propriétés de scène pour l'interface"""
+    bpy.types.Scene.tokyo_size = IntProperty(
+        name="District Size",
+        description="Size of the district (3=3x3, 5=5x5)",
+        default=3,
+        min=3,
+        max=7
+    )
+    
+    bpy.types.Scene.tokyo_density = FloatProperty(
+        name="Block Density",
+        description="Percentage of blocks that will have buildings",
+        default=1.0,
+        min=0.3,
+        max=1.0,
+        subtype='PERCENTAGE'
+    )
+    
+    bpy.types.Scene.tokyo_variety = EnumProperty(
+        name="Building Variety",
+        description="Types of buildings to generate",
+        items=[
+            ('ALL', 'All Types', 'Business + Commercial + Residential'),
+            ('BUSINESS_ONLY', 'Business Only', 'Only skyscrapers'),
+            ('NO_BUSINESS', 'No Business', 'Commercial + Residential only'),
+            ('RESIDENTIAL_ONLY', 'Residential Only', 'Only houses')
+        ],
+        default='ALL'
+    )
+    
+    bpy.types.Scene.tokyo_organic = FloatProperty(
+        name="Organic Streets",
+        description="How organic/curved the streets are",
+        default=0.3,
+        min=0.0,
+        max=1.0,
+        subtype='FACTOR'
+    )
+
+def clear_scene_properties():
+    """Supprime les propriétés de scène"""
+    del bpy.types.Scene.tokyo_size
+    del bpy.types.Scene.tokyo_density  
+    del bpy.types.Scene.tokyo_variety
+    del bpy.types.Scene.tokyo_organic
+
+def register():
+    for cls in classes:
+        bpy.utils.register_class(cls)
+    init_scene_properties()
+    print("🗾 Tokyo City Generator 1.0.3 registered!")
+
+def unregister():
+    clear_scene_properties()
+    for cls in reversed(classes):
+        bpy.utils.unregister_class(cls)
+    print("🗾 Tokyo City Generator 1.0.3 unregistered!")
+
+if __name__ == "__main__":
+    register()
