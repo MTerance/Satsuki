@@ -1,5 +1,5 @@
-# TOKYO TEXTURE SYSTEM v1.2.0
-# Système de textures automatiques selon hauteur/largeur des bâtiments
+# TOKYO TEXTURE SYSTEM v1.3.0
+# Système de textures automatiques selon hauteur/largeur des bâtiments + ROUTES ET TROTTOIRS
 
 import bpy
 import bmesh
@@ -304,6 +304,224 @@ class TokyoTextureSystem:
         
         print(f"🎨 Matériau procédural créé pour {category}")
         return mat
+
+
+class TokyoRoadTextureSystem:
+    """Système de textures avancé pour routes et trottoirs Tokyo"""
+    
+    def __init__(self, base_texture_path):
+        self.base_path = base_texture_path
+        self.asphalt_texture_path = os.path.join(base_texture_path, "roads", "asphalt_quad.jpg")  # Texture avec 4 zones
+        self.normal_map_path = os.path.join(base_texture_path, "roads", "asphalt_normal.jpg")
+        self.specular_map_path = os.path.join(base_texture_path, "roads", "asphalt_specular.jpg")
+        
+        # Configuration des zones de texture (UV mapping)
+        self.texture_zones = {
+            'road_center': {
+                'uv_offset': (0.0, 0.5),     # Haut gauche
+                'uv_scale': (0.5, 0.5),     # Taille de zone
+                'description': 'Centre route - asphalte uni'
+            },
+            'road_border': {
+                'uv_offset': (0.5, 0.0),     # Bas droite  
+                'uv_scale': (0.5, 0.5),     # Ligne blanche parallèle au trottoir
+                'description': 'Bords route - ligne blanche'
+            },
+            'sidewalk_concrete': {
+                'uv_offset': (0.5, 0.5),     # Haut droite
+                'uv_scale': (0.5, 0.5),     # Texture trottoir 1
+                'description': 'Trottoir béton'
+            },
+            'sidewalk_tiles': {
+                'uv_offset': (0.0, 0.0),     # Bas gauche
+                'uv_scale': (0.5, 0.5),     # Texture trottoir 2
+                'description': 'Trottoir carrelage'
+            }
+        }
+    
+    def create_road_material(self, road_type="center", material_name="Tokyo_Road"):
+        """Crée un matériau de route avec mapping UV spécifique"""
+        
+        # Créer le matériau
+        mat = bpy.data.materials.new(name=material_name)
+        mat.use_nodes = True
+        nodes = mat.node_tree.nodes
+        links = mat.node_tree.links
+        nodes.clear()
+        
+        # Nœuds principaux
+        output = nodes.new(type='ShaderNodeOutputMaterial')
+        bsdf = nodes.new(type='ShaderNodeBsdfPrincipled')
+        
+        # Vérifier si la texture existe
+        if not os.path.exists(self.asphalt_texture_path):
+            print(f"⚠️ Texture route non trouvée: {self.asphalt_texture_path}")
+            return self._create_procedural_road_material(mat, road_type)
+        
+        # Nœud texture principale
+        img_texture = nodes.new(type='ShaderNodeTexImage')
+        try:
+            img = bpy.data.images.load(self.asphalt_texture_path)
+            img_texture.image = img
+        except:
+            print(f"❌ Erreur chargement texture route")
+            return self._create_procedural_road_material(mat, road_type)
+        
+        # Nœuds de mapping et coordonnées
+        mapping = nodes.new(type='ShaderNodeMapping')
+        coord = nodes.new(type='ShaderNodeTexCoord')
+        
+        # Configuration selon le type de route
+        zone_config = self.texture_zones.get(road_type, self.texture_zones['road_center'])
+        
+        # Paramètres UV pour sélectionner la bonne zone de texture
+        uv_offset_x, uv_offset_y = zone_config['uv_offset']
+        uv_scale_x, uv_scale_y = zone_config['uv_scale']
+        
+        # Configuration du mapping pour sélectionner la zone
+        mapping.inputs['Location'].default_value = (uv_offset_x, uv_offset_y, 0)
+        mapping.inputs['Scale'].default_value = (uv_scale_x, uv_scale_y, 1)
+        
+        # Rotation pour les bords de route (ligne blanche parallèle)
+        if road_type == 'road_border':
+            mapping.inputs['Rotation'].default_value = (0, 0, 0)  # Ajuster si besoin
+        
+        # Normal map si disponible
+        if os.path.exists(self.normal_map_path):
+            normal_texture = nodes.new(type='ShaderNodeTexImage')
+            normal_map = nodes.new(type='ShaderNodeNormalMap')
+            
+            try:
+                normal_img = bpy.data.images.load(self.normal_map_path)
+                normal_texture.image = normal_img
+                normal_img.colorspace_settings.name = 'Non-Color'
+                
+                # Même mapping que la texture principale
+                mapping_normal = nodes.new(type='ShaderNodeMapping')
+                coord_normal = nodes.new(type='ShaderNodeTexCoord')
+                
+                mapping_normal.inputs['Location'].default_value = (uv_offset_x, uv_offset_y, 0)
+                mapping_normal.inputs['Scale'].default_value = (uv_scale_x, uv_scale_y, 1)
+                
+                # Connexions normal map
+                links.new(coord_normal.outputs['UV'], mapping_normal.inputs['Vector'])
+                links.new(mapping_normal.outputs['Vector'], normal_texture.inputs['Vector'])
+                links.new(normal_texture.outputs['Color'], normal_map.inputs['Color'])
+                links.new(normal_map.outputs['Normal'], bsdf.inputs['Normal'])
+                
+                print(f"✅ Normal map ajoutée pour {road_type}")
+            except:
+                print(f"⚠️ Erreur chargement normal map")
+        
+        # Specular map si disponible
+        if os.path.exists(self.specular_map_path):
+            specular_texture = nodes.new(type='ShaderNodeTexImage')
+            
+            try:
+                specular_img = bpy.data.images.load(self.specular_map_path)
+                specular_texture.image = specular_img
+                specular_img.colorspace_settings.name = 'Non-Color'
+                
+                # Même mapping que la texture principale
+                mapping_spec = nodes.new(type='ShaderNodeMapping')
+                coord_spec = nodes.new(type='ShaderNodeTexCoord')
+                
+                mapping_spec.inputs['Location'].default_value = (uv_offset_x, uv_offset_y, 0)
+                mapping_spec.inputs['Scale'].default_value = (uv_scale_x, uv_scale_y, 1)
+                
+                # Connexions specular
+                links.new(coord_spec.outputs['UV'], mapping_spec.inputs['Vector'])
+                links.new(mapping_spec.outputs['Vector'], specular_texture.inputs['Vector'])
+                links.new(specular_texture.outputs['Color'], bsdf.inputs['Specular'])
+                
+                print(f"✅ Specular map ajoutée pour {road_type}")
+            except:
+                print(f"⚠️ Erreur chargement specular map")
+        
+        # Paramètres matériau selon le type
+        if road_type in ['road_center', 'road_border']:
+            # Route asphalte
+            bsdf.inputs['Roughness'].default_value = 0.9
+            bsdf.inputs['Specular'].default_value = 0.2
+            bsdf.inputs['Metallic'].default_value = 0.0
+        else:
+            # Trottoir béton/carrelage
+            bsdf.inputs['Roughness'].default_value = 0.8
+            bsdf.inputs['Specular'].default_value = 0.3
+            bsdf.inputs['Metallic'].default_value = 0.0
+        
+        # Connexions principales
+        links.new(coord.outputs['UV'], mapping.inputs['Vector'])
+        links.new(mapping.outputs['Vector'], img_texture.inputs['Vector'])
+        links.new(img_texture.outputs['Color'], bsdf.inputs['Base Color'])
+        links.new(bsdf.outputs['BSDF'], output.inputs['Surface'])
+        
+        # Positionnement des nœuds
+        output.location = (400, 0)
+        bsdf.location = (200, 0)
+        img_texture.location = (0, 100)
+        mapping.location = (-200, 100)
+        coord.location = (-400, 100)
+        
+        print(f"🛣️ Matériau route créé: {road_type} - {zone_config['description']}")
+        return mat
+    
+    def _create_procedural_road_material(self, mat, road_type):
+        """Matériau de route procédural de fallback"""
+        nodes = mat.node_tree.nodes
+        links = mat.node_tree.links
+        nodes.clear()
+        
+        output = nodes.new(type='ShaderNodeOutputMaterial')
+        bsdf = nodes.new(type='ShaderNodeBsdfPrincipled')
+        
+        # Couleurs selon le type
+        if road_type in ['road_center', 'road_border']:
+            # Asphalte gris foncé
+            bsdf.inputs['Base Color'].default_value = (0.15, 0.15, 0.15, 1.0)
+        else:
+            # Trottoir gris clair
+            bsdf.inputs['Base Color'].default_value = (0.6, 0.6, 0.6, 1.0)
+        
+        bsdf.inputs['Roughness'].default_value = 0.9
+        bsdf.inputs['Specular'].default_value = 0.1
+        
+        links.new(bsdf.outputs['BSDF'], output.inputs['Surface'])
+        
+        print(f"🛣️ Matériau route procédural: {road_type}")
+        return mat
+    
+    def create_sidewalk_material(self, sidewalk_type="concrete"):
+        """Crée un matériau de trottoir spécifique"""
+        if sidewalk_type == "concrete":
+            return self.create_road_material("sidewalk_concrete", "Tokyo_Sidewalk_Concrete")
+        else:
+            return self.create_road_material("sidewalk_tiles", "Tokyo_Sidewalk_Tiles")
+    
+    def setup_road_texture_folders(self):
+        """Crée la structure de dossiers pour les textures de routes"""
+        road_folder = os.path.join(self.base_path, "roads")
+        os.makedirs(road_folder, exist_ok=True)
+        
+        # Créer fichier README
+        readme_path = os.path.join(road_folder, "README_ROADS.txt")
+        with open(readme_path, 'w') as f:
+            f.write("DOSSIER TEXTURES ROUTES TOKYO\n")
+            f.write("=" * 30 + "\n\n")
+            f.write("Fichiers nécessaires:\n")
+            f.write("• asphalt_quad.jpg - Texture principale avec 4 zones:\n")
+            f.write("  - Haut gauche: Centre route (asphalte uni)\n")
+            f.write("  - Bas droite: Bords route (ligne blanche parallèle)\n")
+            f.write("  - Haut droite: Trottoir béton\n")
+            f.write("  - Bas gauche: Trottoir carrelage\n\n")
+            f.write("• asphalt_normal.jpg - Normal map\n")
+            f.write("• asphalt_specular.jpg - Specular map\n\n")
+            f.write("Taille recommandée: 2048x2048 ou 4096x4096\n")
+            f.write("Format: JPG, PNG, EXR\n")
+        
+        print(f"📁 Dossier routes créé: {road_folder}")
+        return road_folder
+
 
 # Instance globale du système
 tokyo_texture_system = TokyoTextureSystem()

@@ -1,10 +1,10 @@
 bl_info = {
-    "name": "Tokyo City Generator 1.4.1 TEXTURE SYSTEM + DIAGNOSTIC",
+    "name": "Tokyo City Generator 1.5.1 TEXTURE SYSTEM + ROUTES + DIAGNOSTIC FIXED",
     "author": "Tokyo Urban Designer",
-    "version": (1, 4, 1),
+    "version": (1, 5, 1),
     "blender": (4, 0, 0),
     "location": "View3D > Sidebar > Tokyo Tab",
-    "description": "Generate realistic Tokyo-style districts with INTELLIGENT TEXTURE SYSTEM + integrated diagnostic tools",
+    "description": "Generate realistic Tokyo-style districts with INTELLIGENT TEXTURE SYSTEM for buildings AND ROADS + enhanced diagnostic tools",
     "category": "Add Mesh",
     "doc_url": "",
     "tracker_url": ""
@@ -20,13 +20,26 @@ import os
 
 # Import du système de textures avancé
 try:
-    from .texture_system import tokyo_texture_system
+    from . import texture_system
+    from .texture_system import TokyoTextureSystem, TokyoRoadTextureSystem
+    
+    # Créer l'instance globale si elle n'existe pas
+    if not hasattr(texture_system, 'tokyo_texture_system'):
+        texture_system.tokyo_texture_system = TokyoTextureSystem()
+    
+    tokyo_texture_system = texture_system.tokyo_texture_system
     TEXTURE_SYSTEM_AVAILABLE = True
     print("🎨 Système de textures Tokyo chargé avec succès")
+    print("🛣️ Système de routes Tokyo chargé avec succès")
 except ImportError as e:
     TEXTURE_SYSTEM_AVAILABLE = False
+    tokyo_texture_system = None
     print(f"⚠️ Système de textures non disponible: {e}")
     print("🎨 Utilisation des matériaux procéduraux de base")
+except Exception as e:
+    TEXTURE_SYSTEM_AVAILABLE = False
+    tokyo_texture_system = None
+    print(f"⚠️ Erreur chargement système de textures: {e}")
 
 # TOKYO 1.0.3 - FICHIER CORRIGÉ
 # Bug résolu: Fichier vide → Contenu complet restauré
@@ -210,12 +223,16 @@ class TOKYO_OT_generate_district(Operator):
             # NOUVEAU: Utiliser le système de textures avancé si activé
             use_advanced = bpy.context.scene.tokyo_use_advanced_textures if hasattr(bpy.context.scene, 'tokyo_use_advanced_textures') else True
             
-            if TEXTURE_SYSTEM_AVAILABLE and use_advanced:
-                # Récupérer le chemin configuré
-                texture_path = getattr(bpy.context.scene, 'tokyo_texture_base_path', r"C:\Users\sshom\Documents\assets\Tools\tokyo_textures")
-                material = tokyo_texture_system.create_advanced_building_material(
-                    zone_type, height, width_x, width_y, building_name, texture_path
-                )
+            if TEXTURE_SYSTEM_AVAILABLE and use_advanced and tokyo_texture_system is not None:
+                try:
+                    # Récupérer le chemin configuré
+                    texture_path = getattr(bpy.context.scene, 'tokyo_texture_base_path', r"C:\Users\sshom\Documents\assets\Tools\tokyo_textures")
+                    material = tokyo_texture_system.create_advanced_building_material(
+                        zone_type, height, width_x, width_y, building_name, texture_path
+                    )
+                except Exception as e:
+                    print(f"⚠️ Erreur création matériau avancé: {e}")
+                    material = self.create_building_material(zone_type)
             else:
                 # Fallback vers ancien système
                 material = self.create_building_material(zone_type)
@@ -551,7 +568,8 @@ class TOKYO_PT_main_panel(Panel):
             
             col = box_debug.column(align=True)
             col.operator("tokyo.diagnostic_textures", text="🔍 Diagnostic Textures", icon='INFO')
-            col.operator("tokyo.test_textures", text="🧪 Test Visual", icon='CUBE')
+            col.operator("tokyo.test_textures", text="🧪 Test Bâtiments", icon='CUBE')
+            col.operator("tokyo.test_road_textures", text="🛣️ Test Routes", icon='MESH_PLANE')
         
         layout.separator()
         
@@ -631,6 +649,48 @@ class TOKYO_OT_diagnostic_textures(Operator):
             issues.append("❌ Aucun matériau Tokyo trouvé")
             solutions.append("→ Générer un nouveau district pour créer les matériaux")
         
+        # Test 6: Diagnostic approfondi du système de textures
+        self.report({'INFO'}, "🔍 Diagnostic système de textures...")
+        
+        if TEXTURE_SYSTEM_AVAILABLE:
+            self.report({'INFO'}, "✅ TEXTURE_SYSTEM_AVAILABLE = True")
+            
+            if tokyo_texture_system is not None:
+                self.report({'INFO'}, "✅ tokyo_texture_system instance OK")
+                try:
+                    # Test basique de création de matériau
+                    test_material = tokyo_texture_system.create_advanced_building_material(
+                        "residential", 10.0, 5.0, 5.0, "DiagnosticTest", ""
+                    )
+                    if test_material:
+                        self.report({'INFO'}, "✅ Création matériau test réussie")
+                        # Nettoyer le test
+                        bpy.data.materials.remove(test_material)
+                    else:
+                        issues.append("❌ Création matériau test échouée")
+                        solutions.append("→ Vérifier les paramètres du système")
+                except Exception as e:
+                    issues.append(f"❌ Erreur test matériau: {str(e)}")
+                    solutions.append("→ Réinstaller l'addon")
+            else:
+                issues.append("❌ tokyo_texture_system = None")
+                solutions.append("→ Erreur d'initialisation - redémarrer Blender")
+        else:
+            issues.append("❌ TEXTURE_SYSTEM_AVAILABLE = False")
+            solutions.append("→ Erreur d'import - vérifier les fichiers addon")
+        
+        # Test 7: Vérifier module texture_system
+        try:
+            import sys
+            addon_modules = [name for name in sys.modules.keys() if 'texture_system' in name]
+            if addon_modules:
+                self.report({'INFO'}, f"✅ Modules texture trouvés: {addon_modules}")
+            else:
+                issues.append("❌ Module texture_system absent")
+                solutions.append("→ Fichier texture_system.py manquant")
+        except:
+            pass
+        
         # Afficher les résultats
         if issues:
             self.report({'WARNING'}, f"🔍 DIAGNOSTIC: {len(issues)} problème(s) détecté(s)")
@@ -709,7 +769,7 @@ class TOKYO_OT_test_textures(Operator):
             cube3.scale = (2, 2, 4)  # Forme de bâtiment
             
             # Essayer d'utiliser le système Tokyo
-            if TEXTURE_SYSTEM_AVAILABLE and hasattr(context.scene, 'tokyo_use_advanced_textures'):
+            if TEXTURE_SYSTEM_AVAILABLE and tokyo_texture_system is not None and hasattr(context.scene, 'tokyo_use_advanced_textures'):
                 try:
                     texture_path = getattr(context.scene, 'tokyo_texture_base_path', "")
                     material = tokyo_texture_system.create_advanced_building_material(
@@ -752,11 +812,112 @@ class TOKYO_OT_test_textures(Operator):
         return {'FINISHED'}
 
 
+class TOKYO_OT_test_road_textures(Operator):
+    """Test visuel des textures de routes avec sections de démonstration"""
+    bl_idname = "tokyo.test_road_textures"
+    bl_label = "🛣️ Test Textures Routes"
+    bl_description = "Créer des sections de routes test pour vérifier les textures quadrants"
+
+    def execute(self, context):
+        self.report({'INFO'}, "🛣️ Création des sections test routes...")
+        
+        try:
+            # Vérifier que le système de routes est disponible
+            if not TEXTURE_SYSTEM_AVAILABLE:
+                self.report({'ERROR'}, "❌ Système de textures non disponible")
+                return {'CANCELLED'}
+            
+            # Récupérer le chemin de base
+            texture_path = getattr(context.scene, 'tokyo_texture_base_path', "")
+            if not texture_path:
+                texture_path = "C:\\Users\\sshom\\Documents\\assets\\Tools\\textures"
+            
+            road_system = TokyoRoadTextureSystem(texture_path)
+            
+            # Créer un setup de route de test avec 4 sections
+            sections = [
+                {'name': 'Centre_Route', 'location': (0, 0, 0), 'type': 'road_center'},
+                {'name': 'Bord_Route', 'location': (4, 0, 0), 'type': 'road_border'},
+                {'name': 'Trottoir_Beton', 'location': (8, 0, 0), 'type': 'sidewalk_concrete'},
+                {'name': 'Trottoir_Carrelage', 'location': (12, 0, 0), 'type': 'sidewalk_tiles'}
+            ]
+            
+            for section in sections:
+                # Créer un plane pour chaque section
+                bpy.ops.mesh.primitive_plane_add(
+                    size=3,
+                    location=section['location']
+                )
+                plane = context.object
+                plane.name = f"Tokyo_Road_Test_{section['name']}"
+                
+                # Créer le matériau correspondant
+                material = road_system.create_road_material(
+                    road_type=section['type'],
+                    material_name=f"Tokyo_Test_{section['name']}"
+                )
+                
+                # Appliquer le matériau
+                plane.data.materials.append(material)
+                
+                # Ajouter un texte 3D pour identifier la section
+                bpy.ops.object.text_add(location=(section['location'][0], section['location'][1] - 2, 0.1))
+                text_obj = context.object
+                text_obj.name = f"Label_{section['name']}"
+                text_obj.data.body = section['type'].replace('_', ' ').title()
+                text_obj.data.size = 0.5
+                text_obj.rotation_euler = (1.5708, 0, 0)  # Rotation X de 90 degrés
+            
+            # Créer une scène de route complète
+            bpy.ops.mesh.primitive_plane_add(size=20, location=(20, 0, 0))
+            full_road = context.object
+            full_road.name = "Tokyo_Full_Road_Demo"
+            
+            # Matériau combiné pour la route complète (on utilisera le centre)
+            full_material = road_system.create_road_material(
+                road_type='road_center',
+                material_name="Tokyo_Full_Road"
+            )
+            full_road.data.materials.append(full_material)
+            
+            # Ajouter des cubes pour simuler des bâtiments autour
+            for i in range(4):
+                for j in range(4):
+                    if i != 1 and j != 1:  # Laisser de l'espace pour la route
+                        bpy.ops.mesh.primitive_cube_add(
+                            location=(15 + i*5, -5 + j*5, 2),
+                            scale=(2, 2, 4)
+                        )
+                        building = context.object
+                        building.name = f"Demo_Building_{i}_{j}"
+            
+            # Configurer la vue
+            for area in context.screen.areas:
+                if area.type == 'VIEW_3D':
+                    for space in area.spaces:
+                        if space.type == 'VIEW_3D':
+                            space.shading.type = 'MATERIAL'
+                            # Centrer la vue sur les tests
+                            space.region_3d.view_location = (10, 0, 0)
+                            break
+            
+            self.report({'INFO'}, "✅ Tests routes créés!")
+            self.report({'INFO'}, f"📁 Chemin textures: {texture_path}")
+            self.report({'INFO'}, "🔍 4 sections test + 1 route complète + bâtiments démo")
+            self.report({'INFO'}, "🎨 Vérifiez les mappings de texture dans Material Preview")
+            
+        except Exception as e:
+            self.report({'ERROR'}, f"❌ Erreur création test routes: {str(e)}")
+        
+        return {'FINISHED'}
+
+
 # ENREGISTREMENT BLENDER
 classes = [
     TOKYO_OT_generate_district,
     TOKYO_OT_diagnostic_textures,  # NOUVEAU
     TOKYO_OT_test_textures,        # NOUVEAU
+    TOKYO_OT_test_road_textures,   # NOUVEAU - ROUTES
     TOKYO_PT_main_panel,
 ]
 
