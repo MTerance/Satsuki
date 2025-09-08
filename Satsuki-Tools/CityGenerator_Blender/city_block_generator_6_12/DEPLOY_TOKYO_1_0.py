@@ -16,6 +16,12 @@ def deployer_tokyo_1_0():
     print("🎯 L'addon simple qui fait ce que vous voulez !")
     print("")
     
+    print("⚠️  === RAPPEL VERSION === ⚠️")
+    print("🔢 As-tu mis à jour le numéro de version ?")
+    print("📋 Vérifier : bl_info, bl_label, logs")
+    input("⏸️  Appuie sur Entrée pour continuer...")
+    print("")
+    
     # Chemins
     source_path = os.path.abspath("TOKYO_ADDON_1_0")
     target_path = r"C:\Users\sshom\Documents\assets\Tools\tokyo_city_generator_1_0"

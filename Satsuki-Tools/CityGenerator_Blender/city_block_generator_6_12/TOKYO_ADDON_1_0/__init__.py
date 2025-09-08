@@ -1,21 +1,32 @@
 bl_info = {
-    "name": "Tokyo City Generator 1.0.7",
-    "author": "Tokyo Urban Designer", 
-    "version": (1, 0, 7),
+    "name": "Tokyo City Generator 1.4.1 TEXTURE SYSTEM + DIAGNOSTIC",
+    "author": "Tokyo Urban Designer",
+    "version": (1, 4, 1),
     "blender": (4, 0, 0),
     "location": "View3D > Sidebar > Tokyo Tab",
-    "description": "Generate realistic Tokyo-style districts with complete urban network - no empty spaces",
+    "description": "Generate realistic Tokyo-style districts with INTELLIGENT TEXTURE SYSTEM + integrated diagnostic tools",
     "category": "Add Mesh",
     "doc_url": "",
     "tracker_url": ""
 }
 
 import bpy
-from bpy.props import IntProperty, FloatProperty, EnumProperty
+from bpy.props import IntProperty, FloatProperty, EnumProperty, BoolProperty
 from bpy.types import Operator, Panel
 import bmesh
 import mathutils
 import random
+import os
+
+# Import du système de textures avancé
+try:
+    from .texture_system import tokyo_texture_system
+    TEXTURE_SYSTEM_AVAILABLE = True
+    print("🎨 Système de textures Tokyo chargé avec succès")
+except ImportError as e:
+    TEXTURE_SYSTEM_AVAILABLE = False
+    print(f"⚠️ Système de textures non disponible: {e}")
+    print("🎨 Utilisation des matériaux procéduraux de base")
 
 # TOKYO 1.0.3 - FICHIER CORRIGÉ
 # Bug résolu: Fichier vide → Contenu complet restauré
@@ -32,15 +43,21 @@ class TOKYO_OT_generate_district(Operator):
         density = context.scene.tokyo_density
         variety = context.scene.tokyo_variety
         organic = context.scene.tokyo_organic
+        use_advanced_textures = context.scene.tokyo_use_advanced_textures
         
         # Nettoyer la scène
         self.clear_scene()
+        
+        # Vérifier disponibilité du système de textures
+        if use_advanced_textures and not TEXTURE_SYSTEM_AVAILABLE:
+            self.report({'WARNING'}, "Advanced texture system not available. Using basic materials.")
         
         # Créer le district Tokyo
         self.create_tokyo_district(size, organic, density, variety)
         
         blocks_count = int(size * size * density)
-        self.report({'INFO'}, f"Tokyo district {size}x{size} with {blocks_count} blocks generated!")
+        texture_info = "with advanced textures" if (use_advanced_textures and TEXTURE_SYSTEM_AVAILABLE) else "with basic materials"
+        self.report({'INFO'}, f"Tokyo district {size}x{size} with {blocks_count} blocks generated {texture_info}!")
         return {'FINISHED'}
     
     def clear_scene(self):
@@ -169,29 +186,40 @@ class TOKYO_OT_generate_district(Operator):
                 # Gratte-ciels avec formes variées
                 width_x = random.uniform(0.5, 0.8) * block_size
                 width_y = random.uniform(0.5, 0.8) * block_size
-                building_name = f"TokyoBuilding_Skyscraper_{x}_{y}"
+                building_name = f"Skyscraper_{x}_{y}"
             elif zone_type == 'commercial':
                 height = random.uniform(12, 32)
                 # Centres commerciaux plus carrés
                 width_x = random.uniform(0.6, 0.85) * block_size
                 width_y = random.uniform(0.6, 0.85) * block_size
-                building_name = f"TokyoBuilding_Commercial_{x}_{y}"
+                building_name = f"Commercial_{x}_{y}"
             else:  # residential
                 height = random.uniform(4, 20)
                 # Maisons avec formes plus variées
                 width_x = random.uniform(0.4, 0.7) * block_size
                 width_y = random.uniform(0.4, 0.7) * block_size
-                building_name = f"TokyoBuilding_House_{x}_{y}"
+                building_name = f"House_{x}_{y}"
             
             # Créer le bâtiment
             bpy.ops.mesh.primitive_cube_add(size=2.0, location=(pos_x, pos_y, height/2))
             building_obj = bpy.context.object
             # Appliquer la taille avec variation
             building_obj.scale = (width_x/2, width_y/2, height/2)
-            building_obj.name = building_name
+            building_obj.name = f"TokyoBuilding_{building_name}"
             
-            # Matériau selon le type
-            material = self.create_building_material(zone_type)
+            # NOUVEAU: Utiliser le système de textures avancé si activé
+            use_advanced = bpy.context.scene.tokyo_use_advanced_textures if hasattr(bpy.context.scene, 'tokyo_use_advanced_textures') else True
+            
+            if TEXTURE_SYSTEM_AVAILABLE and use_advanced:
+                # Récupérer le chemin configuré
+                texture_path = getattr(bpy.context.scene, 'tokyo_texture_base_path', r"C:\Users\sshom\Documents\assets\Tools\tokyo_textures")
+                material = tokyo_texture_system.create_advanced_building_material(
+                    zone_type, height, width_x, width_y, building_name, texture_path
+                )
+            else:
+                # Fallback vers ancien système
+                material = self.create_building_material(zone_type)
+            
             building_obj.data.materials.append(material)
             buildings[(x, y)] = building_obj
         
@@ -460,7 +488,7 @@ class TOKYO_OT_generate_district(Operator):
 # INTERFACE UTILISATEUR COMPATIBLE BLENDER 4.x
 class TOKYO_PT_main_panel(Panel):
     """Panneau principal Tokyo"""
-    bl_label = "Tokyo City Generator 1.0.7"
+    bl_label = "Tokyo City Generator 1.4.0"
     bl_idname = "TOKYO_PT_main_panel"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -498,10 +526,32 @@ class TOKYO_PT_main_panel(Panel):
         row.label(text="Organic Streets:")
         row.prop(context.scene, "tokyo_organic", text="", slider=True)
         
+        # NOUVEAU: Système de textures avancé
+        row = box.row()
+        row.label(text="Advanced Textures:")
+        row.prop(context.scene, "tokyo_use_advanced_textures", text="")
+        
+        # Chemin des textures (seulement si textures avancées activées)
+        if context.scene.tokyo_use_advanced_textures:
+            row = box.row()
+            row.label(text="Texture Path:")
+            row.prop(context.scene, "tokyo_texture_base_path", text="")
+        
         layout.separator()
         
         # Bouton de génération
         layout.operator("tokyo.generate_district", text="🚀 Generate Tokyo District", icon='MESH_CUBE')
+        
+        layout.separator()
+        
+        # NOUVEAUX BOUTONS: Diagnostic et Test
+        if context.scene.tokyo_use_advanced_textures:
+            box_debug = layout.box()
+            box_debug.label(text="🔧 Texture Troubleshooting:", icon='TOOL_SETTINGS')
+            
+            col = box_debug.column(align=True)
+            col.operator("tokyo.diagnostic_textures", text="🔍 Diagnostic Textures", icon='INFO')
+            col.operator("tokyo.test_textures", text="🧪 Test Visual", icon='CUBE')
         
         layout.separator()
         
@@ -513,9 +563,200 @@ class TOKYO_PT_main_panel(Panel):
         box2.label(text="• Residential: Houses 1-5 floors")
 
 
+# NOUVEL OPÉRATEUR: DIAGNOSTIC TEXTURES
+class TOKYO_OT_diagnostic_textures(Operator):
+    """Diagnostic automatique du système de textures Tokyo"""
+    bl_idname = "tokyo.diagnostic_textures"
+    bl_label = "🔍 Diagnostic Textures"
+    bl_description = "Diagnostiquer pourquoi les textures ne s'appliquent pas"
+
+    def execute(self, context):
+        self.report({'INFO'}, "🔍 Diagnostic des textures en cours...")
+        
+        # Résultats du diagnostic
+        issues = []
+        solutions = []
+        
+        # Test 1: Vérifier Advanced Textures
+        if hasattr(context.scene, 'tokyo_use_advanced_textures'):
+            use_advanced = context.scene.tokyo_use_advanced_textures
+            if not use_advanced:
+                issues.append("❌ Advanced Textures désactivé")
+                solutions.append("→ Cocher 'Advanced Textures' dans le panneau Tokyo")
+            else:
+                self.report({'INFO'}, "✅ Advanced Textures activé")
+        else:
+            issues.append("❌ Propriété Advanced Textures manquante")
+            solutions.append("→ Réinstaller l'addon Tokyo v1.4.0")
+        
+        # Test 2: Vérifier chemin textures
+        if hasattr(context.scene, 'tokyo_texture_base_path'):
+            texture_path = context.scene.tokyo_texture_base_path
+            if texture_path and os.path.exists(texture_path):
+                self.report({'INFO'}, f"✅ Dossier textures trouvé: {texture_path}")
+            else:
+                issues.append("❌ Dossier textures inexistant")
+                solutions.append("→ Configurer le chemin textures ou créer les dossiers")
+        else:
+            issues.append("❌ Propriété chemin textures manquante")
+            solutions.append("→ Réinstaller l'addon Tokyo v1.4.0")
+        
+        # Test 3: Vérifier module texture_system
+        try:
+            if TEXTURE_SYSTEM_AVAILABLE:
+                self.report({'INFO'}, "✅ Module texture_system chargé")
+            else:
+                issues.append("❌ Module texture_system non disponible")
+                solutions.append("→ Vérifier l'installation de l'addon")
+        except:
+            issues.append("❌ Erreur module texture_system")
+            solutions.append("→ Réinstaller l'addon complet")
+        
+        # Test 4: Vérifier mode d'affichage
+        for area in context.screen.areas:
+            if area.type == 'VIEW_3D':
+                for space in area.spaces:
+                    if space.type == 'VIEW_3D':
+                        if space.shading.type not in ['MATERIAL', 'RENDERED']:
+                            issues.append("❌ Mode d'affichage incorrect")
+                            solutions.append("→ Passer en Material Preview ou Rendered")
+                        else:
+                            self.report({'INFO'}, f"✅ Mode d'affichage: {space.shading.type}")
+        
+        # Test 5: Vérifier matériaux Tokyo existants
+        tokyo_materials = [mat for mat in bpy.data.materials if 'tokyo' in mat.name.lower()]
+        if tokyo_materials:
+            self.report({'INFO'}, f"✅ {len(tokyo_materials)} matériaux Tokyo trouvés")
+        else:
+            issues.append("❌ Aucun matériau Tokyo trouvé")
+            solutions.append("→ Générer un nouveau district pour créer les matériaux")
+        
+        # Afficher les résultats
+        if issues:
+            self.report({'WARNING'}, f"🔍 DIAGNOSTIC: {len(issues)} problème(s) détecté(s)")
+            for i, issue in enumerate(issues):
+                self.report({'ERROR'}, f"{i+1}. {issue}")
+                if i < len(solutions):
+                    self.report({'INFO'}, f"   {solutions[i]}")
+        else:
+            self.report({'INFO'}, "✅ Aucun problème détecté - Système de textures OK")
+            self.report({'INFO'}, "💡 Si textures toujours invisibles: vérifier le mode d'affichage")
+        
+        return {'FINISHED'}
+
+
+# NOUVEL OPÉRATEUR: TEST TEXTURES SIMPLE
+class TOKYO_OT_test_textures(Operator):
+    """Test visuel simple des textures avec cubes de démonstration"""
+    bl_idname = "tokyo.test_textures"
+    bl_label = "🧪 Test Textures"
+    bl_description = "Créer des cubes test pour vérifier l'affichage des textures"
+
+    def execute(self, context):
+        self.report({'INFO'}, "🧪 Création des cubes test...")
+        
+        # Sauvegarder la sélection actuelle
+        selected_objects = context.selected_objects.copy()
+        
+        try:
+            # Créer cube test 1: Matériau coloré
+            bpy.ops.mesh.primitive_cube_add(location=(0, 0, 1))
+            cube1 = context.object
+            cube1.name = "Tokyo_Test_Colored"
+            
+            # Matériau coloré
+            mat1 = bpy.data.materials.new(name="Tokyo_Test_Blue")
+            mat1.use_nodes = True
+            nodes = mat1.node_tree.nodes
+            nodes.clear()
+            
+            output = nodes.new(type='ShaderNodeOutputMaterial')
+            bsdf = nodes.new(type='ShaderNodeBsdfPrincipled')
+            bsdf.inputs['Base Color'].default_value = (0.2, 0.5, 1.0, 1.0)  # Bleu
+            mat1.node_tree.links.new(bsdf.outputs['BSDF'], output.inputs['Surface'])
+            
+            cube1.data.materials.append(mat1)
+            
+            # Créer cube test 2: Texture procédurale
+            bpy.ops.mesh.primitive_cube_add(location=(3, 0, 1))
+            cube2 = context.object
+            cube2.name = "Tokyo_Test_Procedural"
+            
+            mat2 = bpy.data.materials.new(name="Tokyo_Test_Noise")
+            mat2.use_nodes = True
+            nodes = mat2.node_tree.nodes
+            nodes.clear()
+            
+            output = nodes.new(type='ShaderNodeOutputMaterial')
+            bsdf = nodes.new(type='ShaderNodeBsdfPrincipled')
+            noise = nodes.new(type='ShaderNodeTexNoise')
+            noise.inputs['Scale'].default_value = 5.0
+            
+            colorramp = nodes.new(type='ShaderNodeValToRGB')
+            colorramp.color_ramp.elements[0].color = (0.8, 0.4, 0.2, 1.0)
+            colorramp.color_ramp.elements[1].color = (0.2, 0.2, 0.2, 1.0)
+            
+            mat2.node_tree.links.new(noise.outputs['Fac'], colorramp.inputs['Fac'])
+            mat2.node_tree.links.new(colorramp.outputs['Color'], bsdf.inputs['Base Color'])
+            mat2.node_tree.links.new(bsdf.outputs['BSDF'], output.inputs['Surface'])
+            
+            cube2.data.materials.append(mat2)
+            
+            # Créer cube test 3: Test système Tokyo
+            bpy.ops.mesh.primitive_cube_add(location=(6, 0, 1))
+            cube3 = context.object
+            cube3.name = "Tokyo_Test_System"
+            cube3.scale = (2, 2, 4)  # Forme de bâtiment
+            
+            # Essayer d'utiliser le système Tokyo
+            if TEXTURE_SYSTEM_AVAILABLE and hasattr(context.scene, 'tokyo_use_advanced_textures'):
+                try:
+                    texture_path = getattr(context.scene, 'tokyo_texture_base_path', "")
+                    material = tokyo_texture_system.create_advanced_building_material(
+                        "business", 8.0, 4.0, 4.0, "TestBuilding", texture_path
+                    )
+                    cube3.data.materials.append(material)
+                    self.report({'INFO'}, "✅ Matériau Tokyo système appliqué")
+                except Exception as e:
+                    # Fallback
+                    mat3 = bpy.data.materials.new(name="Tokyo_Test_Fallback")
+                    mat3.use_nodes = True
+                    nodes = mat3.node_tree.nodes
+                    nodes.clear()
+                    
+                    output = nodes.new(type='ShaderNodeOutputMaterial')
+                    bsdf = nodes.new(type='ShaderNodeBsdfPrincipled')
+                    bsdf.inputs['Base Color'].default_value = (0.7, 0.7, 0.7, 1.0)
+                    bsdf.inputs['Metallic'].default_value = 0.3
+                    mat3.node_tree.links.new(bsdf.outputs['BSDF'], output.inputs['Surface'])
+                    
+                    cube3.data.materials.append(mat3)
+                    self.report({'WARNING'}, f"⚠️ Fallback appliqué: {str(e)}")
+            else:
+                self.report({'WARNING'}, "⚠️ Système Tokyo non disponible")
+            
+            # Configurer la vue en Material Preview
+            for area in context.screen.areas:
+                if area.type == 'VIEW_3D':
+                    for space in area.spaces:
+                        if space.type == 'VIEW_3D':
+                            space.shading.type = 'MATERIAL'
+                            break
+            
+            self.report({'INFO'}, "✅ 3 cubes test créés! Mode Material Preview activé.")
+            self.report({'INFO'}, "💡 Vérifiez visuellement les textures dans la vue 3D")
+            
+        except Exception as e:
+            self.report({'ERROR'}, f"❌ Erreur création test: {str(e)}")
+        
+        return {'FINISHED'}
+
+
 # ENREGISTREMENT BLENDER
 classes = [
     TOKYO_OT_generate_district,
+    TOKYO_OT_diagnostic_textures,  # NOUVEAU
+    TOKYO_OT_test_textures,        # NOUVEAU
     TOKYO_PT_main_panel,
 ]
 
@@ -559,6 +800,21 @@ def init_scene_properties():
         max=1.0,
         subtype='FACTOR'
     )
+    
+    # NOUVEAU: Propriété pour système de textures avancé
+    bpy.types.Scene.tokyo_use_advanced_textures = BoolProperty(
+        name="Use Advanced Textures",
+        description="Use texture system based on building dimensions",
+        default=True
+    )
+    
+    # Chemin vers les textures
+    bpy.types.Scene.tokyo_texture_base_path = bpy.props.StringProperty(
+        name="Texture Base Path",
+        description="Path to the texture folders (skyscrapers, commercial, etc.)",
+        default=r"C:\Users\sshom\Documents\assets\Tools\tokyo_textures",
+        subtype='DIR_PATH'
+    )
 
 def clear_scene_properties():
     """Supprime les propriétés de scène"""
@@ -566,18 +822,20 @@ def clear_scene_properties():
     del bpy.types.Scene.tokyo_density  
     del bpy.types.Scene.tokyo_variety
     del bpy.types.Scene.tokyo_organic
+    del bpy.types.Scene.tokyo_use_advanced_textures
+    del bpy.types.Scene.tokyo_texture_base_path
 
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
     init_scene_properties()
-    print("🗾 Tokyo City Generator 1.0.7 registered!")
+    print("🗾 Tokyo City Generator 1.0.8 registered!")
 
 def unregister():
     clear_scene_properties()
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
-    print("🗾 Tokyo City Generator 1.0.7 unregistered!")
+    print("🗾 Tokyo City Generator 1.0.8 unregistered!")
 
 if __name__ == "__main__":
     register()
