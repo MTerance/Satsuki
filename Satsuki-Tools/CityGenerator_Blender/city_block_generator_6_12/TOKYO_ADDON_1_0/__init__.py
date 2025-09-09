@@ -1,10 +1,10 @@
 bl_info = {
-    "name": "Tokyo City Generator 1.5.1 TEXTURE SYSTEM + ROUTES + DIAGNOSTIC FIXED",
+    "name": "Tokyo City Generator 1.6.0 MULTI-FLOORS TEXTURE SYSTEM",
     "author": "Tokyo Urban Designer",
-    "version": (1, 5, 1),
+    "version": (1, 6, 0),
     "blender": (4, 0, 0),
     "location": "View3D > Sidebar > Tokyo Tab",
-    "description": "Generate realistic Tokyo-style districts with INTELLIGENT TEXTURE SYSTEM for buildings AND ROADS + enhanced diagnostic tools",
+    "description": "Generate realistic Tokyo-style districts with INTELLIGENT MULTI-FLOORS TEXTURE SYSTEM (4 floors per texture file)",
     "category": "Add Mesh",
     "doc_url": "",
     "tracker_url": ""
@@ -570,6 +570,10 @@ class TOKYO_PT_main_panel(Panel):
             col.operator("tokyo.diagnostic_textures", text="🔍 Diagnostic Textures", icon='INFO')
             col.operator("tokyo.test_textures", text="🧪 Test Bâtiments", icon='CUBE')
             col.operator("tokyo.test_road_textures", text="🛣️ Test Routes", icon='MESH_PLANE')
+            
+            # Séparateur pour les actions de correction
+            col.separator()
+            col.operator("tokyo.force_apply_textures", text="🔄 Forcer Textures Bâtiments", icon='MATERIAL')
         
         layout.separator()
         
@@ -912,12 +916,103 @@ class TOKYO_OT_test_road_textures(Operator):
         return {'FINISHED'}
 
 
+class TOKYO_OT_force_apply_textures(Operator):
+    """Force l'application des textures avancées sur tous les bâtiments Tokyo existants"""
+    bl_idname = "tokyo.force_apply_textures"
+    bl_label = "🔄 Forcer Textures Bâtiments"
+    bl_description = "Applique les textures avancées sur tous les bâtiments Tokyo existants dans la scène"
+
+    def execute(self, context):
+        self.report({'INFO'}, "🔄 Application forcée des textures...")
+        
+        if not TEXTURE_SYSTEM_AVAILABLE or tokyo_texture_system is None:
+            self.report({'ERROR'}, "❌ Système de textures non disponible")
+            return {'CANCELLED'}
+        
+        # Vérifier les paramètres
+        if not hasattr(context.scene, 'tokyo_use_advanced_textures') or not context.scene.tokyo_use_advanced_textures:
+            self.report({'WARNING'}, "⚠️ Advanced Texture System désactivé - activation automatique")
+            context.scene.tokyo_use_advanced_textures = True
+        
+        # Récupérer le chemin de textures
+        texture_path = getattr(context.scene, 'tokyo_texture_base_path', "")
+        if not texture_path:
+            self.report({'WARNING'}, "⚠️ Chemin de textures vide - utilisation du chemin par défaut")
+            texture_path = r"C:\Users\sshom\Documents\assets\Tools\tokyo_textures"
+        
+        # Trouver tous les objets Tokyo (bâtiments)
+        tokyo_buildings = []
+        for obj in bpy.data.objects:
+            if obj.type == 'MESH' and 'tokyo' in obj.name.lower() and 'building' in obj.name.lower():
+                tokyo_buildings.append(obj)
+        
+        if not tokyo_buildings:
+            self.report({'WARNING'}, "⚠️ Aucun bâtiment Tokyo trouvé - générez d'abord un district")
+            return {'CANCELLED'}
+        
+        # Compteurs
+        success_count = 0
+        error_count = 0
+        
+        # Appliquer les textures à chaque bâtiment
+        for obj in tokyo_buildings:
+            try:
+                # Déterminer le type de bâtiment selon la taille
+                height = obj.dimensions.z
+                width_x = obj.dimensions.x
+                width_y = obj.dimensions.y
+                
+                # Logique de catégorisation (comme dans le générateur original)
+                if height > 30:
+                    zone_type = "business"  # Gratte-ciel
+                elif height > 15:
+                    zone_type = "commercial"  # Immeubles moyens
+                else:
+                    zone_type = "residential"  # Maisons
+                
+                # Créer le nouveau matériau avec textures
+                material_name = f"Tokyo_Forced_{obj.name}"
+                new_material = tokyo_texture_system.create_advanced_building_material(
+                    zone_type, height, width_x, width_y, material_name, texture_path
+                )
+                
+                # Remplacer tous les matériaux existants
+                obj.data.materials.clear()
+                obj.data.materials.append(new_material)
+                
+                success_count += 1
+                
+            except Exception as e:
+                self.report({'WARNING'}, f"⚠️ Erreur sur {obj.name}: {str(e)}")
+                error_count += 1
+        
+        # Passer en mode Material Preview pour voir les textures
+        for area in context.screen.areas:
+            if area.type == 'VIEW_3D':
+                for space in area.spaces:
+                    if space.type == 'VIEW_3D':
+                        space.shading.type = 'MATERIAL'
+                        break
+        
+        # Rapport final
+        self.report({'INFO'}, f"✅ {success_count} bâtiments mis à jour")
+        if error_count > 0:
+            self.report({'WARNING'}, f"⚠️ {error_count} erreurs")
+        
+        self.report({'INFO'}, f"📁 Chemin textures: {texture_path}")
+        self.report({'INFO'}, "🎨 Mode Material Preview activé")
+        self.report({'INFO'}, "💡 Vérifiez l'affichage des textures dans la vue 3D")
+        
+        return {'FINISHED'}
+
+
 # ENREGISTREMENT BLENDER
 classes = [
     TOKYO_OT_generate_district,
     TOKYO_OT_diagnostic_textures,  # NOUVEAU
     TOKYO_OT_test_textures,        # NOUVEAU
     TOKYO_OT_test_road_textures,   # NOUVEAU - ROUTES
+    TOKYO_OT_force_apply_textures, # NOUVEAU - FORCE TEXTURES
     TOKYO_PT_main_panel,
 ]
 

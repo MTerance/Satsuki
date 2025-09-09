@@ -130,6 +130,17 @@ class TokyoTextureSystem:
         else:
             return 'lowrise'
     
+    def get_category_texture_path(self, category):
+        """Retourne le chemin principal des textures pour une catégorie"""
+        if category not in self.texture_categories:
+            return None
+        
+        category_info = self.texture_categories[category]
+        if category_info['texture_folders']:
+            first_folder = category_info['texture_folders'][0]
+            return os.path.join(self.texture_base_path, first_folder)
+        return None
+    
     def get_random_texture(self, category):
         """Sélectionne une texture aléatoire dans la catégorie"""
         if category not in self.texture_categories:
@@ -165,7 +176,7 @@ class TokyoTextureSystem:
         return selected_texture
     
     def create_advanced_building_material(self, zone_type, height, width_x, width_y, building_name, texture_base_path=None):
-        """Crée un matériau avancé avec texture selon les dimensions"""
+        """Crée un matériau avancé avec texture selon les dimensions - SYSTÈME MULTI-ÉTAGES"""
         
         # Utiliser le chemin fourni ou celui par défaut
         if texture_base_path:
@@ -186,17 +197,20 @@ class TokyoTextureSystem:
         texture_path = self.get_random_texture(category)
         
         if texture_path and os.path.exists(texture_path):
-            # MATÉRIAU AVEC TEXTURE
-            material = self.create_textured_material(mat, texture_path, category, zone_type)
+            # MATÉRIAU AVEC TEXTURE MULTI-ÉTAGES
+            print(f"🎨 Création texture multi-étages pour {category} (hauteur: {height:.1f}m)")
+            material = self.create_textured_material(mat, texture_path, category, zone_type, height)
         else:
             # MATÉRIAU PROCÉDURAL DE FALLBACK
+            print(f"⚠️ Aucune texture trouvée dans: {self.get_category_texture_path(category)}")
+            print(f"🎨 Matériau procédural créé pour {category}")
             material = self.create_procedural_material(mat, category, zone_type, height)
         
         print(f"🏗️ Matériau créé: {mat_name} (catégorie: {category})")
         return material
     
-    def create_textured_material(self, mat, texture_path, category, zone_type):
-        """Crée un matériau avec texture d'image"""
+    def create_textured_material(self, mat, texture_path, category, zone_type, building_height=None):
+        """Crée un matériau avec texture d'image - SYSTÈME MULTI-ÉTAGES"""
         nodes = mat.node_tree.nodes
         links = mat.node_tree.links
         
@@ -211,49 +225,75 @@ class TokyoTextureSystem:
         try:
             img = bpy.data.images.load(texture_path)
             img_texture.image = img
+            print(f"✅ Image chargée: {os.path.basename(texture_path)}")
         except:
             print(f"❌ Erreur chargement texture: {texture_path}")
             return self.create_procedural_material(mat, category, zone_type, 0)
         
-        # Nœud de mapping pour contrôler la taille
+        # Nœud de mapping pour contrôler la répétition multi-étages
         mapping = nodes.new(type='ShaderNodeMapping')
         coord = nodes.new(type='ShaderNodeTexCoord')
         
-        # Paramètres selon la catégorie
+        # CALCUL INTELLIGENT MULTI-ÉTAGES
+        # Chaque fichier texture contient 4 étages
+        etages_par_texture = 4
+        hauteur_etage_standard = 3.0  # 3 mètres par étage
+        
+        if building_height:
+            # Calculer le nombre d'étages réel du bâtiment
+            nb_etages_building = max(1, building_height / hauteur_etage_standard)
+            
+            # Calculer combien de fois répéter la texture verticalement
+            repetitions_verticales = nb_etages_building / etages_par_texture
+            
+            print(f"🏗️ Bâtiment {building_height:.1f}m = {nb_etages_building:.1f} étages")
+            print(f"🔄 Répétitions texture: {repetitions_verticales:.2f}")
+        else:
+            # Valeurs par défaut selon la catégorie
+            if category == 'skyscraper':
+                repetitions_verticales = 15.0  # ~60 étages
+            elif category == 'midrise':
+                repetitions_verticales = 3.0   # ~12 étages
+            elif category == 'commercial':
+                repetitions_verticales = 2.0   # ~8 étages
+            else:
+                repetitions_verticales = 1.0   # ~4 étages
+        
+        # Paramètres de mapping optimisés pour les façades
+        mapping.inputs['Scale'].default_value = (1.0, repetitions_verticales, 1.0)
+        
+        # Paramètres matériau selon la catégorie
         if category == 'skyscraper':
-            # Gratte-ciels: texture étirée verticalement
-            mapping.inputs['Scale'].default_value = (1.0, 0.1, 1.0)  # Étirement vertical
             bsdf.inputs['Metallic'].default_value = 0.8
             bsdf.inputs['Roughness'].default_value = 0.2
+            print(f"🏢 Matériau gratte-ciel: métallique brillant")
         elif category == 'commercial':
-            # Commercial: texture normale
-            mapping.inputs['Scale'].default_value = (1.0, 1.0, 1.0)
             bsdf.inputs['Metallic'].default_value = 0.3
             bsdf.inputs['Roughness'].default_value = 0.6
+            print(f"🏪 Matériau commercial: semi-brillant")
         elif category == 'residential':
-            # Résidentiel: texture plus petite (détaillée)
-            mapping.inputs['Scale'].default_value = (2.0, 2.0, 2.0)
             bsdf.inputs['Metallic'].default_value = 0.1
             bsdf.inputs['Roughness'].default_value = 0.8
+            print(f"🏠 Matériau résidentiel: mat")
         else:
-            # Autres: texture standard
-            mapping.inputs['Scale'].default_value = (1.5, 1.5, 1.5)
             bsdf.inputs['Metallic'].default_value = 0.2
             bsdf.inputs['Roughness'].default_value = 0.7
+            print(f"🏗️ Matériau standard")
         
-        # Connexions
+        # Connexions du système de nodes
         links.new(coord.outputs['UV'], mapping.inputs['Vector'])
         links.new(mapping.outputs['Vector'], img_texture.inputs['Vector'])
         links.new(img_texture.outputs['Color'], bsdf.inputs['Base Color'])
         links.new(bsdf.outputs['BSDF'], output.inputs['Surface'])
         
-        # Positionnement des nœuds
+        # Positionnement des nœuds pour clarté
         output.location = (400, 0)
         bsdf.location = (200, 0)
         img_texture.location = (0, 0)
         mapping.location = (-200, 0)
         coord.location = (-400, 0)
         
+        print(f"🎨 Matériau multi-étages créé avec {repetitions_verticales:.1f}x répétition verticale")
         return mat
     
     def create_procedural_material(self, mat, category, zone_type, height):
