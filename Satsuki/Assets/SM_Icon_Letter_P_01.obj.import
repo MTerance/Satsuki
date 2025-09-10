@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://dua7kj5hostoc"
+path="res://.godot/imported/SM_Icon_Letter_P_01.obj-0828fe7348b30456af52dfdb2b09848c.mesh"
+
+[deps]
+
+files=["res://.godot/imported/SM_Icon_Letter_P_01.obj-0828fe7348b30456af52dfdb2b09848c.mesh"]
+
+source_file="res://Assets/SM_Icon_Letter_P_01.obj"
+dest_files=["res://.godot/imported/SM_Icon_Letter_P_01.obj-0828fe7348b30456af52dfdb2b09848c.mesh", "res://.godot/imported/SM_Icon_Letter_P_01.obj-0828fe7348b30456af52dfdb2b09848c.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

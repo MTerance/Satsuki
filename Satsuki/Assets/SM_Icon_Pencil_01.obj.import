@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://durvsotx4xbp0"
+path="res://.godot/imported/SM_Icon_Pencil_01.obj-dd77f97b201ae17421ecb17adae6548f.mesh"
+
+[deps]
+
+files=["res://.godot/imported/SM_Icon_Pencil_01.obj-dd77f97b201ae17421ecb17adae6548f.mesh"]
+
+source_file="res://Assets/SM_Icon_Pencil_01.obj"
+dest_files=["res://.godot/imported/SM_Icon_Pencil_01.obj-dd77f97b201ae17421ecb17adae6548f.mesh", "res://.godot/imported/SM_Icon_Pencil_01.obj-dd77f97b201ae17421ecb17adae6548f.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

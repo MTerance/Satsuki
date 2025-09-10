@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://cqtf7jyqg8hms"
+path="res://.godot/imported/SM_Icon_Gem_01.obj-df626069b2ab64816d896056537d3bdc.mesh"
+
+[deps]
+
+files=["res://.godot/imported/SM_Icon_Gem_01.obj-df626069b2ab64816d896056537d3bdc.mesh"]
+
+source_file="res://Assets/SM_Icon_Gem_01.obj"
+dest_files=["res://.godot/imported/SM_Icon_Gem_01.obj-df626069b2ab64816d896056537d3bdc.mesh", "res://.godot/imported/SM_Icon_Gem_01.obj-df626069b2ab64816d896056537d3bdc.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

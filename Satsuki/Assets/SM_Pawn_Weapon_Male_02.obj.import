@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://cpc8fhwwjaqpt"
+path="res://.godot/imported/SM_Pawn_Weapon_Male_02.obj-d779c0d54c39ef71fdccdd3c254a42c1.mesh"
+
+[deps]
+
+files=["res://.godot/imported/SM_Pawn_Weapon_Male_02.obj-d779c0d54c39ef71fdccdd3c254a42c1.mesh"]
+
+source_file="res://Assets/SM_Pawn_Weapon_Male_02.obj"
+dest_files=["res://.godot/imported/SM_Pawn_Weapon_Male_02.obj-d779c0d54c39ef71fdccdd3c254a42c1.mesh", "res://.godot/imported/SM_Pawn_Weapon_Male_02.obj-d779c0d54c39ef71fdccdd3c254a42c1.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false
