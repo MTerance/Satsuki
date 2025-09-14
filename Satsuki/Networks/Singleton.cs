@@ -1,29 +1,9 @@
 using Godot;
+using Satsuki.Utils;
 using System;
 using System.Net;
 using System.Net.Sockets;
 
-public interface INetwork
-{
-	bool Start();
-	bool Stop();
-}
-
-public abstract class SingletonBase<T>
-	where T : SingletonBase<T>, new()
-{
-	static private T _instance = null;
-
-	static public T GetInstance
-	{
-		get 
-		{  
-			if (_instance == null)
-				_instance = new T();
-			return _instance; 
-		}   
-	}
-}
 
 public class Network : SingletonBase<Network>, INetwork, IDisposable
 {
