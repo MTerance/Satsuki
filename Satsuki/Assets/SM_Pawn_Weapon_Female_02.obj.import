@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://dqgk53jk4826c"
+path="res://.godot/imported/SM_Pawn_Weapon_Female_02.obj-8aaec7db812b1b5e152df62c9f0c14aa.mesh"
+
+[deps]
+
+files=["res://.godot/imported/SM_Pawn_Weapon_Female_02.obj-8aaec7db812b1b5e152df62c9f0c14aa.mesh"]
+
+source_file="res://Assets/SM_Pawn_Weapon_Female_02.obj"
+dest_files=["res://.godot/imported/SM_Pawn_Weapon_Female_02.obj-8aaec7db812b1b5e152df62c9f0c14aa.mesh", "res://.godot/imported/SM_Pawn_Weapon_Female_02.obj-8aaec7db812b1b5e152df62c9f0c14aa.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false
