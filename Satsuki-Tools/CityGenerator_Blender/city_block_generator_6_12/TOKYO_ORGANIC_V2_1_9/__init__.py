@@ -21,8 +21,14 @@ class TOKYO_OT_generate_organic_city(Operator):
     bl_options = {'REGISTER', 'UNDO'}
     
     def execute(self, context):
+        # FORCER le mode Material Preview pour voir les couleurs
+        self.force_material_preview_mode()
+        
         self.clear_scene()
         props = context.scene.tokyo_props
+        
+        print(f"\n🏗️ DÉBUT GÉNÉRATION ORGANIQUE v2.1.9")
+        print(f"   Paramètres: {props.city_size}x{props.city_size}, {props.city_style}, densité {props.density}")
         
         result = self.generate_organic_tokyo_city(
             props.city_size,
@@ -31,8 +37,55 @@ class TOKYO_OT_generate_organic_city(Operator):
             props.use_materials
         )
         
+        # Vérification post-génération
+        self.verify_generation_results()
+        
         self.report({'INFO'}, f"Ville générée: {result['buildings']} bâtiments, {result['roads']} routes, {result['diagonals']} diagonales")
+        print(f"✅ GÉNÉRATION TERMINÉE avec succès!")
         return {'FINISHED'}
+    
+    def force_material_preview_mode(self):
+        """Forcer le mode Material Preview pour voir les matériaux"""
+        try:
+            for area in bpy.context.screen.areas:
+                if area.type == 'VIEW_3D':
+                    for space in area.spaces:
+                        if space.type == 'VIEW_3D':
+                            space.shading.type = 'MATERIAL_PREVIEW'
+                            print("   🎨 Mode viewport: Material Preview activé")
+                            break
+        except Exception as e:
+            print(f"   ⚠️ Erreur changement viewport: {e}")
+    
+    def verify_generation_results(self):
+        """Vérifier que la génération s'est bien passée"""
+        buildings = [obj for obj in bpy.data.objects if "Building" in obj.name]
+        diagonals = [obj for obj in bpy.data.objects if "Diagonal" in obj.name]
+        
+        # Vérifier les matériaux
+        material_types = set()
+        for building in buildings:
+            if building.data.materials:
+                mat_name = building.data.materials[0].name.lower()
+                for btype in ['tower', 'office', 'residential', 'commercial', 'hotel', 'mixed_use', 'warehouse', 'school']:
+                    if btype in mat_name:
+                        material_types.add(btype)
+                        break
+        
+        print(f"\n📊 VÉRIFICATION RÉSULTATS:")
+        print(f"   🏢 Bâtiments: {len(buildings)}")
+        print(f"   ↗️ Diagonales: {len(diagonals)}")
+        print(f"   🎨 Types matériaux: {len(material_types)} → {list(material_types)}")
+        
+        if len(material_types) >= 3:
+            print("   ✅ VARIÉTÉ MATÉRIAUX: OK")
+        else:
+            print("   ⚠️ PEU DE VARIÉTÉ MATÉRIAUX")
+        
+        if len(diagonals) > 0:
+            print("   ✅ DIAGONALES: OK")
+        else:
+            print("   ⚠️ AUCUNE DIAGONALE GÉNÉRÉE")
     
     def clear_scene(self):
         """Nettoyer la scène"""
@@ -117,28 +170,44 @@ class TOKYO_OT_generate_organic_city(Operator):
         return roads
     
     def create_short_diagonal_network(self, size, block_size, road_width):
-        """Créer des routes diagonales courtes entre intersections adjacentes"""
+        """Créer des routes diagonales courtes entre intersections adjacentes - VERSION CORRIGÉE"""
         diagonal_roads = []
         
         print(f"🔄 Création diagonales courtes pour grille {size}x{size}")
         
-        # Paramètres des diagonales
-        diagonal_width = road_width * 0.8  # Plus fines que les routes secondaires
+        # Paramètres des diagonales améliorés
+        diagonal_width = road_width * 1.2  # Plus larges pour être visibles
         
-        # Créer diagonales courtes aléatoires
-        num_diagonals = min(size * 2, 12)  # Limite raisonnable
+        # Plus de diagonales pour une ville plus organique
+        num_diagonals = min(size * 3, 16)  # Plus de diagonales
         
-        for i in range(num_diagonals):
+        # S'assurer qu'il y a au moins quelques diagonales pour les petites grilles
+        if size >= 3:
+            num_diagonals = max(num_diagonals, 4)
+        
+        print(f"   📏 Nombre de diagonales à créer: {num_diagonals}")
+        
+        created_diagonals = 0
+        attempts = 0
+        max_attempts = num_diagonals * 3  # Éviter boucle infinie
+        
+        while created_diagonals < num_diagonals and attempts < max_attempts:
+            attempts += 1
+            
             # Choisir deux intersections adjacentes aléatoirement
             start_i = random.randint(0, size - 1)
             start_j = random.randint(0, size - 1)
             
-            # Direction aléatoire (diagonal)
+            # Direction aléatoire (diagonal) avec plus de variété
             directions = [
                 (1, 1),   # Nord-Est
                 (1, -1),  # Sud-Est
                 (-1, 1),  # Nord-Ouest
-                (-1, -1)  # Sud-Ouest
+                (-1, -1), # Sud-Ouest
+                (2, 1),   # Nord-Est étendu
+                (1, 2),   # Nord étendu
+                (-1, 2),  # Nord-Ouest étendu
+                (-2, 1),  # Ouest étendu
             ]
             
             dx, dy = random.choice(directions)
@@ -160,20 +229,52 @@ class TOKYO_OT_generate_organic_city(Operator):
                 length = math.sqrt((end_x - start_x)**2 + (end_y - start_y)**2)
                 angle = math.atan2(end_y - start_y, end_x - start_x)
                 
-                # Créer le segment diagonal
-                bpy.ops.mesh.primitive_cube_add(size=1, location=(center_x, center_y, 0.06))
+                # Créer le segment diagonal plus visible
+                bpy.ops.mesh.primitive_cube_add(size=1, location=(center_x, center_y, 0.08))  # Plus haut
                 diagonal = bpy.context.active_object
-                diagonal.scale = (length * 0.9, diagonal_width, 0.1)  # Légèrement plus court pour ne pas toucher les intersections
+                diagonal.scale = (length * 0.95, diagonal_width, 0.15)  # Plus large et plus haut
                 diagonal.rotation_euler = (0, 0, angle)
-                diagonal.name = f"Tokyo_Diagonal_Short_{i}_{start_i}_{start_j}_to_{end_i}_{end_j}"
+                diagonal.name = f"Tokyo_Diagonal_Short_{created_diagonals}_{start_i}_{start_j}_to_{end_i}_{end_j}"
                 
                 bpy.ops.object.transform_apply(scale=True)
                 self.apply_diagonal_material(diagonal)
                 diagonal_roads.append(diagonal)
                 
-                print(f"   ↗️ Diagonale {i}: ({start_i},{start_j}) → ({end_i},{end_j})")
+                print(f"   ↗️ Diagonale {created_diagonals}: ({start_i},{start_j}) → ({end_i},{end_j}), longueur: {length:.1f}")
+                created_diagonals += 1
         
+        if created_diagonals == 0:
+            print("   ⚠️ AUCUNE DIAGONALE CRÉÉE - Tentative de création forcée")
+            # Créer au moins une diagonale forcée
+            self.create_forced_diagonal(size, block_size, diagonal_width, diagonal_roads)
+        
+        print(f"   ✅ {len(diagonal_roads)} diagonales courtes créées")
         return diagonal_roads
+    
+    def create_forced_diagonal(self, size, block_size, diagonal_width, diagonal_roads):
+        """Créer une diagonale forcée si aucune n'a pu être créée"""
+        print("   🔨 Création diagonale forcée...")
+        
+        # Diagonale simple du coin inférieur gauche vers le centre
+        start_x = -size * block_size / 2
+        start_y = -size * block_size / 2
+        end_x = 0
+        end_y = 0
+        
+        center_x = (start_x + end_x) / 2
+        center_y = (start_y + end_y) / 2
+        length = math.sqrt((end_x - start_x)**2 + (end_y - start_y)**2)
+        angle = math.atan2(end_y - start_y, end_x - start_x)
+        
+        bpy.ops.mesh.primitive_cube_add(size=1, location=(center_x, center_y, 0.08))
+        diagonal = bpy.context.active_object
+        diagonal.scale = (length, diagonal_width, 0.15)
+        diagonal.rotation_euler = (0, 0, angle)
+        diagonal.name = "Tokyo_Diagonal_FORCED"
+        
+        bpy.ops.object.transform_apply(scale=True)
+        self.apply_diagonal_material(diagonal)
+        diagonal_roads.append(diagonal)
     
     def create_adaptive_sidewalks(self, size, block_size, main_road_width, secondary_road_width, diagonal_roads):
         """Créer des trottoirs qui s'adaptent aux routes ET aux diagonales"""
@@ -454,38 +555,74 @@ class TOKYO_OT_generate_organic_city(Operator):
         return building
     
     def apply_building_material_by_type(self, obj, building_type, height):
-        """Appliquer des matériaux distinctifs selon le type"""
+        """Appliquer des matériaux distinctifs selon le type - VERSION CORRIGÉE"""
         
-        # Couleurs très distinctes pour voir la différence
+        # Couleurs TRÈS distinctes et saturées pour être visibles
         colors = {
-            'tower': (0.1, 0.3, 0.8, 1.0),       # Bleu foncé
-            'office': (0.6, 0.7, 0.9, 1.0),      # Bleu clair
-            'residential': (0.9, 0.6, 0.3, 1.0), # Orange
-            'commercial': (0.9, 0.2, 0.2, 1.0),  # Rouge vif
-            'hotel': (0.9, 0.9, 0.2, 1.0),       # Jaune
-            'mixed_use': (0.3, 0.8, 0.3, 1.0),   # Vert
-            'warehouse': (0.5, 0.5, 0.5, 1.0),   # Gris
-            'school': (0.8, 0.4, 0.8, 1.0)       # Violet
+            'tower': (0.1, 0.2, 0.9, 1.0),       # Bleu électrique
+            'office': (0.5, 0.6, 0.9, 1.0),      # Bleu clair
+            'residential': (1.0, 0.5, 0.2, 1.0), # Orange vif
+            'commercial': (1.0, 0.1, 0.1, 1.0),  # Rouge pur
+            'hotel': (1.0, 0.9, 0.1, 1.0),       # Jaune vif
+            'mixed_use': (0.2, 0.9, 0.2, 1.0),   # Vert vif
+            'warehouse': (0.4, 0.4, 0.4, 1.0),   # Gris foncé
+            'school': (0.9, 0.2, 0.9, 1.0)       # Magenta
         }
         
-        color = colors.get(building_type, (0.7, 0.7, 0.7, 1.0))
+        base_color = colors.get(building_type, (0.7, 0.7, 0.7, 1.0))
         
-        # Variation légère pour éviter l'uniformité
+        # Variation légère pour éviter l'uniformité MAIS garder la distinction
         varied_color = [
-            min(1.0, color[0] * random.uniform(0.8, 1.2)),
-            min(1.0, color[1] * random.uniform(0.8, 1.2)),
-            min(1.0, color[2] * random.uniform(0.8, 1.2)),
+            min(1.0, max(0.1, base_color[0] * random.uniform(0.85, 1.15))),
+            min(1.0, max(0.1, base_color[1] * random.uniform(0.85, 1.15))),
+            min(1.0, max(0.1, base_color[2] * random.uniform(0.85, 1.15))),
             1.0
         ]
         
-        mat = bpy.data.materials.new(name=f"Organic_{building_type}_{int(height)}")
+        # Créer matériau avec nom unique pour éviter les conflits
+        mat_name = f"Organic_{building_type}_{int(height)}_{random.randint(1000, 9999)}"
+        mat = bpy.data.materials.new(name=mat_name)
         mat.use_nodes = True
+        
+        # Configuration BSDF optimisée
         bsdf = mat.node_tree.nodes["Principled BSDF"]
         bsdf.inputs['Base Color'].default_value = varied_color
-        bsdf.inputs['Metallic'].default_value = 0.3
-        bsdf.inputs['Roughness'].default_value = 0.7
         
+        # Propriétés selon le type pour plus de réalisme
+        if building_type == 'tower':
+            bsdf.inputs['Metallic'].default_value = 0.8
+            bsdf.inputs['Roughness'].default_value = 0.2
+        elif building_type == 'office':
+            bsdf.inputs['Metallic'].default_value = 0.6
+            bsdf.inputs['Roughness'].default_value = 0.3
+        elif building_type in ['residential', 'school']:
+            bsdf.inputs['Metallic'].default_value = 0.1
+            bsdf.inputs['Roughness'].default_value = 0.8
+        elif building_type == 'warehouse':
+            bsdf.inputs['Metallic'].default_value = 0.9
+            bsdf.inputs['Roughness'].default_value = 0.7
+        else:
+            bsdf.inputs['Metallic'].default_value = 0.3
+            bsdf.inputs['Roughness'].default_value = 0.6
+        
+        # Ajouter légère émission pour rendre plus visible
+        emission_strength = 0.05 if building_type != 'warehouse' else 0.02
+        bsdf.inputs['Emission'].default_value = (
+            varied_color[0] * 0.3, 
+            varied_color[1] * 0.3, 
+            varied_color[2] * 0.3, 
+            1.0
+        )
+        bsdf.inputs['Emission Strength'].default_value = emission_strength
+        
+        # FORCER l'application du matériau
+        obj.data.materials.clear()  # Nettoyer d'abord
         obj.data.materials.append(mat)
+        
+        # Debug print pour traçabilité
+        print(f"   🎨 Matériau appliqué: {building_type} → RGB({varied_color[0]:.2f}, {varied_color[1]:.2f}, {varied_color[2]:.2f})")
+        
+        return mat
     
     def apply_basic_material(self, obj):
         """Matériau basique"""
@@ -506,13 +643,26 @@ class TOKYO_OT_generate_organic_city(Operator):
         obj.data.materials.append(mat)
     
     def apply_diagonal_material(self, obj):
-        """Matériau distinctif pour diagonales"""
-        mat = bpy.data.materials.new(name="Diagonal_Road")
+        """Matériau ultra-visible pour diagonales - VERSION CORRIGÉE"""
+        mat = bpy.data.materials.new(name=f"Diagonal_ULTRA_VISIBLE_{random.randint(1000, 9999)}")
         mat.use_nodes = True
         bsdf = mat.node_tree.nodes["Principled BSDF"]
-        bsdf.inputs['Base Color'].default_value = (0.8, 0.3, 0.1, 1.0)  # Orange pour être visible
-        bsdf.inputs['Roughness'].default_value = 0.8
+        
+        # Couleur orange/rouge ultra-vive avec émission
+        bsdf.inputs['Base Color'].default_value = (1.0, 0.3, 0.0, 1.0)  # Orange pur
+        bsdf.inputs['Roughness'].default_value = 0.3
+        bsdf.inputs['Metallic'].default_value = 0.1
+        
+        # ÉMISSION FORTE pour être visible même en mode Solid
+        bsdf.inputs['Emission'].default_value = (1.0, 0.5, 0.0, 1.0)  # Orange émissif
+        bsdf.inputs['Emission Strength'].default_value = 0.8  # Très lumineux
+        
+        # Nettoyer et appliquer
+        obj.data.materials.clear()
         obj.data.materials.append(mat)
+        
+        print(f"   🔶 Matériau diagonal ultra-visible appliqué: {mat.name}")
+        return mat
     
     def apply_sidewalk_material(self, obj):
         """Matériau pour trottoirs"""
@@ -560,8 +710,8 @@ class TokyoProperties(bpy.types.PropertyGroup):
     )
 
 class TOKYO_PT_organic_panel(Panel):
-    """Panneau pour le générateur organique"""
-    bl_label = "Tokyo Organic City v2.1.9"
+    """Panneau pour le générateur organique - VERSION CORRIGÉE"""
+    bl_label = "Tokyo Organic v2.1.9 CORRECTED"
     bl_idname = "TOKYO_PT_organic_panel"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -571,29 +721,55 @@ class TOKYO_PT_organic_panel(Panel):
         layout = self.layout
         props = context.scene.tokyo_props
         
-        # Titre avec emoji
-        layout.label(text="🏙️ Générateur Organique", icon='MESH_CUBE')
+        # En-tête amélioré
+        header_box = layout.box()
+        header_box.label(text="🏙️ Tokyo Organic v2.1.9 CORRECTED", icon='MESH_CUBE')
+        header_box.label(text="🔧 Version corrigée des erreurs v2.1.8", icon='TOOL_SETTINGS')
         
-        # Paramètres principaux
-        layout.prop(props, "city_size")
-        layout.prop(props, "city_style")
-        layout.prop(props, "density")
-        layout.prop(props, "use_materials")
+        # Paramètres principaux avec descriptions
+        params_box = layout.box()
+        params_box.label(text="⚙️ Paramètres", icon='SETTINGS')
         
-        # Bouton de génération
+        col = params_box.column(align=True)
+        col.prop(props, "city_size")
+        col.prop(props, "city_style")
+        col.prop(props, "density", slider=True)
+        col.prop(props, "use_materials")
+        
+        # Avertissement mode viewport
+        layout.separator()
+        warning_box = layout.box()
+        warning_box.alert = True
+        warning_box.label(text="⚠️ IMPORTANT ⚠️", icon='ERROR')
+        warning_box.label(text="Mode 'Material Preview' AUTO")
+        warning_box.label(text="pour voir les couleurs!")
+        
+        # Bouton de génération principal
         layout.separator()
         row = layout.row(align=True)
-        row.scale_y = 1.5
-        row.operator("tokyo.generate_organic_city", text="🏗️ Générer Ville Organique", icon='ADD')
+        row.scale_y = 2.0
+        row.operator("tokyo.generate_organic_city", text="🏗️ Générer Ville Organique CORRIGÉE", icon='ADD')
         
-        # Infos
+        # Corrections appliquées
         layout.separator()
-        box = layout.box()
-        box.label(text="✨ Nouveautés v2.1.9:")
-        box.label(text="• Routes diagonales courtes")
-        box.label(text="• Blocs non uniformes")
-        box.label(text="• Trottoirs adaptatifs")
-        box.label(text="• 8 types de bâtiments colorés")
+        fixes_box = layout.box()
+        fixes_box.label(text="✅ Corrections v2.1.9:", icon='CHECKMARK')
+        fixes_box.label(text="• Matériaux ULTRA-VISIBLES")
+        fixes_box.label(text="• Diagonales ORANGE VIVES")
+        fixes_box.label(text="• Blocs NON-UNIFORMES")
+        fixes_box.label(text="• Mode viewport AUTO")
+        fixes_box.label(text="• Debug prints intégrés")
+        
+        # Instructions
+        layout.separator()
+        info_box = layout.box()
+        info_box.label(text="💡 Vous devriez voir:", icon='INFO')
+        info_box.label(text="🔵 Bleu = Tours/Bureaux")
+        info_box.label(text="🟠 Orange = Résidentiel")
+        info_box.label(text="🔴 Rouge = Commercial")
+        info_box.label(text="🟡 Jaune = Hôtels")
+        info_box.label(text="🟢 Vert = Mixte")
+        info_box.label(text="🔶 Orange vif = Diagonales")
 
 # Enregistrement des classes
 classes = [

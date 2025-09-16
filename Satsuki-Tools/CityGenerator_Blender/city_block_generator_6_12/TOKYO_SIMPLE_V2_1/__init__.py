@@ -1,10 +1,10 @@
 bl_info = {
-    "name": "Tokyo City Generator v2.1.8",
+    "name": "Tokyo City Generator v2.2.0 Extended",
     "author": "Tokyo Urban Designer", 
-    "version": (2, 1, 8),
+    "version": (2, 2, 0),
     "blender": (4, 0, 0),
     "location": "View3D > Sidebar > CityGen",
-    "description": "Complete Tokyo city generator with 8 building types and fixed sidewalks",
+    "description": "Extended Tokyo city generator with 14 building types including hospitals, temples, factories, malls, stations and skyscrapers",
     "category": "Add Mesh",
 }
 
@@ -334,7 +334,13 @@ class TOKYO_SIMPLE_OT_generate(Operator):
             'hotel',        # Hôtels
             'mixed_use',    # Usage mixte
             'warehouse',    # Entrepôts/usines
-            'school'        # Écoles/institutions
+            'school',       # Écoles/institutions
+            'hospital',     # Hôpitaux modernes
+            'temple',       # Temples/sanctuaires
+            'factory',      # Usines/complexes industriels
+            'mall',         # Grands centres commerciaux
+            'station',      # Gares/stations
+            'skyscraper'    # Gratte-ciels ultra-hauts
         ]
         
         # Créer les bâtiments bloc par bloc
@@ -498,6 +504,48 @@ class TOKYO_SIMPLE_OT_generate(Operator):
             depth = random.uniform(4, 7)
             height = random.uniform(8, 16)
             shape = 'institutional'
+            
+        elif building_type == 'hospital':
+            # Hôpitaux - larges et hauts
+            width = random.uniform(8, 12)
+            depth = random.uniform(6, 10)
+            height = random.uniform(15, 25)
+            shape = 'complex'
+            
+        elif building_type == 'temple':
+            # Temples - traditionnels et bas
+            width = random.uniform(5, 8)
+            depth = random.uniform(4, 7)
+            height = random.uniform(4, 8)
+            shape = 'traditional'
+            
+        elif building_type == 'factory':
+            # Usines - très larges et moyennes
+            width = random.uniform(10, 16)
+            depth = random.uniform(8, 12)
+            height = random.uniform(8, 15)
+            shape = 'industrial'
+            
+        elif building_type == 'mall':
+            # Centres commerciaux - très larges et bas
+            width = random.uniform(12, 18)
+            depth = random.uniform(10, 14)
+            height = random.uniform(6, 12)
+            shape = 'mall'
+            
+        elif building_type == 'station':
+            # Gares - allongées et moyennes
+            width = random.uniform(15, 25)
+            depth = random.uniform(6, 10)
+            height = random.uniform(8, 18)
+            shape = 'station'
+            
+        elif building_type == 'skyscraper':
+            # Gratte-ciels - compacts et très hauts
+            width = random.uniform(4, 7)
+            depth = random.uniform(4, 7)
+            height = config['max'] * 1.5  # Plus haut que les tours
+            shape = 'skyscraper'
         
         else:
             # Par défaut
@@ -553,6 +601,72 @@ class TOKYO_SIMPLE_OT_generate(Operator):
             bpy.ops.mesh.primitive_cube_add(size=1, location=(x, y, height/2))
             building = bpy.context.active_object
             building.scale = (width, depth, height)
+            
+        elif shape == 'traditional':
+            # Temple traditionnel - toit pyramidal
+            bpy.ops.mesh.primitive_cube_add(size=1, location=(x, y, height*0.3))
+            building = bpy.context.active_object
+            building.scale = (width, depth, height*0.6)
+            
+            # Toit pyramidal
+            bpy.ops.mesh.primitive_cone_add(radius1=width*0.6, depth=height*0.8, location=(x, y, height*0.8))
+            roof = bpy.context.active_object
+            roof.name = f"Tokyo_Roof_{grid_x}_{grid_y}_{i}"
+            
+        elif shape == 'industrial':
+            # Forme industrielle - plusieurs sections
+            bpy.ops.mesh.primitive_cube_add(size=1, location=(x, y, height*0.4))
+            building = bpy.context.active_object
+            building.scale = (width, depth, height*0.8)
+            
+            # Section de toit avec conduits
+            if random.random() > 0.3:  # 70% de chance
+                bpy.ops.mesh.primitive_cylinder_add(radius=width*0.1, depth=height*0.6, location=(x + width*0.3, y + depth*0.3, height*0.9))
+                pipe = bpy.context.active_object
+                pipe.name = f"Tokyo_Pipe_{grid_x}_{grid_y}_{i}"
+                
+        elif shape == 'mall':
+            # Centre commercial - forme en L ou U
+            # Section principale
+            bpy.ops.mesh.primitive_cube_add(size=1, location=(x, y, height/2))
+            building = bpy.context.active_object
+            building.scale = (width, depth*0.6, height)
+            
+            # Aile perpendiculaire
+            bpy.ops.mesh.primitive_cube_add(size=1, location=(x + width*0.3, y + depth*0.3, height/2))
+            wing = bpy.context.active_object
+            wing.scale = (width*0.6, depth*0.6, height*0.8)
+            wing.name = f"Tokyo_Mall_Wing_{grid_x}_{grid_y}_{i}"
+            
+        elif shape == 'station':
+            # Gare - forme allongée avec courbe
+            bpy.ops.mesh.primitive_cube_add(size=1, location=(x, y, height/2))
+            building = bpy.context.active_object
+            building.scale = (width, depth, height*0.6)
+            
+            # Toit arrondi caractéristique
+            bpy.ops.mesh.primitive_cylinder_add(radius=depth*0.6, depth=width, rotation=(0, 1.5708, 0), location=(x, y, height*0.8))
+            roof = bpy.context.active_object
+            roof.name = f"Tokyo_Station_Roof_{grid_x}_{grid_y}_{i}"
+            
+        elif shape == 'skyscraper':
+            # Gratte-ciel - structure étagée
+            # Base large
+            bpy.ops.mesh.primitive_cube_add(size=1, location=(x, y, height*0.2))
+            building = bpy.context.active_object
+            building.scale = (width*1.2, depth*1.2, height*0.4)
+            
+            # Section moyenne
+            bpy.ops.mesh.primitive_cube_add(size=1, location=(x, y, height*0.5))
+            mid = bpy.context.active_object
+            mid.scale = (width, depth, height*0.6)
+            mid.name = f"Tokyo_Sky_Mid_{grid_x}_{grid_y}_{i}"
+            
+            # Sommet
+            bpy.ops.mesh.primitive_cube_add(size=1, location=(x, y, height*0.85))
+            top = bpy.context.active_object
+            top.scale = (width*0.8, depth*0.8, height*0.3)
+            top.name = f"Tokyo_Sky_Top_{grid_x}_{grid_y}_{i}"
             
         else:
             # Forme standard (cube, rectangular, etc.)
@@ -698,6 +812,94 @@ class TOKYO_SIMPLE_OT_generate(Operator):
             bsdf.inputs['Base Color'].default_value = random.choice(institutional_colors)
             bsdf.inputs['Metallic'].default_value = 0.2
             bsdf.inputs['Roughness'].default_value = 0.7
+            
+        elif building_type == 'hospital':
+            # Hôpitaux - médical moderne
+            medical_colors = [
+                (0.95, 0.95, 1.0, 1.0),  # Blanc médical
+                (0.9, 0.95, 0.9, 1.0),   # Vert médical pâle
+                (0.9, 0.9, 0.95, 1.0),   # Bleu médical pâle
+            ]
+            mat = bpy.data.materials.new(name=f"Tokyo_Hospital_{int(height)}m")
+            mat.use_nodes = True
+            bsdf = mat.node_tree.nodes["Principled BSDF"]
+            bsdf.inputs['Base Color'].default_value = random.choice(medical_colors)
+            bsdf.inputs['Metallic'].default_value = 0.3
+            bsdf.inputs['Roughness'].default_value = 0.4
+            
+        elif building_type == 'temple':
+            # Temples - traditionnel japonais
+            temple_colors = [
+                (0.8, 0.4, 0.2, 1.0),  # Rouge vermillon traditionnel
+                (0.6, 0.3, 0.1, 1.0),  # Bois sombre
+                (0.9, 0.8, 0.6, 1.0),  # Bois clair
+            ]
+            mat = bpy.data.materials.new(name=f"Tokyo_Temple_{int(height)}m")
+            mat.use_nodes = True
+            bsdf = mat.node_tree.nodes["Principled BSDF"]
+            bsdf.inputs['Base Color'].default_value = random.choice(temple_colors)
+            bsdf.inputs['Metallic'].default_value = 0.1
+            bsdf.inputs['Roughness'].default_value = 0.9
+            
+        elif building_type == 'factory':
+            # Usines - super industriel
+            factory_colors = [
+                (0.3, 0.3, 0.3, 1.0),  # Gris acier
+                (0.4, 0.2, 0.1, 1.0),  # Rouille intense
+                (0.2, 0.3, 0.2, 1.0),  # Vert militaire
+                (0.5, 0.5, 0.3, 1.0),  # Jaune industriel
+            ]
+            mat = bpy.data.materials.new(name=f"Tokyo_Factory_{int(height)}m")
+            mat.use_nodes = True
+            bsdf = mat.node_tree.nodes["Principled BSDF"]
+            bsdf.inputs['Base Color'].default_value = random.choice(factory_colors)
+            bsdf.inputs['Metallic'].default_value = 0.8
+            bsdf.inputs['Roughness'].default_value = 0.95
+            
+        elif building_type == 'mall':
+            # Centres commerciaux - coloré et moderne
+            mall_colors = [
+                (0.9, 0.2, 0.3, 1.0),  # Rouge commercial vif
+                (0.2, 0.6, 0.9, 1.0),  # Bleu commercial
+                (0.9, 0.6, 0.1, 1.0),  # Orange commercial
+                (0.3, 0.8, 0.3, 1.0),  # Vert commercial
+                (0.8, 0.3, 0.8, 1.0),  # Magenta commercial
+            ]
+            mat = bpy.data.materials.new(name=f"Tokyo_Mall_{int(height)}m")
+            mat.use_nodes = True
+            bsdf = mat.node_tree.nodes["Principled BSDF"]
+            bsdf.inputs['Base Color'].default_value = random.choice(mall_colors)
+            bsdf.inputs['Metallic'].default_value = 0.5
+            bsdf.inputs['Roughness'].default_value = 0.3
+            
+        elif building_type == 'station':
+            # Gares - transport public
+            station_colors = [
+                (0.7, 0.7, 0.8, 1.0),  # Gris transport
+                (0.6, 0.7, 0.9, 1.0),  # Bleu transport
+                (0.9, 0.9, 0.7, 1.0),  # Jaune signalisation
+            ]
+            mat = bpy.data.materials.new(name=f"Tokyo_Station_{int(height)}m")
+            mat.use_nodes = True
+            bsdf = mat.node_tree.nodes["Principled BSDF"]
+            bsdf.inputs['Base Color'].default_value = random.choice(station_colors)
+            bsdf.inputs['Metallic'].default_value = 0.6
+            bsdf.inputs['Roughness'].default_value = 0.4
+            
+        elif building_type == 'skyscraper':
+            # Gratte-ciels - ultra moderne
+            skyscraper_colors = [
+                (0.2, 0.3, 0.5, 1.0),  # Bleu acier sombre
+                (0.3, 0.3, 0.3, 1.0),  # Gris anthracite
+                (0.4, 0.5, 0.6, 1.0),  # Bleu-gris moderne
+                (0.1, 0.1, 0.1, 1.0),  # Noir moderne
+            ]
+            mat = bpy.data.materials.new(name=f"Tokyo_Skyscraper_{int(height)}m")
+            mat.use_nodes = True
+            bsdf = mat.node_tree.nodes["Principled BSDF"]
+            bsdf.inputs['Base Color'].default_value = random.choice(skyscraper_colors)
+            bsdf.inputs['Metallic'].default_value = 0.9
+            bsdf.inputs['Roughness'].default_value = 0.1
             
         else:
             # Type par défaut
