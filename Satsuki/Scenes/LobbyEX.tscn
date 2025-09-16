@@ -17,7 +17,6 @@
 [ext_resource type="ArrayMesh" uid="uid://due8mgae8ep3b" path="res://Assets/SM_Icon_Player_01.obj" id="15_ilwuq"]
 [ext_resource type="Texture2D" uid="uid://blcht75lud546" path="res://Assets/PolygonPrototype_Texture_02.png" id="16_qp66s"]
 [ext_resource type="ArrayMesh" uid="uid://cvcwwy7sgmeoo" path="res://Assets/SM_Buildings_Floor_5x5_01.obj" id="17_k5eo8"]
-[ext_resource type="ArrayMesh" uid="uid://1bmgbk5as44s" path="res://Assets/SM_Buildings_WindowGlass_01.obj" id="18_qp66s"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5t3so"]
 albedo_texture = ExtResource("1_sxak8")
@@ -83,6 +82,9 @@ albedo_texture = ExtResource("7_5t3so")
 albedo_texture = ExtResource("13_yxgs6")
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6nqsh"]
+albedo_texture = ExtResource("16_qp66s")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0qtia"]
 albedo_texture = ExtResource("16_qp66s")
 
 [node name="LobbyEx" type="Node2D"]
@@ -228,7 +230,7 @@ mesh = ExtResource("8_mtkia")
 skeleton = NodePath("../..")
 
 [node name="SmPrimitiveCylander05" type="MeshInstance3D" parent="LobbyEXNode"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5384, 52.7275, -1345.21)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -375.996, 52.7275, -954.314)
 material_override = SubResource("StandardMaterial3D_lyf50")
 mesh = ExtResource("9_yxgs6")
 skeleton = NodePath("../..")
@@ -240,25 +242,25 @@ mesh = ExtResource("10_ndmc6")
 skeleton = NodePath("../..")
 
 [node name="SmPropSyntyCube01" type="MeshInstance3D" parent="LobbyEXNode"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -419.019, 61.3224, -1174.17)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -44.2006, 61.3224, -1206.48)
 material_override = SubResource("StandardMaterial3D_yh2r7")
 mesh = ExtResource("11_ilwuq")
 skeleton = NodePath("../..")
 
 [node name="SmPropCrate03" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -262.663, 47.7095, -1368)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 170.996, 47.7095, -802.21)
 material_override = SubResource("StandardMaterial3D_la4wd")
 mesh = ExtResource("12_5t3so")
 
 [node name="SmPropCrate02" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 338.875, 34.9587, -810.351)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 510.075, 34.9587, -376.53)
 material_override = SubResource("StandardMaterial3D_gw8cl")
 mesh = ExtResource("13_mtkia")
 
 [node name="Node3D" type="Node3D" parent="."]
 
 [node name="SmIconPlayer01" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 140.741, 105.546, -1068.09)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -675.298, 105.546, -1068.09)
 mesh = ExtResource("15_ilwuq")
 
 [node name="SmBuildingsFloor5x501" type="MeshInstance3D" parent="."]
@@ -371,6 +373,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -202.447, 304.678, -1985.7)
 material_override = SubResource("StandardMaterial3D_6nqsh")
 mesh = ExtResource("17_k5eo8")
 
-[node name="SmBuildingsWindowGlass01" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 81.7964, 69.6732, -1272.09)
-mesh = ExtResource("18_qp66s")
+[node name="SmBuildingsWall2x301" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.000694746, 0.94769, 0.319191, -1, 0.000733093, 0, -0.000233997, -0.319191, 0.94769, -398.844, 82.2683, -1160.91)
+material_override = SubResource("StandardMaterial3D_0qtia")
+mesh = ExtResource("3_mikiw")
+
+[node name="SmBuildingsWall2x302" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.00065994, 0.900212, -0.435451, -1, 0.000733093, 0, 0.000319226, 0.435451, 0.900212, 21.3337, 87.4712, -1224.12)
+material_override = SubResource("StandardMaterial3D_0qtia")
+mesh = ExtResource("3_mikiw")

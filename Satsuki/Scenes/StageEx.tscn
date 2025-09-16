@@ -1,0 +1,117 @@
+[gd_scene load_steps=14 format=3 uid="uid://rdxlqu68ov8x"]
+
+[ext_resource type="Texture2D" uid="uid://6troacshr1fb" path="res://Assets/PolygonPrototype_Texture_01.png" id="1_u8igs"]
+[ext_resource type="ArrayMesh" uid="uid://b2ngh2d6mn6h0" path="res://Assets/SM_Buildings_Floor_5x5_01P.obj" id="2_mi5li"]
+[ext_resource type="ArrayMesh" uid="uid://cnutuf1vpe8p5" path="res://Assets/SM_Buildings_Rail_5x1_01P.obj" id="3_bhomg"]
+[ext_resource type="ArrayMesh" uid="uid://cr1bkfotjjp8e" path="res://Assets/SM_Buildings_Stairs_1x2_01P.obj" id="4_nt2qc"]
+[ext_resource type="Texture2D" uid="uid://blcht75lud546" path="res://Assets/PolygonPrototype_Texture_02.png" id="5_8kvo6"]
+[ext_resource type="ArrayMesh" uid="uid://d1u0bnpc3k4hc" path="res://Assets/SM_Buildings_Wall_5x3_01P.obj" id="6_skv6a"]
+[ext_resource type="Texture2D" uid="uid://cfc6nu3rl8236" path="res://Assets/PolygonPrototype_Texture_05.png" id="7_bhomg"]
+[ext_resource type="ArrayMesh" uid="uid://ci6oht3wuk4cf" path="res://Assets/SM_Prop_Tree_Palm_02.obj" id="8_nt2qc"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_81ijf"]
+albedo_texture = ExtResource("1_u8igs")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_egg5i"]
+albedo_texture = ExtResource("1_u8igs")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_75p7v"]
+albedo_texture = ExtResource("1_u8igs")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nuvp6"]
+albedo_texture = ExtResource("5_8kvo6")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8kvo6"]
+albedo_texture = ExtResource("7_bhomg")
+
+[node name="StageEx" type="Node3D"]
+
+[node name="SmBuildingsFloor5x501p" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0895841, 0, -0.139645)
+material_override = SubResource("StandardMaterial3D_81ijf")
+mesh = ExtResource("2_mi5li")
+
+[node name="SmBuildingsFloor5x501p2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 500.014, 0, -0.139645)
+material_override = SubResource("StandardMaterial3D_81ijf")
+mesh = ExtResource("2_mi5li")
+
+[node name="SmBuildingsFloor5x501p3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0895841, 0, -493.777)
+material_override = SubResource("StandardMaterial3D_81ijf")
+mesh = ExtResource("2_mi5li")
+
+[node name="SmBuildingsFloor5x501p4" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 500.014, 0, -493.777)
+material_override = SubResource("StandardMaterial3D_81ijf")
+mesh = ExtResource("2_mi5li")
+
+[node name="SmBuildingsFloor5x501p5" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 998.578, 0, -0.139645)
+material_override = SubResource("StandardMaterial3D_81ijf")
+mesh = ExtResource("2_mi5li")
+
+[node name="SmBuildingsFloor5x501p6" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1498.68, 0, -0.139645)
+material_override = SubResource("StandardMaterial3D_81ijf")
+mesh = ExtResource("2_mi5li")
+
+[node name="SmBuildingsFloor5x501p7" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 998.578, 0, -493.777)
+material_override = SubResource("StandardMaterial3D_81ijf")
+mesh = ExtResource("2_mi5li")
+
+[node name="SmBuildingsFloor5x501p8" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1498.68, 0, -493.777)
+material_override = SubResource("StandardMaterial3D_81ijf")
+mesh = ExtResource("2_mi5li")
+
+[node name="SmBuildingsRail5x101p" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -483.353, -2.33922, 0.0867233)
+material_override = SubResource("StandardMaterial3D_egg5i")
+mesh = ExtResource("3_bhomg")
+
+[node name="SmBuildingsRail5x101p2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -483.353, -2.33922, -499.963)
+material_override = SubResource("StandardMaterial3D_egg5i")
+mesh = ExtResource("3_bhomg")
+
+[node name="SmBuildingsRail5x101p3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1499.26, -2.33922, 0.0867233)
+material_override = SubResource("StandardMaterial3D_egg5i")
+mesh = ExtResource("3_bhomg")
+
+[node name="SmBuildingsRail5x101p4" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1499.26, -2.33922, -499.963)
+material_override = SubResource("StandardMaterial3D_egg5i")
+mesh = ExtResource("3_bhomg")
+
+[node name="SmBuildingsStairs1x201p" type="MeshInstance3D" parent="."]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 339.119, -53.7507, -489.758)
+material_override = SubResource("StandardMaterial3D_75p7v")
+mesh = ExtResource("4_nt2qc")
+
+[node name="SmBuildingsWall5x301p" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 689.5, 120.251, 232.368)
+material_override = SubResource("StandardMaterial3D_nuvp6")
+mesh = ExtResource("6_skv6a")
+
+[node name="SmPropTreePalm02" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 978.685, 12.222, 385.682)
+material_override = SubResource("StandardMaterial3D_8kvo6")
+mesh = ExtResource("8_nt2qc")
+
+[node name="SmPropTreePalm03" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1255.87, 12.222, 385.682)
+material_override = SubResource("StandardMaterial3D_8kvo6")
+mesh = ExtResource("8_nt2qc")
+
+[node name="SmPropTreePalm04" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -303.02, 12.222, 385.682)
+material_override = SubResource("StandardMaterial3D_8kvo6")
+mesh = ExtResource("8_nt2qc")
+
+[node name="SmPropTreePalm05" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.8391, 12.222, 385.682)
+material_override = SubResource("StandardMaterial3D_8kvo6")
+mesh = ExtResource("8_nt2qc")
