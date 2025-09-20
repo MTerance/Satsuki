@@ -4,6 +4,10 @@
     <EnableDynamicLoading>true</EnableDynamicLoading>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="Networks\README_Encryption.md" />
+    <None Include="Networks\README_MessageSystem.md" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="9.0.7" />
     <PackageReference Include="SQLite" Version="3.13.0" />
     <PackageReference Include="SQLite.Native" Version="3.12.3" />
