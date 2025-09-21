@@ -471,3 +471,344 @@ body {
     font-size: 2rem;
   }
 }
+
+/* Styles pour le modal quiz étendu */
+.quiz-modal {
+  max-width: 800px;
+  width: 95%;
+}
+
+.quiz-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--color-base-300);
+  margin-bottom: 1.5rem;
+}
+
+.tab-button {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  color: var(--color-base-content);
+}
+
+.tab-button:hover {
+  background-color: var(--color-base-200);
+}
+
+.tab-button.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  background-color: var(--color-base-200);
+}
+
+.tab-content {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Styles pour l'upload XML */
+.xml-upload-section {
+  padding: 1rem 0;
+}
+
+.upload-zone {
+  border: 2px dashed var(--color-base-300);
+  border-radius: 0.5rem;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.upload-zone:hover,
+.upload-zone.dragover {
+  border-color: var(--color-primary);
+  background-color: color-mix(in srgb, var(--color-primary) 5%, transparent);
+}
+
+.upload-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.upload-text {
+  margin-bottom: 0.5rem;
+  color: var(--color-base-content);
+}
+
+.upload-link {
+  color: var(--color-primary);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.upload-hint {
+  font-size: 0.875rem;
+  color: var(--color-base-content);
+  opacity: 0.7;
+}
+
+.file-preview {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: var(--color-base-200);
+  border-radius: 0.5rem;
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.file-name {
+  font-weight: 500;
+  flex: 1;
+}
+
+.file-size {
+  color: var(--color-base-content);
+  opacity: 0.7;
+  font-size: 0.875rem;
+}
+
+.remove-file {
+  background-color: var(--color-error);
+  color: var(--color-error-content);
+  border: none;
+  border-radius: 50%;
+  width: 1.5rem;
+  height: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.xml-preview {
+  margin-top: 1rem;
+}
+
+.xml-preview h4 {
+  margin-bottom: 0.5rem;
+  color: var(--color-primary);
+}
+
+.preview-info p {
+  margin-bottom: 0.25rem;
+  font-size: 0.875rem;
+}
+
+/* Styles pour la recherche Toshokan */
+.toshokan-search-section {
+  padding: 1rem 0;
+}
+
+.search-input-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.search-input-group .form-input {
+  flex: 1;
+}
+
+.search-button {
+  padding: 0.5rem 1rem;
+  background-color: var(--color-primary);
+  color: var(--color-primary-content);
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.search-button:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--color-primary) 90%, black);
+}
+
+.search-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.search-filters {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.filter-select {
+  padding: 0.5rem;
+  border: 1px solid var(--color-base-300);
+  border-radius: 0.5rem;
+  background-color: var(--color-base-100);
+  cursor: pointer;
+}
+
+.loading-indicator {
+  text-align: center;
+  padding: 2rem;
+}
+
+.spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 2px solid var(--color-base-300);
+  border-top: 2px solid var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.search-results {
+  margin-top: 1.5rem;
+}
+
+.search-results h4 {
+  margin-bottom: 1rem;
+  color: var(--color-primary);
+}
+
+.results-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--color-base-300);
+  border-radius: 0.5rem;
+}
+
+.result-item {
+  padding: 1rem;
+  border-bottom: 1px solid var(--color-base-300);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.result-item:last-child {
+  border-bottom: none;
+}
+
+.result-item:hover {
+  background-color: var(--color-base-200);
+}
+
+.result-item.selected {
+  background-color: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  border-left: 3px solid var(--color-primary);
+}
+
+.result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.result-title {
+  font-weight: 600;
+  color: var(--color-base-content);
+  margin: 0;
+}
+
+.result-description {
+  color: var(--color-base-content);
+  opacity: 0.8;
+  font-size: 0.875rem;
+  margin: 0.5rem 0;
+}
+
+.result-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.75rem;
+  color: var(--color-base-content);
+  opacity: 0.7;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.error-message {
+  padding: 1rem;
+  background-color: color-mix(in srgb, var(--color-error) 10%, transparent);
+  border: 1px solid var(--color-error);
+  border-radius: 0.5rem;
+  color: var(--color-error);
+  margin-top: 1rem;
+}
+
+/* Styles supplémentaires pour les formulaires */
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-group-half {
+  flex: 1;
+}
+
+.form-textarea {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-base-300);
+  border-radius: 0.5rem;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.form-textarea:focus {
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 20%, transparent);
+}
+
+.btn-cancel {
+  background-color: var(--color-base-300);
+  color: var(--color-base-content);
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-cancel:hover {
+  background-color: color-mix(in srgb, var(--color-base-300) 90%, black);
+}
+
+.btn-submit {
+  background-color: var(--color-primary);
+  color: var(--color-primary-content);
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--color-primary) 90%, black);
+}
+
+.btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
