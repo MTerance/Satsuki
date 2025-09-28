@@ -6,11 +6,6 @@ using System.Threading.Tasks;
 
 namespace Satsuki.Utils
 {
-    public interface INetwork
-    {
-        bool Start();
-        bool Stop();
-    }
 
     public abstract class SingletonBase<T>
         where T : SingletonBase<T>, new()

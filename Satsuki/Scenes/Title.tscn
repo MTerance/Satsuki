@@ -1,5 +1,12 @@
-[gd_scene format=3 uid="uid://d0hmix7qbhh3n"]
+[gd_scene load_steps=2 format=3 uid="uid://d0hmix7qbhh3n"]
+
+[ext_resource type="Texture2D" uid="uid://bk7whe0twub2g" path="res://Assets/img/ChatGPT Image 24 sept. 2025, 13_34_20.png" id="1_tochr"]
 
 [node name="Title" type="Node3D"]
 
 [node name="TitleScreen" type="Node2D" parent="."]
+
+[node name="ChatGptImage24Sept_2025,133420" type="Sprite2D" parent="TitleScreen"]
+position = Vector2(555, 279)
+scale = Vector2(0.491211, 0.491211)
+texture = ExtResource("1_tochr")
