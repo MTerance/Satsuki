@@ -1,15 +1,9 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
-import MainStatusNavBar from './components/MainStatusNavBar.vue'
-import MainGameMenu from './components/MainGameMenu.vue'
 </script>
 
 <template>
-  <!-- Barre de statut Socket.IO en haut -->
-  <MainStatusNavBar />
-  <MainGameMenu />
-  
   <header>
     <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
 

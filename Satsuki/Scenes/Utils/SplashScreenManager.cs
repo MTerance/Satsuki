@@ -1,11 +1,12 @@
 using Godot;
+using Godot.Collections;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 public partial class SplashScreenManager : Control
 {
-    [Export] public List<TextureRect> 	SplashScreenList = new  List<TextureRect>{};
+    [Export] public Array<TextureRect> 	SplashScreenList = new Array<TextureRect>{};
     [Export] public float FadeInDuration { get; set; } = 1.0f;
     [Export] public float DisplayDuration { get; set; } = 2.0f;
     [Export] public float FadeOutDuration { get; set; } = 1.0f;

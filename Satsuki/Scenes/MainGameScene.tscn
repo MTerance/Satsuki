@@ -9,13 +9,15 @@ script = ExtResource("1_cp132")
 
 [node name="Node2D" type="Node2D" parent="."]
 
-[node name="SplashScreenManager" type="Control" parent="."]
+[node name="SplashScreenManager" type="Control" parent="." node_paths=PackedStringArray("SplashScreenList")]
 layout_mode = 3
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 script = ExtResource("2_2axvc")
+SplashScreenList = [null, null, null]
 
 [node name="ChatGptImage24Sept_2025,133420" type="Sprite2D" parent="."]
-position = Vector2(592, 302)
+position = Vector2(589, 264)
+scale = Vector2(0.474609, 0.474609)
 texture = ExtResource("3_7px2j")
