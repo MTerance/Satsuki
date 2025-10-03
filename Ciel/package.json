@@ -15,11 +15,13 @@
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
     "format": "prettier --write src/",
-    "start": "npm run build && electron .",
+    "start": "npm run build & electron .",
     "dist": "electron-builder",
     "pack": "electron-packager . ciel --platform=win32 --arch=x64 --out=out --overwrite",
     "build-and-pack": "npm run build && npm run pack",
-    "build-and-dist": "npm run build && electron-builder --publish=never"
+    "build-and-dist": "npm run build && electron-builder --publish=never",
+    "rebuild": "electron-rebuild -f -w sqlite3",
+    "postinstall": "electron-rebuild -f -w sqlite3"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.10",
@@ -43,6 +45,7 @@
     "electron": "^36.5.0",
     "electron-builder": "^26.0.12",
     "electron-packager": "^17.1.2",
+    "electron-rebuild": "^3.2.9",
     "npm-run-all2": "^7.0.2",
     "prettier": "3.5.3",
     "typescript": "~5.8.0",

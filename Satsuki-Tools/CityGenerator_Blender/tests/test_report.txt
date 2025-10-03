@@ -1,0 +1,23 @@
+RAPPORT DE TESTS - CITY BLOCK GENERATOR
+==================================================
+
+Date: 2025-10-01 17:05:42.786191
+Version: 6.13.7
+
+TESTS EXÉCUTÉS:
+- test_safe_configurations.py: Tests de configurations sécurisées
+- test_anti_crash.py: Tests de robustesse anti-crash
+
+SÉCURITÉS IMPLÉMENTÉES:
+- Limites de grille: max 5x5 (25 blocs)
+- Limites de bâtiments: max 50 par génération
+- Validation des paramètres d'entrée
+- Gestion d'erreurs avec try-catch
+- Avertissements dans l'interface utilisateur
+- Limites de performance pour éviter les crashes
+
+RECOMMANDATIONS:
+- Utiliser des grilles 3x3 ou plus petites pour de meilleures performances
+- Éviter plus de 1-2 bâtiments par bloc
+- Surveiller les avertissements dans l'interface
+- Sauvegarder avant de générer de grandes villes

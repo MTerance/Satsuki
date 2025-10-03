@@ -501,8 +501,8 @@ def generate_rectangular_building(x, y, width, depth, height, mat, building_num)
             return None
         
         print(f"   ➡️ Appel create_cube_with_center_bottom_origin...")
-        # Créer le cube avec origine au centre bas
-        obj = create_cube_with_center_bottom_origin(width, depth, height, (x, y, 0.02))
+        # Créer le cube avec origine au centre bas - Position Z=0 pour être au niveau du sol
+        obj = create_cube_with_center_bottom_origin(width, depth, height, (x, y, 0.0))
         
         if not obj:
             print(f"❌ Échec de création du cube pour le bâtiment {building_num}")
@@ -557,7 +557,7 @@ def generate_l_shaped_building(x, y, width, depth, height, mat, building_num):
         # Partie principale (verticale du L)
         main_obj = create_cube_with_center_bottom_origin(
             main_width, main_depth, height,
-            (x - width*0.15, y - depth*0.2, 0.02)
+            (x - width*0.15, y - depth*0.2, 0.0)
         )
         if main_obj:
             parts.append(main_obj)
@@ -565,7 +565,7 @@ def generate_l_shaped_building(x, y, width, depth, height, mat, building_num):
         # Partie secondaire (horizontale du L)
         secondary_obj = create_cube_with_center_bottom_origin(
             secondary_width, secondary_depth, secondary_height,
-            (x + width*0.25, y + depth*0.3, 0.02)
+            (x + width*0.25, y + depth*0.3, 0.0)
         )
         if secondary_obj:
             parts.append(secondary_obj)
@@ -624,7 +624,7 @@ def generate_u_shaped_building(x, y, width, depth, height, mat, building_num):
             main_width = width * 0.3
             main = create_cube_with_center_bottom_origin(
                 main_width, depth, height, 
-                (x - width*0.35, y, 0.02)
+                (x - width*0.35, y, 0.0)
             )
             if main:
                 parts.append(main)
@@ -653,7 +653,7 @@ def generate_u_shaped_building(x, y, width, depth, height, mat, building_num):
             left_width = width * 0.25
             left_part = create_cube_with_center_bottom_origin(
                 left_width, depth * 0.8, height, 
-                (x - width*0.375, y, 0.02)
+                (x - width*0.375, y, 0.0)
             )
             if left_part:
                 parts.append(left_part)
@@ -661,7 +661,7 @@ def generate_u_shaped_building(x, y, width, depth, height, mat, building_num):
             # Tige droite
             right_part = create_cube_with_center_bottom_origin(
                 left_width, depth * 0.8, height, 
-                (x + width*0.375, y, 0.02)
+                (x + width*0.375, y, 0.0)
             )
             if right_part:
                 parts.append(right_part)
@@ -669,7 +669,7 @@ def generate_u_shaped_building(x, y, width, depth, height, mat, building_num):
             # Barre de liaison (arrière)
             back_part = create_cube_with_center_bottom_origin(
                 width * 0.5, depth * 0.2, height, 
-                (x, y + depth*0.4, 0.02)
+                (x, y + depth*0.4, 0.0)
             )
             if back_part:
                 parts.append(back_part)
@@ -721,7 +721,7 @@ def generate_tower_building(x, y, width, depth, height, mat):
     for v in mesh.vertices:
         v.co.z -= z_min
     
-    base_obj.location = (x, y, 0.02)  # Hauteur ajustée
+    base_obj.location = (x, y, 0.0)  # Au niveau du sol
     
     # Tour principale (plus étroite)
     tower_width = width * 0.7
@@ -740,7 +740,7 @@ def generate_tower_building(x, y, width, depth, height, mat):
     for v in mesh.vertices:
         v.co.z -= z_min
     
-    tower_obj.location = (x, y, base_height + 0.02)  # Hauteur ajustée
+    tower_obj.location = (x, y, base_height + 0.0)  # Position ajustée
     
     # Joindre les parties
     bpy.context.view_layer.objects.active = base_obj
@@ -802,7 +802,7 @@ def generate_simple_tower_building(x, y, width, depth, height, mat, building_num
         # Positionner l'objet
         obj.location.x = x
         obj.location.y = y
-        obj.location.z = 0.02  # Hauteur légèrement au-dessus du trottoir
+        obj.location.z = 0.0  # Au niveau du sol
 
         # Appliquer le matériau
         try:
@@ -868,7 +868,7 @@ def generate_simple_stepped_building(x, y, width, depth, height, mat, building_n
         # Positionner l'objet
         obj.location.x = x
         obj.location.y = y
-        obj.location.z = 0.02  # Hauteur légèrement au-dessus du trottoir
+        obj.location.z = 0.0  # Au niveau du sol
 
         # Appliquer le matériau
         try:
@@ -997,7 +997,7 @@ def generate_t_shaped_building(x, y, width, depth, height, mat, building_num):
         vertical_depth = depth * 0.7
         vertical = create_cube_with_center_bottom_origin(
             vertical_width, vertical_depth, height, 
-            (x, y - depth * 0.15, 0.02)  # Base au sol
+            (x, y - depth * 0.15, 0.0)  # Base au sol
         )
         
         # Collecter les parties créées
@@ -1045,7 +1045,7 @@ def generate_complex_building(x, y, width, depth, height, mat, building_num):
         # Base principale
         base_height = height * 0.6
         base = create_cube_with_center_bottom_origin(
-            width, depth, base_height, (x, y, 0.02)
+            width, depth, base_height, (x, y, 0.0)
         )
         
         if not base:
@@ -3028,7 +3028,7 @@ def create_public_plaza(x, y, size, plaza_mat, tree_mat=None):
         # Créer la place (surface plate) - version simplifiée
         bpy.ops.mesh.primitive_cube_add(
             size=size,
-            location=(x, y, 0.02)  # Légèrement surélevée
+            location=(x, y, 0.0)  # Au niveau du sol
         )
         
         plaza = bpy.context.object

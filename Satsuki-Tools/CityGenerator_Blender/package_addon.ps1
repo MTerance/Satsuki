@@ -4,9 +4,9 @@
 Write-Host "=== PACKAGING CITY BLOCK GENERATOR ADDON ===" -ForegroundColor Cyan
 Write-Host ""
 
-# Configuration
-$ZipName = "city_block_generator_6_12.zip"
-$AddonDir = "city_block_generator_6_12"
+# Configuration - MISE À JOUR pour nouveau nom de dossier
+$ZipName = "city_block_generator.zip"
+$AddonDir = "city_block_generator"
 $InitFile = "$AddonDir\__init__.py"
 
 # Verifier si le dossier de l'addon existe
