@@ -2,6 +2,7 @@ using Godot;
 using Satsuki.Utils;
 using Satsuki.Networks;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -11,17 +12,13 @@ using System.Threading.Tasks;
 public class Network : SingletonBase<Network>, INetwork, IDisposable
 {
 	private TcpListener _server;
-	private TcpClient _client;
-	private NetworkStream _stream;
 	private bool _isRunning = false;
 	private CancellationTokenSource _cancellationTokenSource;
-	private Task _messageListeningTask;
+	private Task _serverListeningTask;
 
     public Network()
 	{
 		_server = null;
-		_client = null;
-		_stream = null;
 		_cancellationTokenSource = new CancellationTokenSource();
 	}
 
@@ -37,216 +34,171 @@ public class Network : SingletonBase<Network>, INetwork, IDisposable
 		{
 			_isRunning = false;
 			_cancellationTokenSource?.Cancel();
+			
+			// Arr�te le r�cepteur de messages
+			MessageReceiver.GetInstance.Stop().Wait(TimeSpan.FromSeconds(5));
 		}
 
-		if (_stream != null)
-		{
-			_stream.Close();
-			_stream.Dispose();
-			_stream = null;
-		}
-		if (_client != null)
-		{
-			_client.Close();
-			_client.Dispose();
-			_client = null;
-		}
 		if (_server != null)
 		{
 			_server.Stop();
 			_server = null;
 		}
+		
+		Console.WriteLine("Network: Serveur arr�t�");
 		return true;
 	}
 
 	public bool Start()	
 	{
-		if (!_isRunning)
+		if (_isRunning)
+			return true;
+
+		try
 		{
 			_server = new TcpListener(IPAddress.Parse("127.0.0.1"), 80);
 			_server.Start();
-			Console.WriteLine("Server has started on {0}:{1}, Waiting for a connection…", "127.0.0.1", 80);
-
-			_client = _server.AcceptTcpClient();
-			Console.WriteLine("A client connected.");
-			_stream = _client.GetStream();
 			_isRunning = true;
-
-			// Démarre le MessageHandler avec cryptage activé
-			MessageHandler.GetInstance.StartMessageProcessing();
 			
-			// Affiche les informations de cryptage
-			var encInfo = MessageHandler.GetInstance.GetEncryptionInfo();
-			Console.WriteLine($"Cryptage: {(encInfo.enabled ? "ACTIVÉ" : "DÉSACTIVÉ")}");
+			Console.WriteLine("Server has started on {0}:{1}, Waiting for connections�", "127.0.0.1", 80);
 
-			// Démarre l'écoute des messages en arrière-plan
-			_messageListeningTask = Task.Run(ListenForMessages, _cancellationTokenSource.Token);
-        }
-		return _isRunning;
-	}
+			// D�marre le syst�me de r�ception des messages
+			MessageReceiver.GetInstance.Start();
 
-	/// <summary>
-	/// Configure le cryptage pour les messages
-	/// </summary>
-	/// <param name="enabled">Active ou désactive le cryptage</param>
-	/// <param name="generateNewKey">Génère une nouvelle clé aléatoire</param>
-	public void ConfigureEncryption(bool enabled, bool generateNewKey = false)
-	{
-		if (generateNewKey)
-		{
-			MessageHandler.GetInstance.GenerateNewEncryptionKey();
+			// D�marre l'�coute des nouvelles connexions en arri�re-plan
+			_serverListeningTask = Task.Run(AcceptClientsLoop, _cancellationTokenSource.Token);
+			
+			return true;
 		}
-		
-		MessageHandler.GetInstance.ConfigureEncryption(enabled);
-		
-		var encInfo = MessageHandler.GetInstance.GetEncryptionInfo();
-		Console.WriteLine($"Network: Cryptage {(encInfo.enabled ? "activé" : "désactivé")}");
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Erreur lors du d�marrage du serveur: {ex.Message}");
+			return false;
+		}
 	}
 
 	/// <summary>
-	/// Écoute les messages entrants des clients en continu
+	/// Boucle d'acceptation des nouveaux clients
 	/// </summary>
-	private async Task ListenForMessages()
+	private async Task AcceptClientsLoop()
 	{
-		byte[] buffer = new byte[4096];
-		
 		try
 		{
 			while (_isRunning && !_cancellationTokenSource.Token.IsCancellationRequested)
 			{
-				if (_stream != null && _stream.CanRead && _client.Connected)
+				try
 				{
-					try
+					// Accepte une nouvelle connexion (bloquant)
+					var tcpClient = await AcceptTcpClientAsync(_server, _cancellationTokenSource.Token);
+					
+					if (tcpClient != null)
 					{
-						int bytesRead = await _stream.ReadAsync(buffer, 0, buffer.Length, _cancellationTokenSource.Token);
+						Console.WriteLine($"Nouveau client connect�: {tcpClient.Client.RemoteEndPoint}");
 						
-						if (bytesRead > 0)
+						// Ajoute le client au syst�me de r�ception de messages
+						string clientId = MessageReceiver.GetInstance.AddClient(tcpClient);
+						
+						if (clientId != null)
 						{
-							string receivedData = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-							Console.WriteLine($"Données reçues: {receivedData.Length} bytes");
-							
-							// Vérifie si les données reçues sont déjà cryptées
-							if (MessageCrypto.IsEncrypted(receivedData))
-							{
-								Console.WriteLine("Message crypté reçu du client");
-								MessageHandler.GetInstance.AddEncryptedMessage(receivedData);
-							}
-							else
-							{
-								Console.WriteLine("Message en clair reçu du client");
-								MessageHandler.GetInstance.AddReceivedMessage(receivedData);
-							}
+							Console.WriteLine($"Client assign� avec l'ID: {clientId}");
+							LogConnectionStats();
 						}
 						else
 						{
-							// Client déconnecté
-							Console.WriteLine("Client déconnecté.");
-							break;
+							Console.WriteLine("�chec de l'ajout du client au MessageReceiver");
+							tcpClient.Close();
 						}
 					}
-					catch (Exception ex) when (ex is ObjectDisposedException || ex is InvalidOperationException)
-					{
-						// Stream fermé ou client déconnecté
-						Console.WriteLine("Connexion fermée.");
-						break;
-					}
 				}
-				else
+				catch (ObjectDisposedException)
 				{
-					// Pas de client connecté, attendre un peu
-					await Task.Delay(100, _cancellationTokenSource.Token);
+					// Serveur ferm�, sortie normale
+					break;
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine($"Erreur lors de l'acceptation d'un client: {ex.Message}");
+					await Task.Delay(1000, _cancellationTokenSource.Token); // Attendre avant de r�essayer
 				}
 			}
 		}
 		catch (OperationCanceledException)
 		{
-			Console.WriteLine("Écoute des messages annulée.");
-		}
-		catch (Exception ex)
-		{
-			Console.WriteLine($"Erreur lors de l'écoute des messages: {ex.Message}");
+			Console.WriteLine("Boucle d'acceptation des clients annul�e");
 		}
 	}
 
 	/// <summary>
-	/// Envoie un message au client connecté (crypté automatiquement)
+	/// Version asynchrone de AcceptTcpClient avec support d'annulation
 	/// </summary>
-	/// <param name="message">Message à envoyer</param>
-	/// <param name="encrypt">Force le cryptage du message (true par défaut)</param>
-	public async Task<bool> SendMessage(string message, bool encrypt = true)
+	private async Task<TcpClient> AcceptTcpClientAsync(TcpListener listener, CancellationToken cancellationToken)
 	{
-		if (_stream != null && _stream.CanWrite && !string.IsNullOrEmpty(message))
+		try
 		{
-			try
+			return await Task.Run(() =>
 			{
-				string dataToSend = message;
-				
-				// Crypte le message si demandé
-				if (encrypt)
-				{
-					dataToSend = MessageCrypto.Encrypt(message);
-					Console.WriteLine($"Envoi message crypté: {dataToSend.Length} bytes");
-				}
-				else
-				{
-					Console.WriteLine($"Envoi message en clair: {message}");
-				}
-
-				byte[] data = Encoding.UTF8.GetBytes(dataToSend);
-				await _stream.WriteAsync(data, 0, data.Length);
-				await _stream.FlushAsync();
-				return true;
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Erreur lors de l'envoi du message: {ex.Message}");
-				return false;
-			}
+				cancellationToken.ThrowIfCancellationRequested();
+				return listener.AcceptTcpClient();
+			}, cancellationToken);
 		}
-		return false;
+		catch (OperationCanceledException)
+		{
+			return null;
+		}
 	}
 
 	/// <summary>
-	/// Envoie un message Message déjà créé
+	/// Affiche les statistiques de connexion
 	/// </summary>
-	/// <param name="message">Objet Message à envoyer</param>
-	/// <param name="sendEncrypted">Envoie la version cryptée si disponible</param>
-	public async Task<bool> SendMessage(Satsuki.Message message, bool sendEncrypted = true)
+	private void LogConnectionStats()
 	{
-		if (message == null)
-			return false;
-
-		string contentToSend;
-		
-		if (sendEncrypted && message.IsEncrypted)
-		{
-			// Envoie directement le contenu crypté
-			contentToSend = message.Content;
-			Console.WriteLine("Envoi du message déjà crypté");
-		}
-		else if (sendEncrypted && !message.IsEncrypted)
-		{
-			// Crypte avant envoi sans modifier l'original
-			var encryptedCopy = message.CreateEncryptedCopy();
-			contentToSend = encryptedCopy.Content;
-			Console.WriteLine("Envoi du message avec cryptage à la volée");
-		}
-		else
-		{
-			// Envoie en clair ou décrypte avant envoi
-			contentToSend = message.IsEncrypted ? message.GetDecryptedContent() : message.Content;
-			Console.WriteLine("Envoi du message en clair");
-		}
-
-		return await SendMessage(contentToSend, false); // false car déjà traité
+		var stats = MessageReceiver.GetInstance.GetStatistics();
+		Console.WriteLine($"Statistiques: {stats.connectedClients} clients connect�s, {stats.pendingMessages} messages en attente");
 	}
 
 	/// <summary>
-	/// Obtient les statistiques de cryptage
+	/// Envoie un message � un client sp�cifique
 	/// </summary>
-	/// <returns>Informations sur l'état du cryptage</returns>
-	public (bool enabled, string keyInfo, string ivInfo) GetEncryptionStatus()
+	/// <param name="clientId">ID du client</param>
+	/// <param name="message">Message � envoyer</param>
+	public async Task<bool> SendMessageToClient(string clientId, string message)
 	{
-		return MessageHandler.GetInstance.GetEncryptionInfo();
+		return await MessageReceiver.GetInstance.SendMessageToClient(clientId, message);
+	}
+
+	/// <summary>
+	/// Diffuse un message � tous les clients connect�s
+	/// </summary>
+	/// <param name="message">Message � diffuser</param>
+	public async Task BroadcastMessage(string message)
+	{
+		await MessageReceiver.GetInstance.BroadcastMessage(message);
+	}
+
+	/// <summary>
+	/// Obtient la liste des clients connect�s
+	/// </summary>
+	public List<string> GetConnectedClients()
+	{
+		return MessageReceiver.GetInstance.GetConnectedClientIds();
+	}
+
+	/// <summary>
+	/// Obtient les statistiques du r�seau
+	/// </summary>
+	public (int connectedClients, int pendingMessages, bool serverRunning) GetNetworkStatistics()
+	{
+		var receiverStats = MessageReceiver.GetInstance.GetStatistics();
+		return (receiverStats.connectedClients, receiverStats.pendingMessages, _isRunning);
+	}
+
+	/// <summary>
+	/// D�connecte un client sp�cifique
+	/// </summary>
+	/// <param name="clientId">ID du client � d�connecter</param>
+	public async Task DisconnectClient(string clientId)
+	{
+		await MessageReceiver.GetInstance.RemoveClient(clientId);
+		Console.WriteLine($"Client {clientId} d�connect�");
 	}
 }
