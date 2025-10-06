@@ -1,6 +1,7 @@
 const express = require('express');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
+const cors = require('cors');
 
 class SocketServer {
     constructor(port = 3001) {
