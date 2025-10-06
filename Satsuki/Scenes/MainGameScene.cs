@@ -13,10 +13,10 @@ public partial class MainGameScene : Node
 	
 	public override void _Ready()
 	{
-		// Teste le système de cryptage au démarrage
+		// Teste le systÃ¨me de cryptage au dÃ©marrage
 		TestCryptographySystem();
 		
-		// Configure un timer pour traiter les messages périodiquement
+		// Configure un timer pour traiter les messages pÃ©riodiquement
 		_messageProcessingTimer = new Timer();
 		_messageProcessingTimer.WaitTime = 0.1; // Traite les messages toutes les 100ms
 		_messageProcessingTimer.Timeout += ProcessIncomingMessages;
@@ -30,40 +30,40 @@ public partial class MainGameScene : Node
 		_statisticsTimer.Autostart = true;
 		AddChild(_statisticsTimer);
 
-		Console.WriteLine("?? MainGameScene: Système de réception multithread initialisé avec cryptage");
+		Console.WriteLine("?? MainGameScene: SystÃ¨me de rÃ©ception multithread initialisÃ© avec cryptage");
 	}
 
 	/// <summary>
-	/// Teste le système de cryptage au démarrage
+	/// Teste le systÃ¨me de cryptage au dÃ©marrage
 	/// </summary>
 	private void TestCryptographySystem()
 	{
-		Console.WriteLine("?? Test du système de cryptage...");
+		Console.WriteLine("?? Test du systÃ¨me de cryptage...");
 		bool testResult = MessageCrypto.TestEncryption();
 		
 		if (testResult)
 		{
-			Console.WriteLine("? Système de cryptage opérationnel");
+			Console.WriteLine("? SystÃ¨me de cryptage opÃ©rationnel");
 		}
 		else
 		{
-			Console.WriteLine("? Problème avec le système de cryptage");
+			Console.WriteLine("? ProblÃ¨me avec le systÃ¨me de cryptage");
 		}
 		
-		// Affiche les informations sur les clés par défaut
+		// Affiche les informations sur les clÃ©s par dÃ©faut
 		var keyInfo = MessageCrypto.GetDefaultKeyInfo();
-		Console.WriteLine($"?? Clé par défaut: {keyInfo.keyBase64.Substring(0, 10)}...");
-		Console.WriteLine($"?? IV par défaut: {keyInfo.ivBase64.Substring(0, 10)}...");
+		Console.WriteLine($"?? ClÃ© par dÃ©faut: {keyInfo.keyBase64.Substring(0, 10)}...");
+		Console.WriteLine($"?? IV par dÃ©faut: {keyInfo.ivBase64.Substring(0, 10)}...");
 	}
 
 	/// <summary>
-	/// Traite les messages entrants du MessageReceiver avec décryptage automatique
+	/// Traite les messages entrants du MessageReceiver avec dÃ©cryptage automatique
 	/// </summary>
 	private void ProcessIncomingMessages()
 	{
 		if (MessageReceiver.GetInstance.HasPendingMessages())
 		{
-			// Récupère tous les messages dans l'ordre d'arrivée avec décryptage automatique
+			// RÃ©cupÃ¨re tous les messages dans l'ordre d'arrivÃ©e avec dÃ©cryptage automatique
 			List<Message> messages = MessageReceiver.GetInstance.GetMessagesByArrivalOrder(decryptMessages: true);
 			
 			foreach (var message in messages)
@@ -74,7 +74,7 @@ public partial class MainGameScene : Node
 	}
 
 	/// <summary>
-	/// Traite les messages un par un avec décryptage automatique
+	/// Traite les messages un par un avec dÃ©cryptage automatique
 	/// </summary>
 	private void ProcessNextMessage()
 	{
@@ -86,7 +86,7 @@ public partial class MainGameScene : Node
 	}
 
 	/// <summary>
-	/// Affiche les statistiques du système avec informations de cryptage
+	/// Affiche les statistiques du systÃ¨me avec informations de cryptage
 	/// </summary>
 	private void DisplayStatistics()
 	{
@@ -95,36 +95,36 @@ public partial class MainGameScene : Node
 			var stats = MessageReceiver.GetInstance.GetStatistics();
 			var encInfo = MessageReceiver.GetInstance.GetEncryptionInfo();
 			
-			Console.WriteLine($"=== STATISTIQUES RÉSEAU ===");
+			Console.WriteLine($"=== STATISTIQUES RÃ‰SEAU ===");
 			Console.WriteLine($"?? Serveur actif: {stats.isRunning}");
-			Console.WriteLine($"?? Clients connectés: {stats.connectedClients}");
+			Console.WriteLine($"?? Clients connectÃ©s: {stats.connectedClients}");
 			Console.WriteLine($"?? Messages en attente: {stats.pendingMessages}");
-			Console.WriteLine($"?? Cryptage: {(stats.encryptionEnabled ? "ACTIVÉ" : "DÉSACTIVÉ")}");
-			Console.WriteLine($"?? Mode: Ordre d'arrivée (FIFO)");
+			Console.WriteLine($"?? Cryptage: {(stats.encryptionEnabled ? "ACTIVÃ‰" : "DÃ‰SACTIVÃ‰")}");
+			Console.WriteLine($"?? Mode: Ordre d'arrivÃ©e (FIFO)");
 			if (stats.encryptionEnabled)
 			{
-				Console.WriteLine($"?? Clé: {encInfo.keyBase64.Substring(0, 10)}...");
+				Console.WriteLine($"?? ClÃ©: {encInfo.keyBase64.Substring(0, 10)}...");
 			}
 			Console.WriteLine($"========================");
 		}
 	}
 
 	/// <summary>
-	/// Traite un message individuel (déjà décrypté)
+	/// Traite un message individuel (dÃ©jÃ  dÃ©cryptÃ©)
 	/// </summary>
-	/// <param name="message">Message à traiter</param>
+	/// <param name="message">Message Ã  traiter</param>
 	private void HandleMessage(Message message)
 	{
 		if (_debugMode)
 		{
-			Console.WriteLine($"[Séq#{message.SequenceNumber}] [{message.Timestamp:HH:mm:ss.fff}] {message.Content}");
+			Console.WriteLine($"[SÃ©q#{message.SequenceNumber}] [{message.Timestamp:HH:mm:ss.fff}] {message.Content}");
 		}
 		
 		// Extrait l'ID du client du message (format: [ClientId] contenu)
 		string clientId = ExtractClientId(message.Content);
 		string content = ExtractMessageContent(message.Content);
 		
-		// Traitement basé sur le contenu du message
+		// Traitement basÃ© sur le contenu du message
 		if (content.StartsWith("PLAYER_MOVE:"))
 		{
 			HandlePlayerMovement(clientId, content);
@@ -188,7 +188,7 @@ public partial class MainGameScene : Node
 	{
 		Console.WriteLine($"?? Mouvement du joueur {clientId}: {content}");
 		
-		// Retransmet le mouvement aux autres clients (crypté)
+		// Retransmet le mouvement aux autres clients (cryptÃ©)
 		BroadcastToOtherClients(clientId, content, encrypt: true);
 	}
 
@@ -199,18 +199,18 @@ public partial class MainGameScene : Node
 	{
 		Console.WriteLine($"?? Chat de {clientId}: {content}");
 		
-		// Retransmet le message de chat à tous les clients (crypté)
+		// Retransmet le message de chat Ã  tous les clients (cryptÃ©)
 		BroadcastToAllClients($"CHAT_RELAY:{clientId}:{content}", encrypt: true);
 	}
 
 	/// <summary>
-	/// Traite les mises à jour d'état de jeu
+	/// Traite les mises Ã  jour d'Ã©tat de jeu
 	/// </summary>
 	private void HandleGameStateUpdate(string clientId, string content)
 	{
-		Console.WriteLine($"?? Mise à jour d'état de {clientId}: {content}");
+		Console.WriteLine($"?? Mise Ã  jour d'Ã©tat de {clientId}: {content}");
 		
-		// Traite la mise à jour d'état du jeu...
+		// Traite la mise Ã  jour d'Ã©tat du jeu...
 	}
 
 	/// <summary>
@@ -220,7 +220,7 @@ public partial class MainGameScene : Node
 	{
 		Console.WriteLine($"?? Informations du client {clientId}: {content}");
 		
-		// Répond avec les informations du serveur (crypté)
+		// RÃ©pond avec les informations du serveur (cryptÃ©)
 		var encInfo = MessageReceiver.GetInstance.GetEncryptionInfo();
 		SendMessageToClient(clientId, $"SERVER_INFO:Version=1.0,Players={GetConnectedClientCount()},Crypto={encInfo.enabled}", encrypt: true);
 	}
@@ -235,7 +235,7 @@ public partial class MainGameScene : Node
 			Console.WriteLine($"?? Ping de {clientId}: {content}");
 		}
 		
-		// Répond avec un pong (crypté)
+		// RÃ©pond avec un pong (cryptÃ©)
 		SendMessageToClient(clientId, "PONG", encrypt: true);
 	}
 
@@ -246,57 +246,57 @@ public partial class MainGameScene : Node
 	{
 		Console.WriteLine($"?? Test de cryptage de {clientId}: {content}");
 		
-		// Répond avec un message de test crypté
-		SendMessageToClient(clientId, "CRYPTO_RESPONSE:Message de test crypté du serveur", encrypt: true);
+		// RÃ©pond avec un message de test cryptÃ©
+		SendMessageToClient(clientId, "CRYPTO_RESPONSE:Message de test cryptÃ© du serveur", encrypt: true);
 	}
 
 	/// <summary>
-	/// Traite les messages génériques
+	/// Traite les messages gÃ©nÃ©riques
 	/// </summary>
 	private void HandleGenericMessage(string clientId, string content)
 	{
-		Console.WriteLine($"?? Message générique de {clientId}: {content}");
+		Console.WriteLine($"?? Message gÃ©nÃ©rique de {clientId}: {content}");
 	}
 
 	/// <summary>
-	/// Envoie un message à un client spécifique avec cryptage optionnel
+	/// Envoie un message Ã  un client spÃ©cifique avec cryptage optionnel
 	/// </summary>
 	/// <param name="clientId">ID du client</param>
-	/// <param name="message">Message à envoyer</param>
+	/// <param name="message">Message Ã  envoyer</param>
 	/// <param name="encrypt">Si true, crypte le message avant envoi</param>
 	public async void SendMessageToClient(string clientId, string message, bool encrypt = true)
 	{
 		bool success = await MessageReceiver.GetInstance.SendMessageToClient(clientId, message, encrypt);
 		if (_debugMode && !success)
 		{
-			Console.WriteLine($"? Échec envoi message à {clientId}");
+			Console.WriteLine($"? Ã‰chec envoi message Ã  {clientId}");
 		}
 		else if (_debugMode && encrypt)
 		{
-			Console.WriteLine($"?? Message crypté envoyé à {clientId}");
+			Console.WriteLine($"?? Message cryptÃ© envoyÃ© Ã  {clientId}");
 		}
 	}
 
 	/// <summary>
-	/// Diffuse un message à tous les clients avec cryptage optionnel
+	/// Diffuse un message Ã  tous les clients avec cryptage optionnel
 	/// </summary>
-	/// <param name="message">Message à diffuser</param>
+	/// <param name="message">Message Ã  diffuser</param>
 	/// <param name="encrypt">Si true, crypte le message avant envoi</param>
 	public async void BroadcastToAllClients(string message, bool encrypt = true)
 	{
 		await MessageReceiver.GetInstance.BroadcastMessage(message, encrypt);
 		if (_debugMode)
 		{
-			string status = encrypt ? "crypté" : "clair";
-			Console.WriteLine($"?? Message {status} diffusé: {message}");
+			string status = encrypt ? "cryptÃ©" : "clair";
+			Console.WriteLine($"?? Message {status} diffusÃ©: {message}");
 		}
 	}
 
 	/// <summary>
-	/// Diffuse un message à tous les clients sauf l'expéditeur
+	/// Diffuse un message Ã  tous les clients sauf l'expÃ©diteur
 	/// </summary>
-	/// <param name="senderClientId">ID de l'expéditeur à exclure</param>
-	/// <param name="message">Message à diffuser</param>
+	/// <param name="senderClientId">ID de l'expÃ©diteur Ã  exclure</param>
+	/// <param name="message">Message Ã  diffuser</param>
 	/// <param name="encrypt">Si true, crypte le message avant envoi</param>
 	public async void BroadcastToOtherClients(string senderClientId, string message, bool encrypt = true)
 	{
@@ -310,13 +310,13 @@ public partial class MainGameScene : Node
 		}
 		if (_debugMode)
 		{
-			string status = encrypt ? "crypté" : "clair";
-			Console.WriteLine($"?? Message {status} diffusé à {clients.Count - 1} autres clients");
+			string status = encrypt ? "cryptÃ©" : "clair";
+			Console.WriteLine($"?? Message {status} diffusÃ© Ã  {clients.Count - 1} autres clients");
 		}
 	}
 
 	/// <summary>
-	/// Obtient le nombre de clients connectés
+	/// Obtient le nombre de clients connectÃ©s
 	/// </summary>
 	public int GetConnectedClientCount()
 	{
@@ -324,16 +324,16 @@ public partial class MainGameScene : Node
 	}
 
 	/// <summary>
-	/// Déconnecte un client spécifique
+	/// DÃ©connecte un client spÃ©cifique
 	/// </summary>
 	public async void DisconnectClient(string clientId)
 	{
 		await MessageReceiver.GetInstance.RemoveClient(clientId);
-		Console.WriteLine($"?? Client {clientId} déconnecté par le serveur");
+		Console.WriteLine($"?? Client {clientId} dÃ©connectÃ© par le serveur");
 	}
 
 	/// <summary>
-	/// Méthode alternative pour récupérer un nombre limité de messages
+	/// MÃ©thode alternative pour rÃ©cupÃ©rer un nombre limitÃ© de messages
 	/// </summary>
 	private void ProcessLimitedMessages(int maxMessages = 10)
 	{
@@ -349,11 +349,11 @@ public partial class MainGameScene : Node
 	}
 
 	/// <summary>
-	/// Traite les messages en mode haute fréquence
+	/// Traite les messages en mode haute frÃ©quence
 	/// </summary>
 	private void ProcessMessagesHighFrequency()
 	{
-		// Traite tous les messages disponibles immédiatement
+		// Traite tous les messages disponibles immÃ©diatement
 		while (MessageReceiver.GetInstance.HasPendingMessages())
 		{
 			ProcessNextMessage();
@@ -361,7 +361,7 @@ public partial class MainGameScene : Node
 	}
 
 	/// <summary>
-	/// Commandes Input pour tests et debug avec fonctionnalités de cryptage
+	/// Commandes Input pour tests et debug avec fonctionnalitÃ©s de cryptage
 	/// </summary>
 	public override void _Input(InputEvent @event)
 	{
@@ -370,47 +370,47 @@ public partial class MainGameScene : Node
 			switch (keyEvent.Keycode)
 			{
 				case Key.F1:
-					// Test d'envoi de message crypté à tous les clients
-					BroadcastToAllClients("SERVER_BROADCAST:Message de test crypté du serveur", encrypt: true);
+					// Test d'envoi de message cryptÃ© Ã  tous les clients
+					BroadcastToAllClients("SERVER_BROADCAST:Message de test cryptÃ© du serveur", encrypt: true);
 					break;
 				case Key.F2:
 					// Affiche les statistiques avec informations de cryptage
 					DisplayStatistics();
 					break;
 				case Key.F3:
-					// Liste des clients connectés
+					// Liste des clients connectÃ©s
 					var clients = MessageReceiver.GetInstance.GetConnectedClientIds();
-					Console.WriteLine($"?? Clients connectés: {string.Join(", ", clients)}");
+					Console.WriteLine($"?? Clients connectÃ©s: {string.Join(", ", clients)}");
 					break;
 				case Key.F4:
 					// Bascule le mode debug
 					_debugMode = !_debugMode;
-					Console.WriteLine($"?? Mode debug: {(_debugMode ? "ACTIVÉ" : "DÉSACTIVÉ")}");
+					Console.WriteLine($"?? Mode debug: {(_debugMode ? "ACTIVÃ‰" : "DÃ‰SACTIVÃ‰")}");
 					break;
 				case Key.F5:
-					// Simule un message de chat crypté du serveur
-					BroadcastToAllClients("CHAT:SERVER:Message crypté du serveur à tous les joueurs", encrypt: true);
+					// Simule un message de chat cryptÃ© du serveur
+					BroadcastToAllClients("CHAT:SERVER:Message cryptÃ© du serveur Ã  tous les joueurs", encrypt: true);
 					break;
 				case Key.F6:
-					// Traite les messages en mode haute fréquence
+					// Traite les messages en mode haute frÃ©quence
 					ProcessMessagesHighFrequency();
-					Console.WriteLine("? Traitement haute fréquence exécuté");
+					Console.WriteLine("? Traitement haute frÃ©quence exÃ©cutÃ©");
 					break;
 				case Key.F7:
 					// Traite seulement les 5 prochains messages
 					ProcessLimitedMessages(5);
-					Console.WriteLine("?? Traitement limité à 5 messages");
+					Console.WriteLine("?? Traitement limitÃ© Ã  5 messages");
 					break;
 				case Key.F8:
 					// Bascule le cryptage on/off
 					var encInfo = MessageReceiver.GetInstance.GetEncryptionInfo();
 					MessageReceiver.GetInstance.ConfigureEncryption(!encInfo.enabled);
-					Console.WriteLine($"?? Cryptage basculé: {(!encInfo.enabled ? "ACTIVÉ" : "DÉSACTIVÉ")}");
+					Console.WriteLine($"?? Cryptage basculÃ©: {(!encInfo.enabled ? "ACTIVÃ‰" : "DÃ‰SACTIVÃ‰")}");
 					break;
 				case Key.F9:
-					// Génère une nouvelle clé de cryptage
+					// GÃ©nÃ¨re une nouvelle clÃ© de cryptage
 					MessageReceiver.GetInstance.GenerateNewEncryptionKey();
-					Console.WriteLine("?? Nouvelle clé de cryptage générée");
+					Console.WriteLine("?? Nouvelle clÃ© de cryptage gÃ©nÃ©rÃ©e");
 					break;
 				case Key.F10:
 					// Test de cryptage manuel
@@ -429,7 +429,7 @@ public partial class MainGameScene : Node
 
 	public override void _ExitTree()
 	{
-		// Nettoie les ressources quand la scène se ferme
+		// Nettoie les ressources quand la scÃ¨ne se ferme
 		_messageProcessingTimer?.QueueFree();
 		_statisticsTimer?.QueueFree();
 		Console.WriteLine("?? MainGameScene: Nettoyage des ressources de cryptage");
