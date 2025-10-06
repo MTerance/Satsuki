@@ -23,16 +23,11 @@ class SocketServer {
         
         // État du serveur
         this.connectedClients = new Map();
-        this.activeQuizzes = new Map();
-        this.quizParticipants = new Map();
-        this.sharedModels = new Map();
+        this.gamePlayers = new Map(); // Stocker les joueurs du jeu
+        this.gameQuizzes = new Map(); // Stocker les quiz du jeu
     }
 
     setupMiddleware() {
-        this.app.use(cors({
-            origin: ["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"],
-            credentials: true
-        }));
         this.app.use(express.json());
         this.app.use(express.static('public'));
     }
@@ -43,17 +38,9 @@ class SocketServer {
                 message: 'Serveur Socket.IO pour Quiz 3D',
                 status: 'running',
                 connections: this.connectedClients.size,
-                activeQuizzes: this.activeQuizzes.size,
+                players: this.gamePlayers.size,
+                quizzes: this.gameQuizzes.size,
                 timestamp: new Date().toISOString()
-            });
-        });
-
-        this.app.get('/status', (req, res) => {
-            res.json({
-                connectedClients: this.connectedClients.size,
-                activeQuizzes: Array.from(this.activeQuizzes.keys()),
-                participants: Object.fromEntries(this.quizParticipants),
-                sharedModels: Array.from(this.sharedModels.keys())
             });
         });
     }
@@ -65,345 +52,183 @@ class SocketServer {
             // Stocker les informations du client
             this.connectedClients.set(socket.id, {
                 id: socket.id,
-                connectedAt: new Date(),
-                userName: null,
-                currentQuiz: null,
-                rooms: new Set()
+                connectedAt: new Date()
             });
 
-            // Événements de base
-            this.setupBasicEvents(socket);
+            // Test de base
+            socket.emit('welcome', { message: 'Bienvenue sur le serveur Socket.IO!' });
             
-            // Événements du quiz 3D
-            this.setupQuizEvents(socket);
+            // === GESTION DES JOUEURS ===
+            socket.on('player_added', (playerData) => {
+                console.log(`👤 Nouveau joueur ajouté:`, playerData);
+                
+                // Stocker le joueur
+                this.gamePlayers.set(playerData.id, {
+                    ...playerData,
+                    socketId: socket.id,
+                    addedAt: new Date()
+                });
+                
+                // Confirmer au client
+                socket.emit('player_added_response', {
+                    success: true,
+                    message: `Joueur ${playerData.name} ajouté avec succès`,
+                    player: playerData,
+                    totalPlayers: this.gamePlayers.size
+                });
+                
+                // Notifier tous les autres clients
+                socket.broadcast.emit('player_joined', {
+                    player: playerData,
+                    totalPlayers: this.gamePlayers.size
+                });
+                
+                console.log(`📊 Total joueurs: ${this.gamePlayers.size}`);
+            });
             
-            // Événements de synchronisation 3D
-            this.setup3DEvents(socket);
+            socket.on('player_removed', (removeData) => {
+                console.log(`🗑️ Suppression joueur ID:`, removeData.id);
+                
+                const removedPlayer = this.gamePlayers.get(removeData.id);
+                
+                if (removedPlayer) {
+                    // Supprimer le joueur
+                    this.gamePlayers.delete(removeData.id);
+                    
+                    // Confirmer au client
+                    socket.emit('player_removed_response', {
+                        success: true,
+                        message: `Joueur ${removedPlayer.name} supprimé avec succès`,
+                        playerId: removeData.id,
+                        totalPlayers: this.gamePlayers.size
+                    });
+                    
+                    // Notifier tous les autres clients
+                    socket.broadcast.emit('player_left', {
+                        playerId: removeData.id,
+                        playerName: removedPlayer.name,
+                        totalPlayers: this.gamePlayers.size
+                    });
+                    
+                    console.log(`📊 Total joueurs: ${this.gamePlayers.size}`);
+                } else {
+                    // Joueur non trouvé
+                    socket.emit('player_removed_response', {
+                        success: false,
+                        message: `Joueur avec ID ${removeData.id} non trouvé`,
+                        playerId: removeData.id
+                    });
+                }
+            });
+            
+            // === GESTIONNAIRES D'ÉVÉNEMENTS POUR LES QUIZ ===
+            
+            socket.on('quiz_added', (quizData) => {
+                console.log(`📝 Nouveau quiz ajouté:`, quizData);
+                
+                // Stocker le quiz
+                this.gameQuizzes.set(quizData.id, {
+                    ...quizData,
+                    createdBy: socket.id,
+                    createdAt: new Date().toISOString()
+                });
+                
+                // Confirmer au client
+                socket.emit('quiz_added_response', {
+                    success: true,
+                    message: `Quiz "${quizData.title}" créé avec succès`,
+                    quiz: quizData,
+                    totalQuizzes: this.gameQuizzes.size
+                });
+                
+                // Notifier tous les autres clients
+                socket.broadcast.emit('quiz_created', {
+                    quiz: quizData,
+                    createdBy: this.connectedClients.get(socket.id)?.name || 'Utilisateur anonyme',
+                    totalQuizzes: this.gameQuizzes.size
+                });
+                
+                console.log(`📊 Total quiz: ${this.gameQuizzes.size}`);
+            });
+            
+            socket.on('quiz_removed', (removeData) => {
+                console.log(`🗑️ Suppression quiz ID:`, removeData.id);
+                
+                const removedQuiz = this.gameQuizzes.get(removeData.id);
+                
+                if (removedQuiz) {
+                    // Supprimer le quiz
+                    this.gameQuizzes.delete(removeData.id);
+                    
+                    // Confirmer au client
+                    socket.emit('quiz_removed_response', {
+                        success: true,
+                        message: `Quiz "${removedQuiz.title}" supprimé avec succès`,
+                        quizId: removeData.id,
+                        totalQuizzes: this.gameQuizzes.size
+                    });
+                    
+                    // Notifier tous les autres clients
+                    socket.broadcast.emit('quiz_deleted', {
+                        quizId: removeData.id,
+                        quizTitle: removedQuiz.title,
+                        deletedBy: this.connectedClients.get(socket.id)?.name || 'Utilisateur anonyme',
+                        totalQuizzes: this.gameQuizzes.size
+                    });
+                    
+                    console.log(`📊 Total quiz: ${this.gameQuizzes.size}`);
+                } else {
+                    // Quiz non trouvé
+                    socket.emit('quiz_removed_response', {
+                        success: false,
+                        message: `Quiz avec ID ${removeData.id} non trouvé`,
+                        quizId: removeData.id
+                    });
+                }
+            });
+            
+            // Obtenir la liste des joueurs
+            socket.on('get_players', () => {
+                const playersList = Array.from(this.gamePlayers.values()).map(player => ({
+                    id: player.id,
+                    name: player.name,
+                    gender: player.gender,
+                    color: player.color
+                }));
+                
+                socket.emit('players_list', {
+                    players: playersList,
+                    totalPlayers: this.gamePlayers.size
+                });
+            });
             
             // Gestion de la déconnexion
             socket.on('disconnect', (reason) => {
                 console.log(`❌ Client déconnecté: ${socket.id} (${reason})`);
-                this.handleDisconnect(socket);
-            });
-        });
-    }
-
-    setupBasicEvents(socket) {
-        // Rejoindre une room
-        socket.on('join_room', (data) => {
-            const { room, user } = data;
-            socket.join(room);
-            
-            const client = this.connectedClients.get(socket.id);
-            if (client) {
-                client.rooms.add(room);
-                if (user) {
-                    client.userName = user.name || user.userName;
-                }
-            }
-            
-            socket.to(room).emit('participant:joined', {
-                participant: { id: socket.id, name: client?.userName },
-                room,
-                timestamp: new Date().toISOString()
-            });
-            
-            console.log(`👥 ${socket.id} a rejoint la room: ${room}`);
-        });
-
-        // Quitter une room
-        socket.on('leave_room', (data) => {
-            const { room } = data;
-            socket.leave(room);
-            
-            const client = this.connectedClients.get(socket.id);
-            if (client) {
-                client.rooms.delete(room);
-            }
-            
-            socket.to(room).emit('participant:left', {
-                participant: { id: socket.id, name: client?.userName },
-                room,
-                timestamp: new Date().toISOString()
-            });
-            
-            console.log(`👋 ${socket.id} a quitté la room: ${room}`);
-        });
-    }
-
-    setupQuizEvents(socket) {
-        // Démarrer un quiz
-        socket.on('quiz:start', (data) => {
-            const { quizId, userName } = data;
-            console.log(`🎯 Démarrage du quiz ${quizId} pour ${userName}`);
-            
-            // Créer ou rejoindre le quiz
-            if (!this.activeQuizzes.has(quizId)) {
-                this.activeQuizzes.set(quizId, {
-                    id: quizId,
-                    startedAt: new Date(),
-                    participants: new Map(),
-                    currentQuestion: 0,
-                    questions: this.generateSampleQuestions()
-                });
-            }
-
-            const quiz = this.activeQuizzes.get(quizId);
-            const roomName = `quiz_${quizId}`;
-            
-            // Ajouter le participant
-            quiz.participants.set(socket.id, {
-                id: socket.id,
-                name: userName,
-                score: 0,
-                answers: [],
-                joinedAt: new Date()
-            });
-
-            // Rejoindre la room du quiz
-            socket.join(roomName);
-            
-            // Mettre à jour les informations du client
-            const client = this.connectedClients.get(socket.id);
-            if (client) {
-                client.userName = userName;
-                client.currentQuiz = quizId;
-                client.rooms.add(roomName);
-            }
-
-            // Notifier le client du démarrage
-            socket.emit('quiz:started', {
-                quiz: {
-                    id: quizId,
-                    participantCount: quiz.participants.size
-                },
-                participant: quiz.participants.get(socket.id)
-            });
-
-            // Envoyer la première question
-            this.sendNextQuestion(socket, quiz);
-
-            // Notifier les autres participants
-            socket.to(roomName).emit('participant:joined', {
-                participant: { id: socket.id, name: userName }
-            });
-        });
-
-        // Soumettre une réponse
-        socket.on('quiz:submit_answer', (data) => {
-            const { questionId, answer, timeTaken } = data;
-            const client = this.connectedClients.get(socket.id);
-            
-            if (!client?.currentQuiz) {
-                socket.emit('quiz:error', { message: 'Aucun quiz actif' });
-                return;
-            }
-
-            const quiz = this.activeQuizzes.get(client.currentQuiz);
-            const participant = quiz?.participants.get(socket.id);
-            
-            if (!quiz || !participant) {
-                socket.emit('quiz:error', { message: 'Quiz ou participant introuvable' });
-                return;
-            }
-
-            // Vérifier la réponse
-            const question = quiz.questions.find(q => q.id === questionId);
-            const isCorrect = question && answer === question.correctAnswer;
-            const points = isCorrect ? Math.max(10 - Math.floor(timeTaken / 3), 1) : 0;
-
-            // Enregistrer la réponse
-            const answerRecord = {
-                questionId,
-                answer,
-                isCorrect,
-                points,
-                timeTaken,
-                timestamp: new Date()
-            };
-
-            participant.answers.push(answerRecord);
-            participant.score += points;
-
-            // Envoyer le résultat
-            socket.emit('quiz:answer_result', {
-                ...answerRecord,
-                correctAnswer: question?.correctAnswer,
-                explanation: question?.explanation
-            });
-
-            // Envoyer la question suivante ou terminer
-            if (participant.answers.length < quiz.questions.length) {
-                setTimeout(() => {
-                    this.sendNextQuestion(socket, quiz);
-                }, 2000);
-            } else {
-                this.finishQuizForParticipant(socket, quiz);
-            }
-
-            // Mettre à jour le leaderboard
-            this.updateLeaderboard(client.currentQuiz);
-
-            console.log(`📝 ${participant.name} a répondu: ${answer} (${isCorrect ? 'correct' : 'incorrect'}) - ${points} points`);
-        });
-    }
-
-    setup3DEvents(socket) {
-        // Synchronisation de caméra 3D
-        socket.on('3d:sync_camera', (data) => {
-            const { position, rotation, timestamp } = data;
-            const client = this.connectedClients.get(socket.id);
-            
-            // Diffuser à tous les clients connectés sauf l'expéditeur
-            socket.broadcast.emit('3d:camera_sync', {
-                userId: socket.id,
-                userName: client?.userName,
-                position,
-                rotation,
-                timestamp
-            });
-
-            console.log(`📷 Synchronisation caméra 3D de ${client?.userName || socket.id}`);
-        });
-
-        // Chargement de modèle 3D partagé
-        socket.on('3d:load_model', (data) => {
-            const { modelPath, modelData, timestamp } = data;
-            const client = this.connectedClients.get(socket.id);
-            
-            // Stocker le modèle partagé
-            this.sharedModels.set(modelPath, {
-                path: modelPath,
-                data: modelData,
-                loadedBy: socket.id,
-                userName: client?.userName,
-                timestamp: new Date()
-            });
-
-            // Diffuser à tous les clients
-            this.io.emit('3d:model_loaded', {
-                modelPath,
-                modelData,
-                loadedBy: socket.id,
-                userName: client?.userName,
-                timestamp
-            });
-
-            console.log(`🎨 Modèle 3D chargé: ${modelPath} par ${client?.userName || socket.id}`);
-        });
-    }
-
-    generateSampleQuestions() {
-        return [
-            {
-                id: 1,
-                text: "Combien de faces a un cube ?",
-                type: "3d-object",
-                options: ["4", "6", "8", "12"],
-                correctAnswer: "6",
-                explanation: "Un cube a 6 faces carrées identiques.",
-                model3D: "/models/cube.glb"
-            },
-            {
-                id: 2,
-                text: "Quelle est la forme géométrique avec le plus de côtés parmi ces options ?",
-                type: "3d-object",
-                options: ["Triangle", "Carré", "Pentagone", "Hexagone"],
-                correctAnswer: "Hexagone",
-                explanation: "Un hexagone a 6 côtés, plus que les autres formes proposées.",
-                model3D: "/models/polygon.glb"
-            },
-            {
-                id: 3,
-                text: "Dans un repère 3D, quel axe représente généralement la hauteur ?",
-                type: "3d-scene",
-                options: ["X", "Y", "Z", "W"],
-                correctAnswer: "Y",
-                explanation: "L'axe Y représente généralement la hauteur dans un repère 3D standard.",
-                model3D: "/models/axes.glb"
-            }
-        ];
-    }
-
-    sendNextQuestion(socket, quiz) {
-        const participant = quiz.participants.get(socket.id);
-        const questionIndex = participant.answers.length;
-        
-        if (questionIndex < quiz.questions.length) {
-            const question = quiz.questions[questionIndex];
-            socket.emit('quiz:question', {
-                question: {
-                    id: question.id,
-                    text: question.text,
-                    type: question.type,
-                    options: question.options,
-                    model3D: question.model3D
-                },
-                questionNumber: questionIndex + 1,
-                totalQuestions: quiz.questions.length
-            });
-        }
-    }
-
-    finishQuizForParticipant(socket, quiz) {
-        const participant = quiz.participants.get(socket.id);
-        const client = this.connectedClients.get(socket.id);
-        
-        socket.emit('quiz:finished', {
-            finalScore: participant.score,
-            totalQuestions: quiz.questions.length,
-            answers: participant.answers,
-            completedAt: new Date()
-        });
-
-        console.log(`🏁 Quiz terminé pour ${participant.name} - Score: ${participant.score}`);
-    }
-
-    updateLeaderboard(quizId) {
-        const quiz = this.activeQuizzes.get(quizId);
-        if (!quiz) return;
-
-        const leaderboard = Array.from(quiz.participants.values())
-            .sort((a, b) => b.score - a.score)
-            .map((participant, index) => ({
-                rank: index + 1,
-                id: participant.id,
-                name: participant.name,
-                score: participant.score,
-                answersCount: participant.answers.length
-            }));
-
-        const roomName = `quiz_${quizId}`;
-        this.io.to(roomName).emit('quiz:leaderboard', { leaderboard });
-    }
-
-    handleDisconnect(socket) {
-        const client = this.connectedClients.get(socket.id);
-        
-        if (client) {
-            // Notifier les rooms de la déconnexion
-            for (const room of client.rooms) {
-                socket.to(room).emit('participant:left', {
-                    participant: { id: socket.id, name: client.userName }
-                });
-            }
-
-            // Retirer des quiz actifs
-            if (client.currentQuiz) {
-                const quiz = this.activeQuizzes.get(client.currentQuiz);
-                if (quiz) {
-                    quiz.participants.delete(socket.id);
-                    if (quiz.participants.size === 0) {
-                        this.activeQuizzes.delete(client.currentQuiz);
-                        console.log(`🗑️ Quiz ${client.currentQuiz} supprimé (aucun participant)`);
-                    } else {
-                        this.updateLeaderboard(client.currentQuiz);
+                this.connectedClients.delete(socket.id);
+                
+                // Supprimer tous les joueurs associés à cette connexion
+                const playersToRemove = [];
+                for (const [playerId, player] of this.gamePlayers.entries()) {
+                    if (player.socketId === socket.id) {
+                        playersToRemove.push({ id: playerId, name: player.name });
                     }
                 }
-            }
-        }
-
-        this.connectedClients.delete(socket.id);
+                
+                playersToRemove.forEach(player => {
+                    this.gamePlayers.delete(player.id);
+                    console.log(`🗑️ Joueur ${player.name} supprimé suite à la déconnexion`);
+                });
+                
+                if (playersToRemove.length > 0) {
+                    // Notifier les autres clients
+                    socket.broadcast.emit('players_disconnected', {
+                        removedPlayers: playersToRemove,
+                        totalPlayers: this.gamePlayers.size
+                    });
+                }
+            });
+        });
     }
 
     start() {
@@ -423,7 +248,7 @@ class SocketServer {
 
 // Démarrer le serveur si ce fichier est exécuté directement
 if (require.main === module) {
-    const server = new SocketServer(3001);
+    const server = new SocketServer(3002);
     server.start();
 
     // Gérer l'arrêt propre

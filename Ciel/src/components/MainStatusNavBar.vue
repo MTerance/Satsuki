@@ -1,13 +1,13 @@
 <template>
-    <nav class="status-navbar">
-        <div class="navbar-content">
+    <nav class="navbar-primary">
+        <div class="container">
             <div class="navbar-left">
-                <h1 class="status-title">Status Bar</h1>
+                <h1 class="title-gradient">Status Bar</h1>
             </div>
             
             <div class="navbar-right">
                 <!-- Témoin de connexion Socket.IO -->
-                <div class="connection-indicator" :class="connectionClass">
+                <div class="status-indicator" :class="connectionClass">
                     <div class="status-dot" :class="statusDotClass"></div>
                     <span class="status-text">{{ connectionText }}</span>
                 </div>
@@ -16,16 +16,15 @@
                 <button 
                     v-if="!isConnected" 
                     @click="handleConnect" 
-                    class="connect-btn"
+                    class="btn-base btn-success"
                     :disabled="isConnecting"
                 >
                     {{ isConnecting ? 'Connexion...' : 'Se connecter' }}
                 </button>
-                
                 <button 
                     v-else 
                     @click="handleDisconnect" 
-                    class="disconnect-btn"
+                    class="btn-base btn-danger"
                 >
                     Se déconnecter
                 </button>
@@ -36,17 +35,19 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useSocket } from '../composables/useSocket.js';
+import { io, type Socket } from 'socket.io-client';
 
-// Utiliser le composable Socket.IO
-const socket = useSocket();
+// Types
+type ConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'error' | 'reconnecting';
 
 // États locaux
-const isConnecting = ref(false);
+const socket = ref<Socket | null>(null);
+const isConnected = ref<boolean>(false);
+const isConnecting = ref<boolean>(false);
+const connectionStatus = ref<ConnectionStatus>('disconnected');
 
-// États calculés
-const isConnected = computed(() => socket.isConnected.value);
-const connectionStatus = computed(() => socket.connectionStatus.value);
+// Configuration
+const SERVER_URL: string = 'http://localhost:3002';
 
 // Classes CSS dynamiques
 const connectionClass = computed(() => ({
@@ -71,140 +72,222 @@ const connectionText = computed(() => {
 const handleConnect = async () => {
     try {
         isConnecting.value = true;
-        await socket.connect();
+        connectionStatus.value = 'connecting';
+        
+        // Créer la connexion Socket.IO
+        socket.value = io(SERVER_URL, {
+            autoConnect: false,
+            reconnection: true,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000,
+            reconnectionAttempts: 5,
+            timeout: 20000
+        });
+        
+        // Configurer les écouteurs d'événements
+        setupSocketListeners();
+        
+        // Se connecter
+        socket.value.connect();
+        
     } catch (error) {
         console.error('Erreur de connexion Socket.IO:', error);
-    } finally {
         isConnecting.value = false;
+        connectionStatus.value = 'error';
     }
 };
 
 const handleDisconnect = () => {
-    socket.disconnect();
+    if (socket.value) {
+        socket.value.disconnect();
+        socket.value = null;
+    }
+    isConnected.value = false;
+    isConnecting.value = false;
+    connectionStatus.value = 'disconnected';
 };
 
-// Configuration des écouteurs d'événements
-onMounted(() => {
-    // Écouter les événements de connexion pour mettre à jour l'état
-    socket.on('connect', () => {
+const setupSocketListeners = () => {
+    if (!socket.value) return;
+    
+    socket.value.on('connect', () => {
+        console.log('✅ Socket.IO connecté:', socket?.value?.id);
+        isConnected.value = true;
         isConnecting.value = false;
-        console.log('✅ Socket.IO connecté via MainStatusNavBar');
+        connectionStatus.value = 'connected';
+        broadcastConnectionStatus();
     });
-
-    socket.on('disconnect', () => {
+    
+    socket.value.on('disconnect', (reason) => {
+        console.log('❌ Socket.IO déconnecté:', reason);
+        isConnected.value = false;
         isConnecting.value = false;
-        console.log('❌ Socket.IO déconnecté via MainStatusNavBar');
+        connectionStatus.value = 'disconnected';
+        broadcastConnectionStatus();
     });
-
-    socket.on('connect_error', () => {
+    
+    socket.value.on('connect_error', (error) => {
+        console.error('❌ Erreur de connexion Socket.IO:', error);
+        isConnected.value = false;
         isConnecting.value = false;
-        console.error('❌ Erreur de connexion Socket.IO via MainStatusNavBar');
+        connectionStatus.value = 'error';
+        broadcastConnectionStatus();
     });
+    
+    socket.value.on('reconnect', (attemptNumber) => {
+        console.log(`✅ Reconnecté après ${attemptNumber} tentatives`);
+        isConnected.value = true;
+        isConnecting.value = false;
+        connectionStatus.value = 'connected';
+        broadcastConnectionStatus();
+    });
+    
+    socket.value.on('reconnect_attempt', (attemptNumber) => {
+        console.log(`🔄 Tentative de reconnexion #${attemptNumber}`);
+        isConnecting.value = true;
+        connectionStatus.value = 'reconnecting';
+    });
+    
+    socket.value.on('welcome', (data) => {
+        console.log('📨 Message de bienvenue:', data);
+    });
+    
+    // Écouter les événements de jeu depuis les autres composants
+    socket.value.on('player_added_confirmed', (data) => {
+        console.log('🎮 Joueur ajouté confirmé:', data);
+        // Diffuser l'événement vers les autres composants
+        window.dispatchEvent(new CustomEvent('socket-response', {
+            detail: { eventName: 'player_added_confirmed', data }
+        }));
+    });
+    
+    socket.value.on('player_removed_confirmed', (data) => {
+        console.log('🎮 Joueur supprimé confirmé:', data);
+        // Diffuser l'événement vers les autres composants
+        window.dispatchEvent(new CustomEvent('socket-response', {
+            detail: { eventName: 'player_removed_confirmed', data }
+        }));
+    });
+    
+    socket.value.on('player_list_updated', (data) => {
+        console.log('🎮 Liste des joueurs mise à jour:', data);
+        // Diffuser l'événement vers les autres composants
+        window.dispatchEvent(new CustomEvent('socket-response', {
+            detail: { eventName: 'player_list_updated', data }
+        }));
+    });
+};
 
-    // Tentative de connexion automatique au démarrage
-    if (!isConnected.value) {
-        setTimeout(() => {
-            handleConnect();
-        }, 1000);
+// Gestionnaire pour les événements émis par d'autres composants
+const handleGameSocketEmit = (event: CustomEvent) => {
+    const { eventName, data } = event.detail;
+    
+    if (socket.value && isConnected.value) {
+        console.log(`🎮 Transfert vers serveur: ${eventName}`, data);
+        socket.value.emit(eventName, data);
+    } else {
+        console.warn('⚠️ Socket non connecté, impossible de transférer:', eventName, data);
     }
+};
+
+// Diffuser le statut de connexion vers les autres composants
+const broadcastConnectionStatus = () => {
+    window.dispatchEvent(new CustomEvent('socket-status-change', {
+        detail: { connected: isConnected.value }
+    }));
+};
+
+// Configuration au montage
+onMounted(() => {
+    // Écouter les événements de jeu depuis MainGameMenu
+    window.addEventListener('game-socket-emit', handleGameSocketEmit as EventListener);
+    
+    // Tentative de connexion automatique au démarrage
+    setTimeout(() => {
+        handleConnect();
+    }, 1000);
 });
 
-// Nettoyage lors du démontage
+// Nettoyage au démontage
 onUnmounted(() => {
-    // Les listeners sont automatiquement nettoyés par le composable useSocket
+    // Supprimer les écouteurs d'événements
+    window.removeEventListener('game-socket-emit', handleGameSocketEmit as EventListener);
+    
+    if (socket.value) {
+        socket.value.disconnect();
+    }
 });
 </script>
 
 <style scoped>
-.status-navbar {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-bottom: 2px solid #e5e7eb;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 0.75rem 1.5rem;
-    min-height: 60px;
-}
-
-.navbar-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 100%;
-    width: 100%;
-}
+/* ========== STYLES SPÉCIFIQUES À MAINSTATUSNAVBAR ========== */
 
 .navbar-left {
     flex: 1;
 }
 
-.status-title {
-    color: white;
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin: 0;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-}
-
 .navbar-right {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: var(--spacing-md);
 }
 
-/* Indicateur de connexion */
-.connection-indicator {
+/* ========== INDICATEUR DE STATUT ========== */
+.status-indicator {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--border-radius-pill);
     font-size: 0.875rem;
     font-weight: 600;
-    transition: all 0.3s ease;
+    transition: all var(--transition-normal);
     min-width: 130px;
     justify-content: center;
+    border: 2px solid;
 }
 
-.connection-indicator.connected {
+.status-indicator.connected {
     background: rgba(34, 197, 94, 0.2);
-    border: 2px solid #22c55e;
-    color: #16a34a;
+    border-color: var(--color-success);
+    color: var(--color-success);
     box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
 }
 
-.connection-indicator.disconnected {
+.status-indicator.disconnected {
     background: rgba(239, 68, 68, 0.2);
-    border: 2px solid #ef4444;
-    color: #dc2626;
+    border-color: var(--color-danger);
+    color: var(--color-danger);
     box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
 }
 
-.connection-indicator.connecting {
+.status-indicator.connecting {
     background: rgba(251, 191, 36, 0.2);
-    border: 2px solid #fbbf24;
-    color: #d97706;
+    border-color: var(--color-warning);
+    color: var(--color-warning);
     box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
 }
 
-/* Points de statut */
+/* ========== POINTS DE STATUT ========== */
 .status-dot {
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    transition: all 0.3s ease;
+    transition: all var(--transition-normal);
 }
 
 .status-dot.dot-connected {
-    background: #22c55e;
+    background: var(--color-success);
     box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
 }
 
 .status-dot.dot-disconnected {
-    background: #ef4444;
+    background: var(--color-danger);
     box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
 }
 
 .status-dot.dot-connecting {
-    background: #fbbf24;
+    background: var(--color-warning);
     box-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
     animation: pulse 1.5s infinite;
 }
@@ -225,53 +308,11 @@ onUnmounted(() => {
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* Boutons de connexion */
-.connect-btn, .disconnect-btn {
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    border: none;
-    font-size: 0.875rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    min-width: 120px;
-}
-
-.connect-btn {
-    background: linear-gradient(135deg, #10b981, #059669);
-    color: white;
-    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
-}
-
-.connect-btn:hover:not(:disabled) {
-    background: linear-gradient(135deg, #059669, #047857);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4);
-}
-
-.connect-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.disconnect-btn {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    color: white;
-    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
-}
-
-.disconnect-btn:hover {
-    background: linear-gradient(135deg, #dc2626, #b91c1c);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.4);
-}
-
-/* Responsive */
+/* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
-    .navbar-content {
+    .container {
         flex-direction: column;
-        gap: 0.75rem;
+        gap: var(--spacing-sm);
         align-items: stretch;
     }
     
@@ -279,27 +320,27 @@ onUnmounted(() => {
         justify-content: space-between;
     }
     
-    .connection-indicator {
+    .status-indicator {
         min-width: auto;
         flex: 1;
     }
     
-    .connect-btn, .disconnect-btn {
+    .btn-base {
         min-width: auto;
         flex: 1;
     }
 }
 
 @media (max-width: 480px) {
-    .status-navbar {
-        padding: 0.5rem 1rem;
+    .navbar-primary {
+        padding: var(--spacing-xs) var(--spacing-md);
     }
     
-    .status-title {
+    .title-gradient {
         font-size: 1rem;
     }
     
-    .connection-indicator, .connect-btn, .disconnect-btn {
+    .status-indicator, .btn-base {
         font-size: 0.75rem;
         padding: 0.4rem 0.8rem;
     }
