@@ -1,6 +1,7 @@
 using Godot;
-using System;
 using Microsoft.Data.Sqlite;
+using Satsuki.Utils;
+using System;
 using System.IO;
 
 public interface IDbManager : IDisposable
@@ -10,7 +11,7 @@ public interface IDbManager : IDisposable
 	SqliteConnection GetConnection();
 }
 
-public class SqliteDbManager : IDbManager
+public class SqliteDbManager : SingletonBase<SqliteDbManager>, IDbManager
 {
 	private SqliteConnection _connection;
 	private readonly string _dbPath;
