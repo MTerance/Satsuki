@@ -13,6 +13,7 @@ config_version=5
 config/name="Satsuki"
 run/main_scene="uid://cj6ew4ns2j6bl"
 config/features=PackedStringArray("4.4", "C#", "GL Compatibility")
+boot_splash/show_image=false
 config/icon="res://icon.svg"
 
 [dotnet]
