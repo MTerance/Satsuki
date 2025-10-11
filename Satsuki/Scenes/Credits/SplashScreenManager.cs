@@ -16,8 +16,8 @@ namespace Satsuki.Scenes.Credits
         [Export] public float FadeInDuration { get; set; } = 1.0f;
         [Export] public float FadeOutDuration { get; set; } = 1.0f;
         [Export] public float DisplayDuration { get; set; } = 2.0f;
-
-        [Export] public List<SplashScreenModel> SplashScreens = [];
+        public List<SplashScreenModel> SplashScreens = [];
+        private List<SplashScreenModel>.Enumerator _currrent;
 
         private TextureRect _imageDisplay;
         private ColorRect _background;
@@ -27,8 +27,8 @@ namespace Satsuki.Scenes.Credits
 
         public override void _Ready()
         {
-            SetupUI();
             SetupSplashScreens();
+            SetupUI();
             SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
             ZIndex = 100; // S'assurer qu'il est au-dessus de tout
         }
@@ -37,18 +37,37 @@ namespace Satsuki.Scenes.Credits
         private void SetupSplashScreens()
         {
             // recuperer la liste des ecrans a afficher
+            GD.Print("recuperer la liste des ecrans a afficher");
+            //  SqliteDbManager.GetInstance.GetConnection();// getSplashScreens();
 
-            SqliteDbManager.GetInstance.GetConnection();// getSplashScreens();
+            SplashScreens.Add(new SplashScreenModel()
+            {
+                ImagePath = "res://Assets/Img/6b303511-16cc-4a6d-aef7-f9355560ba94nb.png",
+                FadeOutDuration = 2.0f,
+                FadeInDuration = 1.0f,
+                DisplayDuration = 1.3f
+            });
+
+            SplashScreens.Add(new SplashScreenModel()
+            {
+                ImagePath = "res://Scenes/6136264df5966900044cbf71.png",
+                FadeOutDuration = 2.0f,
+                FadeInDuration = 1.0f,
+                DisplayDuration = 1.3f
+            });
+
 
             foreach (var splashscreen in SplashScreens)
             {
                 splashscreen.LoadTexture();
             }
+            _currrent = SplashScreens.GetEnumerator(); 
         }
 
 
         private void SetupUI()
         {
+            GD.Print("setup UI");
             // Fond noir
             _background = new ColorRect();
             _background.Color = Colors.Black;
@@ -62,10 +81,21 @@ namespace Satsuki.Scenes.Credits
             _imageDisplay.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
 
             // Charger l'image
-            if (ResourceLoader.Exists(ImagePath))
+            if (ResourceLoader.Exists( _currrent.Current.ImagePath))
             {
+                /*
                 var texture = GD.Load<Texture2D>(ImagePath);
                 _imageDisplay.Texture = texture;
+                */                
+                _imageDisplay.Texture = _currrent.Current.Texture;
+                FadeInDuration = _currrent.Current.FadeInDuration;
+                FadeOutDuration = _currrent.Current.FadeOutDuration;
+                DisplayDuration = _currrent.Current.DisplayDuration;
+                if (!_currrent.MoveNext())
+                {
+                    GD.Print("no more splashscreens");
+                    _currrent = SplashScreens.GetEnumerator();
+                }
             }
             else
             {
@@ -86,7 +116,7 @@ namespace Satsuki.Scenes.Credits
 
             // Tween pour les animations
             _tween = new Tween();
-            AddChild(_tween);
+            //AddChild(_tween);
 
             // Commencer invisible
             Modulate = new Color(1, 1, 1, 0);

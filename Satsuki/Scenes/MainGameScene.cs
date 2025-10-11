@@ -13,6 +13,7 @@ public partial class MainGameScene : Node
 	
 	public override void _Ready()
 	{
+		GD.Print("z : main scene");
 		// Teste le système de cryptage au démarrage
 		TestCryptographySystem();
 		
