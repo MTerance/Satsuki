@@ -35,7 +35,7 @@ public class QuestionAnswerQuizzModel
 
 	public string Question { get; set; }
 	public string Answer { get; set; }
-	public System.Collections.Generic.Dictionary<ShowStateMedia, MediaModel> Medias{ get; set; } // Path to media file (image, audio, video)
+	public System.Collections.Generic.Dictionary<ShowStateMedia, MediaModel> Medias { get; set; } // Path to media file (image, audio, video)
 	public QuestionAnswerQuizzModel(string question, string answer, System.Collections.Generic.Dictionary<ShowStateMedia, MediaModel> medias = null)
 	{
 		Question = question;
@@ -49,7 +49,7 @@ public partial class QuestionAswerQuizzScene : Control
 	private Label questionLabel;
 	private Label answerLabel;
 	private GameState currentState;
-	private enum GameState 
+	private enum GameState
 	{
 		Beginning,
 		ShowMediaBeforeQuestion,
@@ -60,12 +60,24 @@ public partial class QuestionAswerQuizzScene : Control
 		End
 	}
 
+	public override void _UnhandledKeyInput(InputEvent @event)
+	{
+		if (@event is InputEventKey eventKey)
+		{
+			if (eventKey.IsReleased() && eventKey.Keycode == Key.Enter)
+			{
+				GD.Print("Enter key pressed");
+				NextStateGame();
+				return;
+			}
+		}
+	}
+
 	private void StartGame()
 	{
 		currentState = GameState.Beginning;
 		this.questionLabel.Visible = false;
 		this.answerLabel.Visible = false;
-		NextStateGame();
 	}
 
 	private void ShowAnswer()
@@ -82,7 +94,6 @@ public partial class QuestionAswerQuizzScene : Control
 	{
 
 	}
-
 
 	private void ShowQuestion()
 	{
@@ -108,9 +119,9 @@ public partial class QuestionAswerQuizzScene : Control
 				currentState = GameState.PickUpAnswer;
 				break;
 			case GameState.PickUpAnswer:
-				currentState = GameState.ShowMediabeforeAnswer;
+				currentState = GameState.ShowMediaBeforeAnswer;
 				break;
-			case GameState.ShowMediabeforeAnswer:
+			case GameState.ShowMediaBeforeAnswer:
 				currentState = GameState.ShowingAnswer;
 				break;
 			case GameState.ShowingAnswer:
@@ -137,6 +148,8 @@ public partial class QuestionAswerQuizzScene : Control
 		}
 		questionLabel.Text = "What is the capital of France?";
 		answerLabel.Text = "The capital of France is Paris.";
+		StartGame();
+
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
