@@ -49,6 +49,10 @@ public partial class QuestionAswerQuizzScene : Control
 	private Label questionLabel;
 	private Label answerLabel;
 	private GameState currentState;
+	private TextureRect mediaDisplay;
+
+	private QuestionAnswerQuizzModel currentQuizz;
+
 	private enum GameState
 	{
 		Beginning,
@@ -73,6 +77,17 @@ public partial class QuestionAswerQuizzScene : Control
 		}
 	}
 
+	private void TEST_SetNewQuizz()
+	{
+		var medias = new System.Collections.Generic.Dictionary<QuestionAnswerQuizzModel.ShowStateMedia, MediaModel>
+		{
+			{ QuestionAnswerQuizzModel.ShowStateMedia.DuringQuestion, new MediaModel(MediaModel.MediaType.Image, "res://Assets/Img/drapeau-france-2.png") },
+			{ QuestionAnswerQuizzModel.ShowStateMedia.DuringAnswer, new MediaModel(MediaModel.MediaType.Image, "res://Assets/Img/La_Tour_Eiffel.webp") }
+		};
+		currentQuizz = new QuestionAnswerQuizzModel("What is the capital of France?", "The capital of France is Paris.", medias);
+	}
+
+
 	private void StartGame()
 	{
 		currentState = GameState.Beginning;
@@ -82,7 +97,15 @@ public partial class QuestionAswerQuizzScene : Control
 
 	private void ShowAnswer()
 	{
+		this.answerLabel.Text = currentQuizz.Answer;
 		this.answerLabel.Visible = true;
+		if (!(bool)(currentQuizz.Medias?.ContainsKey(QuestionAnswerQuizzModel.ShowStateMedia.DuringAnswer)))
+			NextStateGame();
+		else
+		{
+			var currentMedia = currentQuizz.Medias.TryGetValue(QuestionAnswerQuizzModel.ShowStateMedia.DuringAnswer, out MediaModel media);
+			ShowMedia(media);
+		}
 	}
 
 	private void PickUpPlayerAnswer()
@@ -90,39 +113,72 @@ public partial class QuestionAswerQuizzScene : Control
 
 	}
 
-	private void ShowMedia()
+	private void ShowMedia(MediaModel media)
 	{
-
+		switch (media.Type)
+		{
+			case MediaModel.MediaType.Image:
+				GD.Print("Show Image: " + media.Path);
+				mediaDisplay.Texture = GD.Load<Texture2D>(media.Path);
+				mediaDisplay.Visible = true;
+				break;
+			case MediaModel.MediaType.Audio:
+				GD.Print("Play Audio: " + media.Path);				
+				break;
+			case MediaModel.MediaType.Video:
+				GD.Print("Play Video: " + media.Path);
+				break;
+			default:
+				GD.PrintErr("Unknown media type");
+				break;
+		}
 	}
 
 	private void ShowQuestion()
 	{
+		if ((bool)currentQuizz.Medias?.ContainsKey(QuestionAnswerQuizzModel.ShowStateMedia.DuringQuestion))
+			ShowMedia(currentQuizz.Medias[QuestionAnswerQuizzModel.ShowStateMedia.DuringQuestion]);
+		this.questionLabel.Text = currentQuizz.Question;
 		this.questionLabel.Visible = true;
 	}
 
 	private void EndGame()
 	{
+		this.answerLabel.Visible = false;
+		this.questionLabel.Visible = false;
 		GD.Print("Game Ended");
 	}
 
 	private void NextStateGame()
 	{
+		GD.Print("Old State: " + currentState.ToString());
 		switch (currentState)
 		{
 			case GameState.Beginning:
 				currentState = GameState.ShowMediaBeforeQuestion;
+				if (!(bool)(currentQuizz.Medias?.ContainsKey(QuestionAnswerQuizzModel.ShowStateMedia.BeforeQuestion)))
+					NextStateGame();
+				else
+				{
+					var currentMedia = currentQuizz.Medias.TryGetValue(QuestionAnswerQuizzModel.ShowStateMedia.BeforeQuestion, out MediaModel media);
+					ShowMedia(media);
+				}
 				break;
 			case GameState.ShowMediaBeforeQuestion:
 				currentState = GameState.ShowingQuestion;
+				ShowQuestion();
 				break;
 			case GameState.ShowingQuestion:
 				currentState = GameState.PickUpAnswer;
 				break;
 			case GameState.PickUpAnswer:
 				currentState = GameState.ShowMediaBeforeAnswer;
+				if (!(bool)(currentQuizz.Medias?.ContainsKey(QuestionAnswerQuizzModel.ShowStateMedia.BeforeAnswer)))
+					NextStateGame();
 				break;
 			case GameState.ShowMediaBeforeAnswer:
 				currentState = GameState.ShowingAnswer;
+				ShowAnswer();
 				break;
 			case GameState.ShowingAnswer:
 				currentState = GameState.End;
@@ -132,6 +188,7 @@ public partial class QuestionAswerQuizzScene : Control
 			default:
 				break;
 		}
+		GD.Print("New State: " + currentState.ToString());
 	}
 
 	// Called when the node enters the scene tree for the first time.
@@ -140,14 +197,18 @@ public partial class QuestionAswerQuizzScene : Control
 		GD.Print("QuestionAswerQuizzScene ready");
 		questionLabel = this.GetNode<Label>("QuizzVBoxContainer/QuestionMarginContainer/QuestionLabel");
 		answerLabel = this.GetNode<Label>("QuizzVBoxContainer/AnswerMarginContainer/AnswerLabel");
+		mediaDisplay = this.GetNode<TextureRect>("QuizzVBoxContainer/MarginContainerVisualMedia/mediaDisplay");
 		currentState = GameState.Beginning;
 		if (questionLabel == null || answerLabel == null)
 		{
 			GD.PrintErr("Labels not found!");
 			return;
 		}
-		questionLabel.Text = "What is the capital of France?";
-		answerLabel.Text = "The capital of France is Paris.";
+		// pour les besoinns de dev de QuestionAnswerQuizzScene
+		/*----------------------------------------------------------------------------------------------------------*/
+		GD.Print("TEST_SetNewQuizz ready");
+		TEST_SetNewQuizz();
+		/*----------------------------------------------------------------------------------------------------------*/
 		StartGame();
 
 	}

@@ -7,6 +7,10 @@ layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = -3.0
+offset_right = 8.0
+offset_bottom = -3.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_8fesu")
@@ -24,6 +28,15 @@ offset_right = 68.0
 offset_bottom = 25.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="MarginContainerVisualMedia" type="MarginContainer" parent="QuizzVBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 0
+
+[node name="mediaDisplay" type="TextureRect" parent="QuizzVBoxContainer/MarginContainerVisualMedia"]
+texture_repeat = 1
+layout_mode = 2
+expand_mode = 5
 
 [node name="QuestionMarginContainer" type="MarginContainer" parent="QuizzVBoxContainer"]
 layout_mode = 2
