@@ -9,10 +9,12 @@ public partial class MainGameScene : Node
 {
 	private Timer _messageProcessingTimer;
 	private Timer _statisticsTimer;
+	Node currentScene;
 	private bool _debugMode = true;
 	
 	public override void _Ready()
 	{
+		currentScene = GetNode<Node>("QuestionAnswerQuizzScene");
 		// Teste le système de cryptage au démarrage
 		TestCryptographySystem();
 		

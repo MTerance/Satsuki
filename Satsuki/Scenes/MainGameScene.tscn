@@ -1,12 +1,9 @@
-[gd_scene load_steps=2 format=3 uid="uid://cj6ew4ns2j6bl"]
+[gd_scene load_steps=3 format=3 uid="uid://cj6ew4ns2j6bl"]
 
 [ext_resource type="Script" uid="uid://ypyguhd3r0md" path="res://Scenes/MainGameScene.cs" id="1_cp132"]
+[ext_resource type="PackedScene" uid="uid://br7jfj63p0fjp" path="res://Scenes/Quizz/QuestionAnswer/QuestionAswerQuizzScene.tscn" id="2_2axvc"]
 
 [node name="MainGameScene" type="Node"]
 script = ExtResource("1_cp132")
 
-[node name="SplashScreenManager" type="Control" parent="."]
-layout_mode = 3
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
+[node name="QuestionAswerQuizzScene" parent="." instance=ExtResource("2_2axvc")]
