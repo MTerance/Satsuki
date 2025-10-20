@@ -7,17 +7,67 @@ using System.Collections.Generic;
 
 public partial class MainGameScene : Node
 {
-	private Timer _messageProcessingTimer;
-	private Timer _statisticsTimer;
-	Node currentScene;
+	private ServerManager _serverManager;
 	private bool _debugMode = true;
 	
 	public override void _Ready()
 	{
-		currentScene = GetNode<Node>("QuestionAnswerQuizzScene");
+		//currentScene = GetNode<Node>("QuestionAnswerQuizzScene");
+		
+		// Essayer de récupérer le ServerManager via AutoLoad
+		_serverManager = GetNodeOrNull<ServerManager>("/root/ServerManager");
+		
+		if (_serverManager == null)
+		{
+			GD.PrintErr("❌ ServerManager non trouvé via AutoLoad! Démarrage manuel...");
+			// Démarrage manuel du serveur
+			try
+			{
+				var network = Network.GetInstance;
+				if (network.Start())
+				{
+					GD.Print("✅ Serveur démarré manuellement avec succès!");
+				}
+				else
+				{
+					GD.PrintErr("❌ Échec du démarrage manuel du serveur");
+				}
+			}
+			catch (System.Exception ex)
+			{
+				GD.PrintErr($"❌ Erreur lors du démarrage manuel: {ex.Message}");
+			}
+		}
+		else
+		{
+			// Connecter les événements du ServerManager
+			_serverManager.ServerStarted += OnServerStarted;
+			_serverManager.ServerStopped += OnServerStopped;
+			_serverManager.ServerError += OnServerError;
+			
+			GD.Print("🎮 MainGameScene: Connecté au ServerManager");
+		}
+		
+		// Récupérer le serveur global (démarré automatiquement)
+		_serverManager = GetNode<ServerManager>("/root/ServerManager");
+		
+		if (_serverManager != null)
+		{
+			// Écouter les événements du serveur
+			_serverManager.ServerStarted += OnServerStarted;
+			_serverManager.ServerStopped += OnServerStopped;
+			_serverManager.ServerError += OnServerError;
+			
+			GD.Print("🎮 MainGameScene: Connecté au ServerManager");
+		}
+		else
+		{
+			GD.PrintErr("❌ ServerManager non trouvé! Vérifiez la configuration AutoLoad.");
+		}
+		
 		// Teste le système de cryptage au démarrage
 		TestCryptographySystem();
-		
+		/*
 		// Configure un timer pour traiter les messages périodiquement
 		_messageProcessingTimer = new Timer();
 		_messageProcessingTimer.WaitTime = 0.1; // Traite les messages toutes les 100ms
@@ -31,7 +81,7 @@ public partial class MainGameScene : Node
 		_statisticsTimer.Timeout += DisplayStatistics;
 		_statisticsTimer.Autostart = true;
 		AddChild(_statisticsTimer);
-
+		*/
 		Console.WriteLine("?? MainGameScene: Système de réception multithread initialisé avec cryptage");
 	}
 
@@ -429,11 +479,49 @@ public partial class MainGameScene : Node
 		);
 	}
 
+	private void OnServerStarted()
+	{
+		GD.Print("🎮 MainGameScene: Serveur démarré avec succès!");
+		
+		// Le serveur est maintenant prêt, on peut activer les fonctionnalités réseau
+		SetNetworkUIEnabled(true);
+	}
+
+	private void OnServerStopped()
+	{
+		GD.Print("🎮 MainGameScene: Serveur arrêté");
+		SetNetworkUIEnabled(false);
+	}
+
+	private void OnServerError(string error)
+	{
+		GD.PrintErr($"🎮 MainGameScene: Erreur serveur - {error}");
+		// Optionnel: afficher une notification à l'utilisateur
+		ShowNetworkError(error);
+	}
+
+	private void SetNetworkUIEnabled(bool enabled)
+	{
+		// Activer/désactiver les éléments UI liés au réseau
+		// Par exemple, boutons multijoueur, indicateurs de statut, etc.
+		GD.Print($"📡 Interface réseau: {(enabled ? "Activée" : "Désactivée")}");
+	}
+
+	private void ShowNetworkError(string error)
+	{
+		// Afficher une notification d'erreur réseau
+		GD.PrintErr($"🚨 Erreur réseau: {error}");
+	}
+
 	public override void _ExitTree()
 	{
-		// Nettoie les ressources quand la scène se ferme
-		_messageProcessingTimer?.QueueFree();
-		_statisticsTimer?.QueueFree();
-		Console.WriteLine("?? MainGameScene: Nettoyage des ressources de cryptage");
+		// Déconnecter les événements du serveur
+		if (_serverManager != null)
+		{
+			_serverManager.ServerStarted -= OnServerStarted;
+			_serverManager.ServerStopped -= OnServerStopped;
+			_serverManager.ServerError -= OnServerError;
+		}
+		Console.WriteLine("🎮 MainGameScene: Nettoyage des ressources de cryptage");
 	}
 }

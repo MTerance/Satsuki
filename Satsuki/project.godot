@@ -11,14 +11,22 @@ config_version=5
 [application]
 
 config/name="Satsuki"
-run/main_scene="uid://cj6ew4ns2j6bl"
+run/main_scene="res://Scenes/MainGameScene.tscn"
 config/features=PackedStringArray("4.4", "C#", "GL Compatibility")
 boot_splash/show_image=false
 config/icon="res://icon.svg"
 
+[autoload]
+
+ServerManager="*res://Systems/ServerManager.cs"
+
 [dotnet]
 
 project/assembly_name="Satsuki"
+
+[editor]
+
+version_control/autoload_on_startup=true
 
 [rendering]
 
