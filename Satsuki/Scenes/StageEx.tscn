@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://rdxlqu68ov8x"]
+[gd_scene load_steps=14 format=3 uid="uid://coa8nboclov8f"]
 
 [ext_resource type="Texture2D" uid="uid://6troacshr1fb" path="res://Assets/PolygonPrototype_Texture_01.png" id="1_u8igs"]
 [ext_resource type="ArrayMesh" uid="uid://b2ngh2d6mn6h0" path="res://Assets/SM_Buildings_Floor_5x5_01P.obj" id="2_mi5li"]
@@ -18,16 +18,8 @@ albedo_texture = ExtResource("1_u8igs")
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_75p7v"]
 albedo_texture = ExtResource("1_u8igs")
 
-[sub_resource type="ViewportTexture" id="ViewportTexture_xdtd5"]
-viewport_path = NodePath("../SubViewport")
-
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nuvp6"]
-resource_local_to_scene = true
-resource_name = "QuizzScreen"
-albedo_color = Color(0, 0, 0, 1)
 albedo_texture = ExtResource("5_8kvo6")
-emission_enabled = true
-emission_texture = SubResource("ViewportTexture_xdtd5")
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8kvo6"]
 albedo_texture = ExtResource("7_bhomg")
@@ -100,7 +92,7 @@ material_override = SubResource("StandardMaterial3D_75p7v")
 mesh = ExtResource("4_nt2qc")
 
 [node name="SmBuildingsWall5x301p" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.999805, 0, 0.0197386, 0, 1, 0, -0.0197386, 0, 0.999805, 409.131, 120.251, 232.368)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 263.981, 120.251, 232.368)
 material_override = SubResource("StandardMaterial3D_nuvp6")
 mesh = ExtResource("6_skv6a")
 
@@ -123,10 +115,3 @@ mesh = ExtResource("8_nt2qc")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -451.358, 12.222, 385.682)
 material_override = SubResource("StandardMaterial3D_8kvo6")
 mesh = ExtResource("8_nt2qc")
-
-[node name="QuizScreen" type="Node3D" parent="."]
-
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 799.118, 0)
-light_energy = 4.6
-light_indirect_energy = 5.091
