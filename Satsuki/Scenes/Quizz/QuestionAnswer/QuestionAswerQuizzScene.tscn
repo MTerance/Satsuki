@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://br7jfj63p0fjp"]
+[gd_scene load_steps=3 format=3 uid="uid://br7jfj63p0fjp"]
 
 [ext_resource type="Script" uid="uid://7eq8rcr3li6j" path="res://Scenes/Quizz/QuestionAnswer/QuestionAswerQuizzScene.cs" id="1_8fesu"]
+[ext_resource type="Texture2D" uid="uid://ci6xj2la2cv1t" path="res://Assets/Img/coffee shop.png" id="2_0qeg4"]
 
 [node name="QuestionAswerQuizzScene" type="Control"]
 layout_mode = 3
@@ -14,6 +15,13 @@ offset_bottom = -3.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_8fesu")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 0
+offset_right = 800.0
+offset_bottom = 600.0
+texture = ExtResource("2_0qeg4")
+expand_mode = 5
 
 [node name="QuizzVBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 1

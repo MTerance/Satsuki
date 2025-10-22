@@ -6,6 +6,7 @@
   <ItemGroup>
     <None Include="Networks\README_Encryption.md" />
     <None Include="Networks\README_MessageSystem.md" />
+    <None Include="Scenes\Locations\StageEx.tscn" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="9.0.7" />
