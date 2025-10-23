@@ -1,8 +1,11 @@
 using Godot;
 using Godot.Collections;
+using Satsuki.Interfaces.Quizz;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net.Http.Json;
+using System.Text.Json;
 
 
 public class MediaModel
@@ -44,7 +47,7 @@ public class QuestionAnswerQuizzModel
 	}
 }
 
-public partial class QuestionAswerQuizzScene : Control
+public partial class QuestionAswerQuizzScene : Control, IQuizz
 {
 	private Label questionLabel;
 	private Label answerLabel;
@@ -77,7 +80,18 @@ public partial class QuestionAswerQuizzScene : Control
 		}
 	}
 
-	private void TEST_SetNewQuizz()
+	public string GetQuizzState()
+	{
+		var quizzState = new Dictionary
+		{
+			{ "Question", currentQuizz.Question },
+			{ "Answer", currentQuizz.Answer },
+			{ "CurrentState", currentState.ToString() }
+		};
+		return JsonSerializer.Serialize(quizzState);
+    }
+
+    private void TEST_SetNewQuizz()
 	{
 		var medias = new System.Collections.Generic.Dictionary<QuestionAnswerQuizzModel.ShowStateMedia, MediaModel>
 		{
@@ -204,7 +218,7 @@ public partial class QuestionAswerQuizzScene : Control
 			GD.PrintErr("Labels not found!");
 			return;
 		}
-		// pour les besoinns de dev de QuestionAnswerQuizzScene
+		// pour les besoins de dev de QuestionAnswerQuizzScene
 		/*----------------------------------------------------------------------------------------------------------*/
 		GD.Print("TEST_SetNewQuizz ready");
 		TEST_SetNewQuizz();
