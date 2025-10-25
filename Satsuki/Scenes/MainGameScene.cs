@@ -4,6 +4,8 @@ using Satsuki.Networks;
 using Satsuki.Utils;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
 
 public partial class MainGameScene : Node
 {
@@ -12,9 +14,7 @@ public partial class MainGameScene : Node
 	
 	public override void _Ready()
 	{
-		//currentScene = GetNode<Node>("QuestionAnswerQuizzScene");
-		
-		// Essayer de récupérer le ServerManager via AutoLoad
+		// Récupérer le ServerManager via AutoLoad
 		_serverManager = GetNodeOrNull<ServerManager>("/root/ServerManager");
 		
 		if (_serverManager == null)
@@ -48,41 +48,10 @@ public partial class MainGameScene : Node
 			GD.Print("🎮 MainGameScene: Connecté au ServerManager");
 		}
 		
-		// Récupérer le serveur global (démarré automatiquement)
-		_serverManager = GetNode<ServerManager>("/root/ServerManager");
-		
-		if (_serverManager != null)
-		{
-			// Écouter les événements du serveur
-			_serverManager.ServerStarted += OnServerStarted;
-			_serverManager.ServerStopped += OnServerStopped;
-			_serverManager.ServerError += OnServerError;
-			
-			GD.Print("🎮 MainGameScene: Connecté au ServerManager");
-		}
-		else
-		{
-			GD.PrintErr("❌ ServerManager non trouvé! Vérifiez la configuration AutoLoad.");
-		}
-		
 		// Teste le système de cryptage au démarrage
 		TestCryptographySystem();
-		/*
-		// Configure un timer pour traiter les messages périodiquement
-		_messageProcessingTimer = new Timer();
-		_messageProcessingTimer.WaitTime = 0.1; // Traite les messages toutes les 100ms
-		_messageProcessingTimer.Timeout += ProcessIncomingMessages;
-		_messageProcessingTimer.Autostart = true;
-		AddChild(_messageProcessingTimer);
 
-		// Timer pour afficher les statistiques
-		_statisticsTimer = new Timer();
-		_statisticsTimer.WaitTime = 5.0; // Affiche les stats toutes les 5 secondes
-		_statisticsTimer.Timeout += DisplayStatistics;
-		_statisticsTimer.Autostart = true;
-		AddChild(_statisticsTimer);
-		*/
-		Console.WriteLine("?? MainGameScene: Système de réception multithread initialisé avec cryptage");
+		Console.WriteLine("🔧 MainGameScene: Système de réception multithread initialisé avec cryptage");
 	}
 
 	/// <summary>
@@ -90,22 +59,22 @@ public partial class MainGameScene : Node
 	/// </summary>
 	private void TestCryptographySystem()
 	{
-		Console.WriteLine("?? Test du système de cryptage...");
+		Console.WriteLine("🔐 Test du système de cryptage...");
 		bool testResult = MessageCrypto.TestEncryption();
 		
 		if (testResult)
 		{
-			Console.WriteLine("? Système de cryptage opérationnel");
+			Console.WriteLine("✅ Système de cryptage opérationnel");
 		}
 		else
 		{
-			Console.WriteLine("? Problème avec le système de cryptage");
+			Console.WriteLine("❌ Problème avec le système de cryptage");
 		}
 		
 		// Affiche les informations sur les clés par défaut
 		var keyInfo = MessageCrypto.GetDefaultKeyInfo();
-		Console.WriteLine($"?? Clé par défaut: {keyInfo.keyBase64.Substring(0, 10)}...");
-		Console.WriteLine($"?? IV par défaut: {keyInfo.ivBase64.Substring(0, 10)}...");
+		Console.WriteLine($"🔑 Clé par défaut: {keyInfo.keyBase64.Substring(0, 10)}...");
+		Console.WriteLine($"🔑 IV par défaut: {keyInfo.ivBase64.Substring(0, 10)}...");
 	}
 
 	/// <summary>
@@ -148,14 +117,14 @@ public partial class MainGameScene : Node
 			var encInfo = MessageReceiver.GetInstance.GetEncryptionInfo();
 			
 			Console.WriteLine($"=== STATISTIQUES RÉSEAU ===");
-			Console.WriteLine($"?? Serveur actif: {stats.isRunning}");
-			Console.WriteLine($"?? Clients connectés: {stats.connectedClients}");
-			Console.WriteLine($"?? Messages en attente: {stats.pendingMessages}");
-			Console.WriteLine($"?? Cryptage: {(stats.encryptionEnabled ? "ACTIVÉ" : "DÉSACTIVÉ")}");
-			Console.WriteLine($"?? Mode: Ordre d'arrivée (FIFO)");
+			Console.WriteLine($"📡 Serveur actif: {stats.isRunning}");
+			Console.WriteLine($"👥 Clients connectés: {stats.connectedClients}");
+			Console.WriteLine($"📬 Messages en attente: {stats.pendingMessages}");
+			Console.WriteLine($"🔐 Cryptage: {(stats.encryptionEnabled ? "ACTIVÉ" : "DÉSACTIVÉ")}");
+			Console.WriteLine($"📋 Mode: Ordre d'arrivée (FIFO)");
 			if (stats.encryptionEnabled)
 			{
-				Console.WriteLine($"?? Clé: {encInfo.keyBase64.Substring(0, 10)}...");
+				Console.WriteLine($"🔑 Clé: {encInfo.keyBase64.Substring(0, 10)}...");
 			}
 			Console.WriteLine($"========================");
 		}
@@ -175,6 +144,13 @@ public partial class MainGameScene : Node
 		// Extrait l'ID du client du message (format: [ClientId] contenu)
 		string clientId = ExtractClientId(message.Content);
 		string content = ExtractMessageContent(message.Content);
+		
+		// Vérifier si c'est une réponse JSON (commence par '{')
+		if (content.TrimStart().StartsWith("{"))
+		{
+			HandleJsonMessage(clientId, content);
+			return;
+		}
 		
 		// Traitement basé sur le contenu du message
 		if (content.StartsWith("PLAYER_MOVE:"))
@@ -204,6 +180,45 @@ public partial class MainGameScene : Node
 		else
 		{
 			HandleGenericMessage(clientId, content);
+		}
+	}
+
+	/// <summary>
+	/// Traite les messages JSON du client
+	/// </summary>
+	private void HandleJsonMessage(string clientId, string jsonContent)
+	{
+		try
+		{
+			using JsonDocument doc = JsonDocument.Parse(jsonContent);
+			JsonElement root = doc.RootElement;
+			
+			// Vérifier si c'est une réponse de type client
+			if (root.TryGetProperty("order", out JsonElement orderElement))
+			{
+				string order = orderElement.GetString();
+				
+				if (order == "ClientTypeResponse" && root.TryGetProperty("clientType", out JsonElement typeElement))
+				{
+					string clientType = typeElement.GetString();
+					Console.WriteLine($"📥 Type de client reçu de {clientId}: {clientType}");
+					
+					// Récupérer le mot de passe si présent (pour les clients BACKEND)
+					string password = null;
+					if (root.TryGetProperty("password", out JsonElement passwordElement))
+					{
+						password = passwordElement.GetString();
+						Console.WriteLine($"🔑 Mot de passe fourni par {clientId} pour authentification BACKEND");
+					}
+					
+					// Transférer au ServerManager pour traitement avec le mot de passe
+					_serverManager?.HandleClientTypeResponse(clientId, clientType, password);
+				}
+			}
+		}
+		catch (JsonException ex)
+		{
+			Console.WriteLine($"❌ Erreur lors du parsing JSON de {clientId}: {ex.Message}");
 		}
 	}
 
@@ -238,7 +253,7 @@ public partial class MainGameScene : Node
 	/// </summary>
 	private void HandlePlayerMovement(string clientId, string content)
 	{
-		Console.WriteLine($"?? Mouvement du joueur {clientId}: {content}");
+		Console.WriteLine($"🎮 Mouvement du joueur {clientId}: {content}");
 		
 		// Retransmet le mouvement aux autres clients (crypté)
 		BroadcastToOtherClients(clientId, content, encrypt: true);
@@ -249,7 +264,7 @@ public partial class MainGameScene : Node
 	/// </summary>
 	private void HandleChatMessage(string clientId, string content)
 	{
-		Console.WriteLine($"?? Chat de {clientId}: {content}");
+		Console.WriteLine($"💬 Chat de {clientId}: {content}");
 		
 		// Retransmet le message de chat à tous les clients (crypté)
 		BroadcastToAllClients($"CHAT_RELAY:{clientId}:{content}", encrypt: true);
@@ -260,7 +275,7 @@ public partial class MainGameScene : Node
 	/// </summary>
 	private void HandleGameStateUpdate(string clientId, string content)
 	{
-		Console.WriteLine($"?? Mise à jour d'état de {clientId}: {content}");
+		Console.WriteLine($"🔄 Mise à jour d'état de {clientId}: {content}");
 		
 		// Traite la mise à jour d'état du jeu...
 	}
@@ -270,7 +285,7 @@ public partial class MainGameScene : Node
 	/// </summary>
 	private void HandleClientInfo(string clientId, string content)
 	{
-		Console.WriteLine($"?? Informations du client {clientId}: {content}");
+		Console.WriteLine($"ℹ️ Informations du client {clientId}: {content}");
 		
 		// Répond avec les informations du serveur (crypté)
 		var encInfo = MessageReceiver.GetInstance.GetEncryptionInfo();
@@ -284,7 +299,7 @@ public partial class MainGameScene : Node
 	{
 		if (_debugMode)
 		{
-			Console.WriteLine($"?? Ping de {clientId}: {content}");
+			Console.WriteLine($"🏓 Ping de {clientId}: {content}");
 		}
 		
 		// Répond avec un pong (crypté)
@@ -296,7 +311,7 @@ public partial class MainGameScene : Node
 	/// </summary>
 	private void HandleCryptoTestMessage(string clientId, string content)
 	{
-		Console.WriteLine($"?? Test de cryptage de {clientId}: {content}");
+		Console.WriteLine($"🔐 Test de cryptage de {clientId}: {content}");
 		
 		// Répond avec un message de test crypté
 		SendMessageToClient(clientId, "CRYPTO_RESPONSE:Message de test crypté du serveur", encrypt: true);
@@ -307,7 +322,7 @@ public partial class MainGameScene : Node
 	/// </summary>
 	private void HandleGenericMessage(string clientId, string content)
 	{
-		Console.WriteLine($"?? Message générique de {clientId}: {content}");
+		Console.WriteLine($"📨 Message générique de {clientId}: {content}");
 	}
 
 	/// <summary>
@@ -321,11 +336,11 @@ public partial class MainGameScene : Node
 		bool success = await MessageReceiver.GetInstance.SendMessageToClient(clientId, message, encrypt);
 		if (_debugMode && !success)
 		{
-			Console.WriteLine($"? Échec envoi message à {clientId}");
+			Console.WriteLine($"❌ Échec envoi message à {clientId}");
 		}
 		else if (_debugMode && encrypt)
 		{
-			Console.WriteLine($"?? Message crypté envoyé à {clientId}");
+			Console.WriteLine($"🔐 Message crypté envoyé à {clientId}");
 		}
 	}
 
@@ -340,7 +355,7 @@ public partial class MainGameScene : Node
 		if (_debugMode)
 		{
 			string status = encrypt ? "crypté" : "clair";
-			Console.WriteLine($"?? Message {status} diffusé: {message}");
+			Console.WriteLine($"📢 Message {status} diffusé: {message}");
 		}
 	}
 
@@ -363,7 +378,7 @@ public partial class MainGameScene : Node
 		if (_debugMode)
 		{
 			string status = encrypt ? "crypté" : "clair";
-			Console.WriteLine($"?? Message {status} diffusé à {clients.Count - 1} autres clients");
+			Console.WriteLine($"📢 Message {status} diffusé à {clients.Count - 1} autres clients");
 		}
 	}
 
@@ -376,12 +391,57 @@ public partial class MainGameScene : Node
 	}
 
 	/// <summary>
+	/// Obtient l'état complet du jeu incluant les informations serveur et clients
+	/// </summary>
+	/// <returns>Un objet contenant l'état du jeu</returns>
+	public object GetGameState()
+	{
+		var stats = MessageReceiver.GetInstance.GetStatistics();
+		var encInfo = MessageReceiver.GetInstance.GetEncryptionInfo();
+		var connectedClients = MessageReceiver.GetInstance.GetConnectedClientIds();
+		var network = Network.GetInstance;
+
+		return new
+		{
+			Server = new
+			{
+				IsRunning = stats.isRunning,
+				IsServerManagerActive = _serverManager?.IsServerRunning() ?? false,
+				ConnectedClients = stats.connectedClients,
+				PendingMessages = stats.pendingMessages
+			},
+			Encryption = new
+			{
+				Enabled = stats.encryptionEnabled,
+				KeyPreview = encInfo.keyBase64?.Substring(0, Math.Min(10, encInfo.keyBase64?.Length ?? 0)) ?? "N/A",
+				IVPreview = encInfo.ivBase64?.Substring(0, Math.Min(10, encInfo.ivBase64?.Length ?? 0)) ?? "N/A"
+			},
+			Clients = connectedClients.Select(id => new
+			{
+				Id = id,
+				Status = "Connected",
+				Type = network.GetClientType(id) ?? "UNKNOWN"
+			}).ToList(),
+			Debug = new
+			{
+				DebugMode = _debugMode,
+				Timestamp = DateTime.UtcNow
+			},
+			Scene = new
+			{
+				CurrentScene = GetTree().CurrentScene?.Name ?? "Unknown",
+				ScenePath = GetTree().CurrentScene?.SceneFilePath ?? "Unknown"
+			}
+		};
+	}
+
+	/// <summary>
 	/// Déconnecte un client spécifique
 	/// </summary>
 	public async void DisconnectClient(string clientId)
 	{
 		await MessageReceiver.GetInstance.RemoveClient(clientId);
-		Console.WriteLine($"?? Client {clientId} déconnecté par le serveur");
+		Console.WriteLine($"🔌 Client {clientId} déconnecté par le serveur");
 	}
 
 	/// <summary>
@@ -430,14 +490,20 @@ public partial class MainGameScene : Node
 					DisplayStatistics();
 					break;
 				case Key.F3:
-					// Liste des clients connectés
+					// Liste des clients connectés avec leurs types
 					var clients = MessageReceiver.GetInstance.GetConnectedClientIds();
-					Console.WriteLine($"?? Clients connectés: {string.Join(", ", clients)}");
+					var network = Network.GetInstance;
+					Console.WriteLine($"👥 Clients connectés:");
+					foreach (var clientId in clients)
+					{
+						string clientType = network.GetClientType(clientId) ?? "UNKNOWN";
+						Console.WriteLine($"   - {clientId}: {clientType}");
+					}
 					break;
 				case Key.F4:
 					// Bascule le mode debug
 					_debugMode = !_debugMode;
-					Console.WriteLine($"?? Mode debug: {(_debugMode ? "ACTIVÉ" : "DÉSACTIVÉ")}");
+					Console.WriteLine($"🐛 Mode debug: {(_debugMode ? "ACTIVÉ" : "DÉSACTIVÉ")}");
 					break;
 				case Key.F5:
 					// Simule un message de chat crypté du serveur
@@ -446,23 +512,23 @@ public partial class MainGameScene : Node
 				case Key.F6:
 					// Traite les messages en mode haute fréquence
 					ProcessMessagesHighFrequency();
-					Console.WriteLine("? Traitement haute fréquence exécuté");
+					Console.WriteLine("⚡ Traitement haute fréquence exécuté");
 					break;
 				case Key.F7:
 					// Traite seulement les 5 prochains messages
 					ProcessLimitedMessages(5);
-					Console.WriteLine("?? Traitement limité à 5 messages");
+					Console.WriteLine("📦 Traitement limité à 5 messages");
 					break;
 				case Key.F8:
 					// Bascule le cryptage on/off
 					var encInfo = MessageReceiver.GetInstance.GetEncryptionInfo();
 					MessageReceiver.GetInstance.ConfigureEncryption(!encInfo.enabled);
-					Console.WriteLine($"?? Cryptage basculé: {(!encInfo.enabled ? "ACTIVÉ" : "DÉSACTIVÉ")}");
+					Console.WriteLine($"🔐 Cryptage basculé: {(!encInfo.enabled ? "ACTIVÉ" : "DÉSACTIVÉ")}");
 					break;
 				case Key.F9:
 					// Génère une nouvelle clé de cryptage
 					MessageReceiver.GetInstance.GenerateNewEncryptionKey();
-					Console.WriteLine("?? Nouvelle clé de cryptage générée");
+					Console.WriteLine("🔑 Nouvelle clé de cryptage générée");
 					break;
 				case Key.F10:
 					// Test de cryptage manuel
@@ -474,9 +540,7 @@ public partial class MainGameScene : Node
 
 	public async void ChangeScene()
 	{
-		GetTree().ChangeSceneToFile(
-			"res://Scenes/OtherScene.tscn"
-		);
+		GetTree().ChangeSceneToFile("res://Scenes/OtherScene.tscn");
 	}
 
 	private void OnServerStarted()
