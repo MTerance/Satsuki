@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="Documentation\CLIENT_TYPE_AUTHENTICATION.md" />
+    <None Include="Documentation\SPLASHSCREEN_MANAGER.md" />
     <None Include="Networks\README_Encryption.md" />
     <None Include="Networks\README_MessageSystem.md" />
     <None Include="Scenes\Locations\StageEx.tscn" />
