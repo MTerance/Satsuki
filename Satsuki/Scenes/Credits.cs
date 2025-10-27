@@ -1,12 +1,18 @@
 using Godot;
 using Satsuki.Manager;
+using Satsuki.Interfaces;
+using System;
 
-public partial class Credits : Node
+public partial class Credits : Node, IScene
 {
 	private SplashScreenManager _splashScreenManager;
+	private DateTime _sceneStartTime;
+	private int _totalSkips = 0;
 	
 	public override void _Ready()
 	{
+		_sceneStartTime = DateTime.UtcNow;
+		
 		GD.Print("?? Credits: Initialisation...");
 		
 		// Créer et ajouter le SplashScreenManager
@@ -22,6 +28,56 @@ public partial class Credits : Node
 		
 		// Démarrer la séquence
 		_splashScreenManager.StartSequence();
+	}
+	
+	/// <summary>
+	/// Retourne l'état actuel de la scène Credits
+	/// </summary>
+	public object GetSceneState()
+	{
+		var elapsedTime = (DateTime.UtcNow - _sceneStartTime).TotalSeconds;
+		
+		return new
+		{
+			SceneInfo = new
+			{
+				SceneName = "Credits",
+				SceneType = "SplashScreen",
+				StartTime = _sceneStartTime,
+				ElapsedTime = Math.Round(elapsedTime, 2),
+				ElapsedTimeFormatted = FormatElapsedTime(elapsedTime)
+			},
+			SplashScreens = new
+			{
+				TotalScreens = _splashScreenManager?.GetSplashScreenCount() ?? 0,
+				CurrentIndex = _splashScreenManager?.GetCurrentIndex() ?? 0,
+				RemainingScreens = (_splashScreenManager?.GetSplashScreenCount() ?? 0) - (_splashScreenManager?.GetCurrentIndex() ?? 0),
+				Progress = _splashScreenManager != null && _splashScreenManager.GetSplashScreenCount() > 0
+					? Math.Round((float)_splashScreenManager.GetCurrentIndex() / _splashScreenManager.GetSplashScreenCount() * 100, 2)
+					: 0
+			},
+			UserInteraction = new
+			{
+				TotalSkips = _totalSkips,
+				SkipRate = elapsedTime > 0 ? Math.Round(_totalSkips / elapsedTime * 60, 2) : 0 // Skips per minute
+			},
+			Status = new
+			{
+				IsCompleted = (_splashScreenManager?.GetCurrentIndex() ?? 0) >= (_splashScreenManager?.GetSplashScreenCount() ?? 0),
+				IsActive = _splashScreenManager != null,
+				Timestamp = DateTime.UtcNow
+			}
+		};
+	}
+	
+	/// <summary>
+	/// Formate le temps écoulé en format lisible
+	/// </summary>
+	private string FormatElapsedTime(double seconds)
+	{
+		int minutes = (int)(seconds / 60);
+		int secs = (int)(seconds % 60);
+		return $"{minutes:D2}:{secs:D2}";
 	}
 	
 	/// <summary>
@@ -61,6 +117,10 @@ public partial class Credits : Node
 	{
 		GD.Print("?? Tous les crédits ont été affichés");
 		
+		// Log l'état final
+		var finalState = GetSceneState();
+		GD.Print($"?? État final des crédits: {System.Text.Json.JsonSerializer.Serialize(finalState)}");
+		
 		// Retourner au menu principal ou fermer le jeu
 		// Exemple: Retour au menu après 1 seconde
 		GetTree().CreateTimer(1.0f).Timeout += () =>
@@ -82,12 +142,14 @@ public partial class Credits : Node
 			{
 				GD.Print("?? Skip vers le splash screen suivant");
 				_splashScreenManager.Skip();
+				_totalSkips++;
 			}
 			// Appuyer sur Echap pour tout sauter
 			else if (keyEvent.Keycode == Key.Escape)
 			{
 				GD.Print("???? Skip de tous les crédits");
 				_splashScreenManager.SkipAll();
+				_totalSkips += _splashScreenManager.GetSplashScreenCount() - _splashScreenManager.GetCurrentIndex();
 			}
 		}
 		
@@ -96,6 +158,7 @@ public partial class Credits : Node
 		{
 			GD.Print("??? Clic souris: Skip vers le splash screen suivant");
 			_splashScreenManager.Skip();
+			_totalSkips++;
 		}
 	}
 	

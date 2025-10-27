@@ -6,17 +6,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using Satsuki.Interfaces;
 
 public partial class MainGameScene : Node
 {
 	private ServerManager _serverManager;
+	private IScene _currentScene;
 	private bool _debugMode = true;
-	
+
 	public override void _Ready()
 	{
 		// Récupérer le ServerManager via AutoLoad
 		_serverManager = GetNodeOrNull<ServerManager>("/root/ServerManager");
-		
+
 		if (_serverManager == null)
 		{
 			GD.PrintErr("❌ ServerManager non trouvé via AutoLoad! Démarrage manuel...");
@@ -44,10 +46,10 @@ public partial class MainGameScene : Node
 			_serverManager.ServerStarted += OnServerStarted;
 			_serverManager.ServerStopped += OnServerStopped;
 			_serverManager.ServerError += OnServerError;
-			
+
 			GD.Print("🎮 MainGameScene: Connecté au ServerManager");
 		}
-		
+
 		// Teste le système de cryptage au démarrage
 		TestCryptographySystem();
 		/*
@@ -75,7 +77,7 @@ public partial class MainGameScene : Node
 	{
 		Console.WriteLine("🔧 Test du système de cryptage...");
 		bool testResult = MessageCrypto.TestEncryption();
-		
+
 		if (testResult)
 		{
 			Console.WriteLine("✅ Système de cryptage opérationnel");
@@ -84,7 +86,7 @@ public partial class MainGameScene : Node
 		{
 			Console.WriteLine("❌ Problème avec le système de cryptage");
 		}
-		
+
 		// Affiche les informations sur les clés par défaut
 		var keyInfo = MessageCrypto.GetDefaultKeyInfo();
 		Console.WriteLine($"🔑 Clé par défaut: {keyInfo.keyBase64.Substring(0, 10)}...");
@@ -100,10 +102,8 @@ public partial class MainGameScene : Node
 		if (MessageReceiver.GetInstance.HasPendingMessages())
 		{
 			// Récupère tous les messages dans l'ordre d'arrivée avec décryptage automatique
-			List<Message> messages = maxMessages > 0 
-				? MessageReceiver.GetInstance.GetMessagesByArrivalOrder(maxMessages, decryptMessages: true)
-				: MessageReceiver.GetInstance.GetMessagesByArrivalOrder(decryptMessages: true);
-			
+			List<Message> messages = MessageReceiver.GetInstance.GetMessagesByArrivalOrder(decryptMessages: true);
+
 			foreach (var message in messages)
 			{
 				HandleMessage(message);
@@ -120,7 +120,7 @@ public partial class MainGameScene : Node
 		{
 			var stats = MessageReceiver.GetInstance.GetStatistics();
 			var encInfo = MessageReceiver.GetInstance.GetEncryptionInfo();
-			
+
 			Console.WriteLine($"=== STATISTIQUES RÉSEAU ===");
 			Console.WriteLine($"🟢 Serveur actif: {stats.isRunning}");
 			Console.WriteLine($"👥 Clients connectés: {stats.connectedClients}");
@@ -145,18 +145,18 @@ public partial class MainGameScene : Node
 		{
 			Console.WriteLine($"[Séq#{message.SequenceNumber}] [{message.Timestamp:HH:mm:ss.fff}] {message.Content}");
 		}
-		
+
 		// Extrait l'ID du client du message (format: [ClientId] contenu)
 		string clientId = ExtractClientId(message.Content);
 		string content = ExtractMessageContent(message.Content);
-		
+
 		// Vérifier si c'est une réponse JSON (commence par '{')
 		if (content.TrimStart().StartsWith("{"))
 		{
 			HandleJsonMessage(clientId, content);
 			return;
 		}
-		
+
 		// Traitement basé sur le contenu du message
 		switch (GetMessageType(content))
 		{
@@ -207,17 +207,17 @@ public partial class MainGameScene : Node
 		{
 			using JsonDocument doc = JsonDocument.Parse(jsonContent);
 			JsonElement root = doc.RootElement;
-			
+
 			// Vérifier si c'est une réponse de type client
 			if (root.TryGetProperty("order", out JsonElement orderElement))
 			{
 				string order = orderElement.GetString();
-				
+
 				if (order == "ClientTypeResponse" && root.TryGetProperty("clientType", out JsonElement typeElement))
 				{
 					string clientType = typeElement.GetString();
 					Console.WriteLine($"📥 Type de client reçu de {clientId}: {clientType}");
-					
+
 					// Récupérer le mot de passe si présent (pour les clients BACKEND)
 					string password = null;
 					if (root.TryGetProperty("password", out JsonElement passwordElement))
@@ -225,7 +225,7 @@ public partial class MainGameScene : Node
 						password = passwordElement.GetString();
 						Console.WriteLine($"🔑 Mot de passe fourni par {clientId} pour authentification BACKEND");
 					}
-					
+
 					// Transférer au ServerManager pour traitement avec le mot de passe
 					_serverManager?.HandleClientTypeResponse(clientId, clientType, password);
 				}
@@ -269,7 +269,7 @@ public partial class MainGameScene : Node
 	private void HandlePlayerMovement(string clientId, string content)
 	{
 		Console.WriteLine($"🎮 Mouvement du joueur {clientId}: {content}");
-		
+
 		// Retransmet le mouvement aux autres clients (crypté)
 		BroadcastToOtherClients(clientId, content, encrypt: true);
 	}
@@ -280,7 +280,7 @@ public partial class MainGameScene : Node
 	private void HandleChatMessage(string clientId, string content)
 	{
 		Console.WriteLine($"💬 Chat de {clientId}: {content}");
-		
+
 		// Retransmet le message de chat à tous les clients (crypté)
 		BroadcastToAllClients($"CHAT_RELAY:{clientId}:{content}", encrypt: true);
 	}
@@ -290,8 +290,8 @@ public partial class MainGameScene : Node
 	/// </summary>
 	private void HandleGameStateUpdate(string clientId, string content)
 	{
-		Console.WriteLine($"🎯 Mise à jour d'état de {clientId}: {content}");
-		
+		Console.WriteLine($"🔄 Mise à jour d'état de {clientId}: {content}");
+
 		// Traite la mise à jour d'état du jeu...
 	}
 
@@ -301,7 +301,7 @@ public partial class MainGameScene : Node
 	private void HandleClientInfo(string clientId, string content)
 	{
 		Console.WriteLine($"ℹ️ Informations du client {clientId}: {content}");
-		
+
 		// Répond avec les informations du serveur (crypté)
 		var encInfo = MessageReceiver.GetInstance.GetEncryptionInfo();
 		SendMessageToClient(clientId, $"SERVER_INFO:Version=1.0,Players={GetConnectedClientCount()},Crypto={encInfo.enabled}", encrypt: true);
@@ -316,7 +316,7 @@ public partial class MainGameScene : Node
 		{
 			Console.WriteLine($"🏓 Ping de {clientId}: {content}");
 		}
-		
+
 		// Répond avec un pong (crypté)
 		SendMessageToClient(clientId, "PONG", encrypt: true);
 	}
@@ -327,7 +327,7 @@ public partial class MainGameScene : Node
 	private void HandleCryptoTestMessage(string clientId, string content)
 	{
 		Console.WriteLine($"🔐 Test de cryptage de {clientId}: {content}");
-		
+
 		// Répond avec un message de test crypté
 		SendMessageToClient(clientId, "CRYPTO_RESPONSE:Message de test crypté du serveur", encrypt: true);
 	}
@@ -416,6 +416,41 @@ public partial class MainGameScene : Node
 		var connectedClients = MessageReceiver.GetInstance.GetConnectedClientIds();
 		var network = Network.GetInstance;
 
+		// Récupérer la scène actuelle
+		var currentScene = GetTree().CurrentScene;
+		string sceneName = currentScene?.Name ?? "Unknown";
+		string scenePath = currentScene?.SceneFilePath ?? "Unknown";
+
+		// Essayer d'obtenir l'état de la scène si elle a une méthode GetSceneState
+		object sceneState = null;
+		if (currentScene != null)
+		{
+			// Utiliser la réflexion pour appeler GetSceneState si elle existe
+			var sceneType = currentScene.GetType();
+			var getSceneStateMethod = sceneType.GetMethod("GetSceneState",
+				System.Reflection.BindingFlags.Public |
+				System.Reflection.BindingFlags.Instance);
+
+			if (getSceneStateMethod != null)
+			{
+				try
+				{
+					sceneState = getSceneStateMethod.Invoke(currentScene, null);
+					Console.WriteLine($"✅ État de la scène {sceneName} récupéré");
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine($"❌ Erreur lors de la récupération de l'état de la scène: {ex.Message}");
+					sceneState = new { Error = "Failed to get scene state", Message = ex.Message };
+				}
+			}
+			else
+			{
+				sceneState = new { Info = "Scene does not implement GetSceneState()" };
+				Console.WriteLine($"ℹ️ La scène {sceneName} n'implémente pas GetSceneState()");
+			}
+		}
+
 		return new
 		{
 			Server = new
@@ -444,8 +479,9 @@ public partial class MainGameScene : Node
 			},
 			Scene = new
 			{
-				CurrentScene = GetTree().CurrentScene?.Name ?? "Unknown",
-				ScenePath = GetTree().CurrentScene?.SceneFilePath ?? "Unknown"
+				CurrentScene = sceneName,
+				ScenePath = scenePath,
+				SceneState = sceneState
 			}
 		};
 	}
@@ -456,7 +492,35 @@ public partial class MainGameScene : Node
 	public async void DisconnectClient(string clientId)
 	{
 		await MessageReceiver.GetInstance.RemoveClient(clientId);
-		Console.WriteLine($"🚪 Client {clientId} déconnecté par le serveur");
+		Console.WriteLine($"🔌 Client {clientId} déconnecté par le serveur");
+	}
+
+	/// <summary>
+	/// Méthode alternative pour récupérer un nombre limité de messages
+	/// </summary>
+	private void ProcessLimitedMessages(int maxMessages = 10)
+	{
+		if (MessageReceiver.GetInstance.HasPendingMessages())
+		{
+			List<Message> messages = MessageReceiver.GetInstance.GetMessagesByArrivalOrder(maxMessages, decryptMessages: true);
+
+			foreach (var message in messages)
+			{
+				HandleMessage(message);
+			}
+		}
+	}
+
+	/// <summary>
+	/// Traite les messages en mode haute fréquence
+	/// </summary>
+	private void ProcessMessagesHighFrequency()
+	{
+		// Traite tous les messages disponibles immédiatement
+		while (MessageReceiver.GetInstance.HasPendingMessages())
+		{
+			ProcessNextMessage();
+		}
 	}
 
 	/// <summary>
@@ -530,7 +594,7 @@ public partial class MainGameScene : Node
 	private void OnServerStarted()
 	{
 		GD.Print("🎮 MainGameScene: Serveur démarré avec succès!");
-		
+
 		// Le serveur est maintenant prêt, on peut activer les fonctionnalités réseau
 		SetNetworkUIEnabled(true);
 	}
