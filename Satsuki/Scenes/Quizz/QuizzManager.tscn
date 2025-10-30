@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://c8vvkmwokqd62"]
+
+[ext_resource type="Script" uid="uid://cljtg7o7hlpky" path="res://Scenes/Quizz/QuizzManager.cs" id="1_s4k3u"]
+
+[node name="QuizzManager" type="Node2D"]
+script = ExtResource("1_s4k3u")
