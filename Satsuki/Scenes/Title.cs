@@ -5,7 +5,7 @@ using System;
 namespace Satsuki.Scenes
 {
 	/// <summary>
-	/// Scène d'écran titre du jeu
+	/// Scene d'ecran titre du jeu
 	/// </summary>
 	public partial class Title : Node, IScene
 	{
@@ -20,16 +20,16 @@ namespace Satsuki.Scenes
 		{
 			_sceneStartTime = DateTime.UtcNow;
 			
-			GD.Print("?? Title: Initialisation de l'écran titre...");
+			GD.Print("Title: Initialisation de l'ecran titre...");
 			
 			// Initialiser l'interface utilisateur
 			InitializeUI();
 			
-			GD.Print($"?? Menu initialisé avec {_menuItems.Length} options");
+			GD.Print($"Menu initialise avec {_menuItems.Length} options");
 		}
 		
 		/// <summary>
-		/// Retourne l'état actuel de la scène Title
+		/// Retourne l'etat actuel de la scene Title
 		/// </summary>
 		public object GetSceneState()
 		{
@@ -70,7 +70,7 @@ namespace Satsuki.Scenes
 		/// </summary>
 		private void InitializeUI()
 		{
-			// Créer le titre principal
+			// Creer le titre principal
 			var titleLabel = new Label
 			{
 				Text = "SATSUKI",
@@ -82,7 +82,7 @@ namespace Satsuki.Scenes
 			titleLabel.AddThemeColorOverride("font_color", new Color(1.0f, 0.5f, 0.0f));
 			AddChild(titleLabel);
 			
-			// Créer le menu
+			// Creer le menu
 			var menuContainer = new VBoxContainer
 			{
 				Position = new Vector2(400, 300),
@@ -107,28 +107,28 @@ namespace Satsuki.Scenes
 			
 			AddChild(menuContainer);
 			
-			GD.Print("? UI initialisée");
+			GD.Print("UI initialisee");
 		}
 		
 		/// <summary>
-		/// Callback quand un élément du menu est survolé
+		/// Callback quand un element du menu est survole
 		/// </summary>
 		private void OnMenuItemHover(int index)
 		{
 			_menuItemIndex = index;
 			_selectedMenuItem = _menuItems[index];
-			GD.Print($"??? Menu hover: {_selectedMenuItem}");
+			GD.Print($"Menu hover: {_selectedMenuItem}");
 		}
 		
 		/// <summary>
-		/// Callback quand un élément du menu est sélectionné
+		/// Callback quand un element du menu est selectionne
 		/// </summary>
 		private void OnMenuItemSelected(int index)
 		{
 			_menuItemIndex = index;
 			_selectedMenuItem = _menuItems[index];
 			
-			GD.Print($"? Menu sélectionné: {_selectedMenuItem}");
+			GD.Print($"Menu selectionne: {_selectedMenuItem}");
 			
 			switch (_selectedMenuItem)
 			{
@@ -148,17 +148,17 @@ namespace Satsuki.Scenes
 		}
 		
 		/// <summary>
-		/// Démarre le jeu
+		/// Demarre le jeu
 		/// </summary>
 		private void StartGame()
 		{
-			GD.Print("?? Démarrage du jeu...");
+			GD.Print("Demarrage du jeu...");
 			
-			// Log l'état avant de quitter
+			// Log l'etat avant de quitter
 			var finalState = GetSceneState();
-			GD.Print($"?? État de la scène titre: {System.Text.Json.JsonSerializer.Serialize(finalState)}");
+			GD.Print($"Etat de la scene titre: {System.Text.Json.JsonSerializer.Serialize(finalState)}");
 			
-			// Charger la scène de jeu
+			// Charger la scene de jeu
 			GetTree().ChangeSceneToFile("res://Scenes/MainGameScene.tscn");
 		}
 		
@@ -167,17 +167,17 @@ namespace Satsuki.Scenes
 		/// </summary>
 		private void OpenOptions()
 		{
-			GD.Print("?? Ouverture des options...");
-			// TODO: Implémenter la scène d'options
+			GD.Print("Ouverture des options...");
+			// TODO: Implementer la scene d'options
 			// GetTree().ChangeSceneToFile("res://Scenes/Options.tscn");
 		}
 		
 		/// <summary>
-		/// Ouvre les crédits
+		/// Ouvre les credit
 		/// </summary>
 		private void OpenCredits()
 		{
-			GD.Print("?? Ouverture des crédits...");
+			GD.Print("Ouverture des credits...");
 			GetTree().ChangeSceneToFile("res://Scenes/Credits.tscn");
 		}
 		
@@ -186,17 +186,17 @@ namespace Satsuki.Scenes
 		/// </summary>
 		private void QuitGame()
 		{
-			GD.Print("?? Fermeture du jeu...");
+			GD.Print("Fermeture du jeu...");
 			
-			// Log l'état final
+			// Log l'etat final
 			var finalState = GetSceneState();
-			GD.Print($"?? État final de la scène titre: {System.Text.Json.JsonSerializer.Serialize(finalState)}");
+			GD.Print($"Etat final de la scene titre: {System.Text.Json.JsonSerializer.Serialize(finalState)}");
 			
 			GetTree().Quit();
 		}
 		
 		/// <summary>
-		/// Formate le temps écoulé en format lisible
+		/// Formate le temps ecoule en format lisible
 		/// </summary>
 		private string FormatElapsedTime(double seconds)
 		{
@@ -218,19 +218,19 @@ namespace Satsuki.Scenes
 						// Naviguer vers le haut
 						_menuItemIndex = (_menuItemIndex - 1 + _menuItems.Length) % _menuItems.Length;
 						_selectedMenuItem = _menuItems[_menuItemIndex];
-						GD.Print($"?? Menu: {_selectedMenuItem}");
+						GD.Print($"Menu: {_selectedMenuItem}");
 						break;
 						
 					case Key.Down:
 						// Naviguer vers le bas
 						_menuItemIndex = (_menuItemIndex + 1) % _menuItems.Length;
 						_selectedMenuItem = _menuItems[_menuItemIndex];
-						GD.Print($"?? Menu: {_selectedMenuItem}");
+						GD.Print($"Menu: {_selectedMenuItem}");
 						break;
 						
 					case Key.Enter:
 					case Key.Space:
-						// Sélectionner l'élément actuel
+						// Selectionner l'element actuel
 						OnMenuItemSelected(_menuItemIndex);
 						break;
 						
@@ -271,7 +271,7 @@ namespace Satsuki.Scenes
 		
 		public override void _ExitTree()
 		{
-			GD.Print("?? Title: Nettoyage de la scène titre");
+			GD.Print("Title: Nettoyage de la scene titre");
 		}
 	}
 }

@@ -7,10 +7,15 @@
     <None Include="Documentation\CLIENT_TYPE_AUTHENTICATION.md" />
     <None Include="Documentation\CREDITS_ISCENE_IMPLEMENTATION.md" />
     <None Include="Documentation\CREDITS_SCENARIO.md" />
+    <None Include="Documentation\EMOJI_LOG_GUIDE.md" />
     <None Include="Documentation\GETGAMESTATE_SYSTEM.md" />
+    <None Include="Documentation\MESSAGE_ROUTING_SUMMARY.md" />
+    <None Include="Documentation\MESSAGE_ROUTING_SYSTEM.md" />
+    <None Include="Documentation\SESSION_SUMMARY.md" />
     <None Include="Documentation\SPLASHSCREEN_MANAGER.md" />
     <None Include="Documentation\TITLE_SCENE.md" />
     <None Include="Documentation\TITLE_SCENE_SUMMARY.md" />
+    <None Include="Documentation\UTF8_ENCODING_FIX.md" />
     <None Include="Interfaces\README.md" />
     <None Include="Interfaces\SUMMARY.md" />
     <None Include="Networks\README_Encryption.md" />

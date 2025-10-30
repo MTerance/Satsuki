@@ -11,7 +11,6 @@ using Satsuki.Interfaces;
 public partial class MainGameScene : Node
 {
 	private ServerManager _serverManager;
-	private IScene _currentScene;
 	private bool _debugMode = true;
 
 	public override void _Ready()
@@ -184,46 +183,7 @@ public partial class MainGameScene : Node
 			HandleGenericMessage(clientId, content);
 		}
 	}
-
-	/// <summary>
-	/// Traite les messages JSON du client
-	/// </summary>
-	private void HandleJsonMessage(string clientId, string jsonContent)
-	{
-		try
-		{
-			using JsonDocument doc = JsonDocument.Parse(jsonContent);
-			JsonElement root = doc.RootElement;
-
-			// Vérifier si c'est une réponse de type client
-			if (root.TryGetProperty("order", out JsonElement orderElement))
-			{
-				string order = orderElement.GetString();
-
-				if (order == "ClientTypeResponse" && root.TryGetProperty("clientType", out JsonElement typeElement))
-				{
-					string clientType = typeElement.GetString();
-					Console.WriteLine($"📥 Type de client reçu de {clientId}: {clientType}");
-
-					// Récupérer le mot de passe si présent (pour les clients BACKEND)
-					string password = null;
-					if (root.TryGetProperty("password", out JsonElement passwordElement))
-					{
-						password = passwordElement.GetString();
-						Console.WriteLine($"🔑 Mot de passe fourni par {clientId} pour authentification BACKEND");
-					}
-
-					// Transférer au ServerManager pour traitement avec le mot de passe
-					_serverManager?.HandleClientTypeResponse(clientId, clientType, password);
-				}
-			}
-		}
-		catch (JsonException ex)
-		{
-			Console.WriteLine($"❌ Erreur lors du parsing JSON de {clientId}: {ex.Message}");
-		}
-	}
-
+	
 	/// <summary>
 	/// Extrait l'ID du client du message
 	/// </summary>
@@ -248,6 +208,277 @@ public partial class MainGameScene : Node
 			return messageContent.Substring(startIndex);
 		}
 		return messageContent;
+	}
+	
+	/// <summary>
+	/// Traite les messages JSON du client
+	/// </summary>
+	private void HandleJsonMessage(string clientId, string jsonContent)
+	{
+		try
+		{
+			using JsonDocument doc = JsonDocument.Parse(jsonContent);
+			JsonElement root = doc.RootElement;
+			
+			// Vérifier si le message a un target
+			if (root.TryGetProperty("target", out JsonElement targetElement))
+			{
+				string target = targetElement.GetString();
+				
+				switch (target?.ToUpper())
+				{
+					case "GAME":
+						// Message destiné au MainGameScene
+						HandleGameMessage(clientId, root);
+						break;
+						
+					case "SCENE":
+						// Message destiné à la scène actuelle
+						HandleSceneMessage(clientId, root);
+						break;
+						
+					default:
+						Console.WriteLine($"⚠️ Target inconnu de {clientId}: {target}");
+						break;
+				}
+				return;
+			}
+			
+			// Ancien format (compatibilité) - Vérifier si c'est une réponse de type client
+			if (root.TryGetProperty("order", out JsonElement orderElement))
+			{
+				string order = orderElement.GetString();
+				
+				if (order == "ClientTypeResponse" && root.TryGetProperty("clientType", out JsonElement typeElement))
+				{
+					string clientType = typeElement.GetString();
+					Console.WriteLine($"📥 Type de client reçu de {clientId}: {clientType}");
+					
+					// Récupérer le mot de passe si présent (pour les clients BACKEND)
+					string password = null;
+					if (root.TryGetProperty("password", out JsonElement passwordElement))
+					{
+						password = passwordElement.GetString();
+						Console.WriteLine($"🔑 Mot de passe fourni par {clientId} pour authentification BACKEND");
+					}
+					
+					// Transférer au ServerManager pour traitement avec le mot de passe
+					_serverManager?.HandleClientTypeResponse(clientId, clientType, password);
+				}
+			}
+		}
+		catch (JsonException ex)
+		{
+			Console.WriteLine($"❌ Erreur lors du parsing JSON de {clientId}: {ex.Message}");
+		}
+	}
+	
+	/// <summary>
+	/// Traite les messages destinés au Game (MainGameScene)
+	/// </summary>
+	private void HandleGameMessage(string clientId, JsonElement root)
+	{
+		// Déterminer si c'est un order (BACKEND) ou une request (autres clients)
+		bool isOrder = root.TryGetProperty("order", out JsonElement orderElement);
+		bool isRequest = root.TryGetProperty("request", out JsonElement requestElement);
+		
+		if (isOrder)
+		{
+			string order = orderElement.GetString();
+			Console.WriteLine($"📥 [GAME] Order de {clientId}: {order}");
+			
+			// Traiter les orders BACKEND
+			HandleGameOrder(clientId, order, root);
+		}
+		else if (isRequest)
+		{
+			string request = requestElement.GetString();
+			Console.WriteLine($"📥 [GAME] Request de {clientId}: {request}");
+			
+			// Traiter les requests des clients
+			HandleGameRequest(clientId, request, root);
+		}
+		else
+		{
+			Console.WriteLine($"⚠️ Message Game sans 'order' ni 'request' de {clientId}");
+		}
+	}
+	
+	/// <summary>
+	/// Traite les orders BACKEND pour le Game
+	/// </summary>
+	private void HandleGameOrder(string clientId, string order, JsonElement root)
+	{
+		switch (order)
+		{
+			case "GetGameState":
+				// Renvoyer l'état du jeu au client BACKEND
+				var gameState = GetGameState();
+				string jsonState = JsonSerializer.Serialize(gameState);
+				SendMessageToClient(clientId, jsonState, encrypt: true);
+				Console.WriteLine($"✅ État du jeu envoyé à {clientId}");
+				break;
+				
+			case "DisconnectClient":
+				// Déconnecter un client spécifique
+				if (root.TryGetProperty("targetClientId", out JsonElement targetElement))
+				{
+					string targetClientId = targetElement.GetString();
+					DisconnectClient(targetClientId);
+					Console.WriteLine($"✅ Client {targetClientId} déconnecté sur ordre de {clientId}");
+				}
+				break;
+				
+			case "BroadcastMessage":
+				// Diffuser un message à tous les clients
+				if (root.TryGetProperty("message", out JsonElement messageElement))
+				{
+					string message = messageElement.GetString();
+					BroadcastToAllClients(message, encrypt: true);
+					Console.WriteLine($"✅ Message diffusé sur ordre de {clientId}");
+				}
+				break;
+				
+			case "SetDebugMode":
+				// Basculer le mode debug
+				if (root.TryGetProperty("enabled", out JsonElement enabledElement))
+				{
+					_debugMode = enabledElement.GetBoolean();
+					Console.WriteLine($"✅ Mode debug: {(_debugMode ? "ACTIVÉ" : "DÉSACTIVÉ")} par {clientId}");
+				}
+				break;
+				
+			default:
+				Console.WriteLine($"⚠️ Order Game inconnu: {order}");
+				break;
+		}
+	}
+	
+	/// <summary>
+	/// Traite les requests des clients pour le Game
+	/// </summary>
+	private void HandleGameRequest(string clientId, string request, JsonElement root)
+	{
+		switch (request)
+		{
+			case "GetServerInfo":
+				// Envoyer les informations du serveur
+				var stats = MessageReceiver.GetInstance.GetStatistics();
+				var serverInfo = new
+				{
+					IsRunning = stats.isRunning,
+					ConnectedClients = stats.connectedClients,
+					PendingMessages = stats.pendingMessages,
+					Timestamp = DateTime.UtcNow
+				};
+				string jsonInfo = JsonSerializer.Serialize(serverInfo);
+				SendMessageToClient(clientId, jsonInfo, encrypt: true);
+				Console.WriteLine($"✅ Infos serveur envoyées à {clientId}");
+				break;
+				
+			case "Ping":
+				// Répondre au ping
+				var pongResponse = new
+				{
+					target = "Game",
+					response = "Pong",
+					timestamp = DateTime.UtcNow
+				};
+				SendMessageToClient(clientId, JsonSerializer.Serialize(pongResponse), encrypt: true);
+				Console.WriteLine($"🏓 Pong envoyé à {clientId}");
+				break;
+				
+			default:
+				Console.WriteLine($"⚠️ Request Game inconnue: {request}");
+				break;
+		}
+	}
+	
+	/// <summary>
+	/// Traite les messages destinés à la Scene actuelle
+	/// </summary>
+	private void HandleSceneMessage(string clientId, JsonElement root)
+	{
+		var currentScene = GetTree().CurrentScene;
+		
+		if (currentScene == null)
+		{
+			Console.WriteLine($"⚠️ Pas de scène actuelle pour traiter le message de {clientId}");
+			return;
+		}
+		
+		// Déterminer si c'est un order (BACKEND) ou une request (autres clients)
+		bool isOrder = root.TryGetProperty("order", out JsonElement orderElement);
+		bool isRequest = root.TryGetProperty("request", out JsonElement requestElement);
+		
+		if (isOrder)
+		{
+			string order = orderElement.GetString();
+			Console.WriteLine($"📥 [SCENE] Order de {clientId} pour {currentScene.Name}: {order}");
+			
+			// Appeler HandleSceneOrder sur la scène si elle existe
+			InvokeSceneMethod(currentScene, "HandleSceneOrder", clientId, order, root);
+		}
+		else if (isRequest)
+		{
+			string request = requestElement.GetString();
+			Console.WriteLine($"📥 [SCENE] Request de {clientId} pour {currentScene.Name}: {request}");
+			
+			// Appeler HandleSceneRequest sur la scène si elle existe
+			InvokeSceneMethod(currentScene, "HandleSceneRequest", clientId, request, root);
+		}
+		else
+		{
+			Console.WriteLine($"⚠️ Message Scene sans 'order' ni 'request' de {clientId}");
+		}
+	}
+	
+	/// <summary>
+	/// Invoque une méthode sur la scène actuelle par réflexion
+	/// </summary>
+	private void InvokeSceneMethod(Node scene, string methodName, string clientId, string commandType, JsonElement root)
+	{
+		try
+		{
+			var sceneType = scene.GetType();
+			var method = sceneType.GetMethod(methodName, 
+				System.Reflection.BindingFlags.Public | 
+				System.Reflection.BindingFlags.Instance);
+			
+			if (method != null)
+			{
+				// Convertir JsonElement en string pour le passer à la scène
+				string jsonString = root.GetRawText();
+				method.Invoke(scene, new object[] { clientId, commandType, jsonString });
+				Console.WriteLine($"✅ Méthode {methodName} invoquée sur {scene.Name}");
+			}
+			else
+			{
+				Console.WriteLine($"ℹ️ La scène {scene.Name} n'implémente pas {methodName}");
+				
+				// Si la scène n'a pas la méthode, envoyer une réponse d'erreur
+				var errorResponse = new
+				{
+					target = "Scene",
+					error = $"Method {methodName} not implemented",
+					sceneName = scene.Name
+				};
+				SendMessageToClient(clientId, JsonSerializer.Serialize(errorResponse), encrypt: true);
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"❌ Erreur lors de l'invocation de {methodName}: {ex.Message}");
+			
+			// Envoyer une réponse d'erreur au client
+			var errorResponse = new
+			{
+				target = "Scene",
+				error = ex.Message,
+				method = methodName
+			};
+			SendMessageToClient(clientId, JsonSerializer.Serialize(errorResponse), encrypt: true);
+		}
 	}
 
 	/// <summary>
