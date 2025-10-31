@@ -89,9 +89,9 @@ public partial class QuestionAswerQuizzScene : Control, IQuizz
 			{ "CurrentState", currentState.ToString() }
 		};
 		return JsonSerializer.Serialize(quizzState);
-    }
+	}
 
-    private void TEST_SetNewQuizz()
+	private void TEST_SetNewQuizz()
 	{
 		var medias = new System.Collections.Generic.Dictionary<QuestionAnswerQuizzModel.ShowStateMedia, MediaModel>
 		{

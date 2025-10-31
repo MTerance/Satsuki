@@ -8,7 +8,9 @@
     <None Include="Documentation\CREDITS_ISCENE_IMPLEMENTATION.md" />
     <None Include="Documentation\CREDITS_SCENARIO.md" />
     <None Include="Documentation\GETGAMESTATE_SYSTEM.md" />
+    <None Include="Documentation\ServerArchitecture.md" />
     <None Include="Documentation\SPLASHSCREEN_MANAGER.md" />
+    <None Include="Documentation\SubViewport_Fix.md" />
     <None Include="Documentation\TITLE_SCENE.md" />
     <None Include="Documentation\TITLE_SCENE_SUMMARY.md" />
     <None Include="Interfaces\README.md" />

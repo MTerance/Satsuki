@@ -1,6 +1,7 @@
 using Godot;
 using Satsuki.Networks;
 using Satsuki.Utils;
+using Satsuki.Systems;
 using System;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ public partial class ServerManager : Node
 {
 	private Network _network;
 	private bool _isServerRunning = false;
-	private MainGameScene _mainGameScene;
+	private GameServerHandler _gameServerHandler;
 	private bool _hasHadFirstClient = false;
 	
 	// Mot de passe pour les clients BACKEND
@@ -26,25 +27,28 @@ public partial class ServerManager : Node
 	{
 		GD.Print("?? Server Manager: Initialisation du serveur Satsuki...");
 		
-		// Tenter de récupérer MainGameScene
-		_mainGameScene = GetNodeOrNull<MainGameScene>("/root/MainGameScene");
-		if (_mainGameScene == null)
-		{
-			GD.PrintErr("?? ServerManager: MainGameScene non trouvé, GetGameState ne sera pas disponible");
-		}
-		
-		// Demarrer le serveur automatiquement au lancement du jeu
+		// Démarrer le serveur automatiquement au lancement du jeu
 		CallDeferred(nameof(StartServerAsync));
 		
-		// Gerer la fermeture propre du serveur
+		// Gérer la fermeture propre du serveur
 		GetTree().AutoAcceptQuit = false;
+	}
+
+	/// <summary>
+	/// Définit la référence au GameServerHandler
+	/// </summary>
+	/// <param name="gameServerHandler">Instance du GameServerHandler</param>
+	public void SetGameServerHandler(GameServerHandler gameServerHandler)
+	{
+		_gameServerHandler = gameServerHandler;
+		GD.Print("? ServerManager: GameServerHandler configuré");
 	}
 
 	private async void StartServerAsync()
 	{
 		try
 		{
-			GD.Print("?? Demarrage du serveur reseau...");
+			GD.Print("?? Démarrage du serveur réseau...");
 			
 			_network = Network.GetInstance;
 			
@@ -54,27 +58,27 @@ public partial class ServerManager : Node
 			if (_network.Start())
 			{
 				_isServerRunning = true;
-				GD.Print("? Serveur Satsuki demarre avec succes!");
+				GD.Print("? Serveur Satsuki démarré avec succès!");
 				GD.Print("?? Serveur TCP: 127.0.0.1:80");
-				GD.Print("?? Systeme de cryptage: Active");
-				GD.Print("?? Authentification BACKEND: Active");
+				GD.Print("?? Système de cryptage: Activé");
+				GD.Print("?? Authentification BACKEND: Activé");
 				
 				EmitSignal(SignalName.ServerStarted);
 				
-				// Envoyer un message d'etat initial aux clients connectes
-				await Task.Delay(1000); // Attendre que le serveur soit completement initialise
+				// Envoyer un message d'état initial aux clients connectés
+				await Task.Delay(1000); // Attendre que le serveur soit complètement initialisé
 				await _network.BroadcastMessage("SERVER_READY: Serveur Satsuki en ligne");
 			}
 			else
 			{
-				var error = "? Echec du demarrage du serveur reseau";
+				var error = "? Échec du démarrage du serveur réseau";
 				GD.PrintErr(error);
 				EmitSignal(SignalName.ServerError, error);
 			}
 		}
 		catch (Exception ex)
 		{
-			var error = $"? Erreur lors du demarrage du serveur: {ex.Message}";
+			var error = $"? Erreur lors du démarrage du serveur: {ex.Message}";
 			GD.PrintErr(error);
 			EmitSignal(SignalName.ServerError, error);
 		}
@@ -93,18 +97,18 @@ public partial class ServerManager : Node
 		// Demander le type du client
 		await RequestClientType(clientId);
 		
-		// Si c'est le premier client, appeler GetGameState
+		// Si c'est le premier client, récupérer l'état du jeu
 		if (!_hasHadFirstClient)
 		{
 			_hasHadFirstClient = true;
 			GD.Print("?? Premier client connecté - Récupération de l'état du jeu...");
 			
-			if (_mainGameScene != null)
+			if (_gameServerHandler != null)
 			{
 				try
 				{
-					var gameState = _mainGameScene.GetGameState();
-					GD.Print("?? État du jeu récupéré:");
+					var gameState = _gameServerHandler.GetCompleteGameState();
+					GD.Print("? État du jeu récupéré:");
 					
 					// Convertir l'objet en JSON pour l'affichage
 					string gameStateJson = System.Text.Json.JsonSerializer.Serialize(gameState);
@@ -120,7 +124,7 @@ public partial class ServerManager : Node
 			}
 			else
 			{
-				GD.PrintErr("?? MainGameScene non disponible, impossible de récupérer l'état du jeu");
+				GD.PrintErr("?? GameServerHandler non disponible, impossible de récupérer l'état du jeu");
 			}
 		}
 	}
@@ -182,7 +186,7 @@ public partial class ServerManager : Node
 				return;
 			}
 			
-			GD.Print($"?? Client {clientId} authentifié en tant que BACKEND avec succès");
+			GD.Print($"? Client {clientId} authentifié en tant que BACKEND avec succès");
 		}
 		
 		// Valider le type de client
@@ -201,7 +205,7 @@ public partial class ServerManager : Node
 		}
 		else
 		{
-			GD.PrintErr($"?? Type de client invalide reçu de {clientId}: {clientType}");
+			GD.PrintErr($"? Type de client invalide reçu de {clientId}: {clientType}");
 			await SendClientTypeConfirmation(clientId, clientType, false, "INVALID_TYPE");
 		}
 	}
@@ -303,7 +307,7 @@ public partial class ServerManager : Node
 
 	private async void OnQuitRequest()
 	{
-		GD.Print("?? Arret du serveur en cours...");
+		GD.Print("?? Arrêt du serveur en cours...");
 		
 		if (_isServerRunning && _network != null)
 		{
@@ -314,17 +318,17 @@ public partial class ServerManager : Node
 				
 				// Notifier les clients de la fermeture
 				await _network.BroadcastMessage("SERVER_SHUTDOWN: Le serveur Satsuki va se fermer");
-				await Task.Delay(2000); // Attendre que les messages soient envoyes
+				await Task.Delay(2000); // Attendre que les messages soient envoyés
 				
 				_network.Stop();
 				_isServerRunning = false;
 				EmitSignal(SignalName.ServerStopped);
 				
-				GD.Print("? Serveur arrete proprement");
+				GD.Print("? Serveur arrêté proprement");
 			}
 			catch (Exception ex)
 			{
-				GD.PrintErr($"? Erreur lors de l'arret du serveur: {ex.Message}");
+				GD.PrintErr($"? Erreur lors de l'arrêt du serveur: {ex.Message}");
 			}
 		}
 	}
