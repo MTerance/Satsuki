@@ -7,7 +7,14 @@ public partial class Credits : Node, IScene
 {
 	private SplashScreenManager _splashScreenManager;
 	private DateTime _sceneStartTime;
-	private int _totalSkips = 0;
+	
+	#region Signals
+	[Signal]
+	public delegate void CreditsCompletedEventHandler();
+	
+	[Signal]
+	public delegate void LoadTitleSceneRequestedEventHandler();
+	#endregion
 	
 	public override void _Ready()
 	{
@@ -22,20 +29,26 @@ public partial class Credits : Node, IScene
 		// S'abonner aux événements
 		_splashScreenManager.SplashScreenCompleted += OnSplashScreenCompleted;
 		_splashScreenManager.AllSplashScreensCompleted += OnAllSplashScreensCompleted;
+		_splashScreenManager.SplashScreenSkipped += OnSplashScreenSkipped;
+		_splashScreenManager.SequenceStarted += OnSequenceStarted;
 		
-		// Configurer les splash screens
-		SetupSplashScreens();
+		// Configurer les splash screens (le SplashScreenManager s'occupe de tout)
+		_splashScreenManager.SetupDefaultCredits();
 		
 		// Démarrer la séquence
 		_splashScreenManager.StartSequence();
+		
+		GD.Print("? Credits: SplashScreenManager configuré et démarré");
 	}
 	
 	/// <summary>
 	/// Retourne l'état actuel de la scène Credits
+	/// Le SplashScreenManager gère maintenant tous les détails
 	/// </summary>
 	public object GetSceneState()
 	{
 		var elapsedTime = (DateTime.UtcNow - _sceneStartTime).TotalSeconds;
+		var splashState = _splashScreenManager?.GetSplashScreenState();
 		
 		return new
 		{
@@ -47,24 +60,12 @@ public partial class Credits : Node, IScene
 				ElapsedTime = Math.Round(elapsedTime, 2),
 				ElapsedTimeFormatted = FormatElapsedTime(elapsedTime)
 			},
-			SplashScreens = new
-			{
-				TotalScreens = _splashScreenManager?.GetSplashScreenCount() ?? 0,
-				CurrentIndex = _splashScreenManager?.GetCurrentIndex() ?? 0,
-				RemainingScreens = (_splashScreenManager?.GetSplashScreenCount() ?? 0) - (_splashScreenManager?.GetCurrentIndex() ?? 0),
-				Progress = _splashScreenManager != null && _splashScreenManager.GetSplashScreenCount() > 0
-					? Math.Round((float)_splashScreenManager.GetCurrentIndex() / _splashScreenManager.GetSplashScreenCount() * 100, 2)
-					: 0
-			},
-			UserInteraction = new
-			{
-				TotalSkips = _totalSkips,
-				SkipRate = elapsedTime > 0 ? Math.Round(_totalSkips / elapsedTime * 60, 2) : 0 // Skips per minute
-			},
+			SplashScreenManager = splashState,
 			Status = new
 			{
-				IsCompleted = (_splashScreenManager?.GetCurrentIndex() ?? 0) >= (_splashScreenManager?.GetSplashScreenCount() ?? 0),
-				IsActive = _splashScreenManager != null,
+				IsCompleted = _splashScreenManager?.GetCurrentIndex() >= _splashScreenManager?.GetSplashScreenCount(),
+				IsActive = _splashScreenManager?.IsSequenceActive() ?? false,
+				ManagerLoaded = _splashScreenManager != null,
 				Timestamp = DateTime.UtcNow
 			}
 		};
@@ -81,26 +82,6 @@ public partial class Credits : Node, IScene
 	}
 	
 	/// <summary>
-	/// Configure les splash screens des crédits
-	/// </summary>
-	private void SetupSplashScreens()
-	{
-		// Splash screen 1: Titre du jeu
-		_splashScreenManager.AddTextSplash("SATSUKI", 2.5f, new Color(1.0f, 0.5f, 0.0f));
-		
-		// Splash screen 2: Développé par
-		_splashScreenManager.AddTextSplash("Développé par\nMTerance", 2.0f, Colors.Cyan);
-		
-		// Splash screen 3: Remerciements
-		_splashScreenManager.AddTextSplash("Merci d'avoir joué!", 2.0f, Colors.LightGreen);
-		
-		// Option: Ajouter des images si disponibles
-		// _splashScreenManager.AddImageSplash("res://Assets/logo.png", 3.0f);
-		
-		GD.Print($"?? {_splashScreenManager.GetSplashScreenCount()} splash screens configurés");
-	}
-	
-	/// <summary>
 	/// Callback quand un splash screen est terminé
 	/// </summary>
 	private void OnSplashScreenCompleted()
@@ -108,6 +89,22 @@ public partial class Credits : Node, IScene
 		int current = _splashScreenManager.GetCurrentIndex();
 		int total = _splashScreenManager.GetSplashScreenCount();
 		GD.Print($"? Splash screen {current}/{total} terminé");
+	}
+	
+	/// <summary>
+	/// Callback quand un splash screen est sauté
+	/// </summary>
+	private void OnSplashScreenSkipped(int screenIndex)
+	{
+		GD.Print($"?? Splash screen {screenIndex + 1} sauté (Total skips: {_splashScreenManager.GetTotalSkips()})");
+	}
+	
+	/// <summary>
+	/// Callback quand la séquence démarre
+	/// </summary>
+	private void OnSequenceStarted(int totalScreens)
+	{
+		GD.Print($"?? Séquence de crédits démarrée: {totalScreens} écrans");
 	}
 	
 	/// <summary>
@@ -121,45 +118,112 @@ public partial class Credits : Node, IScene
 		var finalState = GetSceneState();
 		GD.Print($"?? État final des crédits: {System.Text.Json.JsonSerializer.Serialize(finalState)}");
 		
-		// Retourner au menu principal ou fermer le jeu
-		// Exemple: Retour au menu après 1 seconde
+		// Émettre le signal de completion des crédits
+		EmitSignal(SignalName.CreditsCompleted);
+		
+		// Utiliser le SceneNavigationManager pour charger la scène Title
 		GetTree().CreateTimer(1.0f).Timeout += () =>
 		{
-			GD.Print("?? Retour au menu principal...");
-			GetTree().ChangeSceneToFile("res://Scenes/MainGameScene.tscn");
+			GD.Print("?? Credits: Demande de chargement de la scène Title via SceneNavigationManager...");
+			
+			// Utiliser le singleton SceneNavigationManager
+			var navigationManager = GetNode<Satsuki.Manager.SceneNavigationManager>("/root/SceneNavigationManager");
+			if (navigationManager != null)
+			{
+				navigationManager.NotifyCreditsCompleted();
+			}
+			else
+			{
+				// Fallback: chargement direct
+				GD.Print("?? SceneNavigationManager non trouvé, chargement direct");
+				EmitSignal(SignalName.LoadTitleSceneRequested);
+				GetTree().ChangeSceneToFile("res://Scenes/Title.tscn");
+			}
 		};
 	}
 	
 	/// <summary>
-	/// Gestion des inputs pour sauter les crédits
+	/// Méthode publique pour terminer manuellement les crédits
+	/// </summary>
+	public void CompleteCredits()
+	{
+		GD.Print("?? Credits: Completion manuelle demandée");
+		
+		// Arrêter la séquence en cours
+		_splashScreenManager?.SkipAll();
+		
+		// Émettre les signaux
+		EmitSignal(SignalName.CreditsCompleted);
+		EmitSignal(SignalName.LoadTitleSceneRequested);
+	}
+	
+	/// <summary>
+	/// Gestion des inputs - délégué au SplashScreenManager
 	/// </summary>
 	public override void _Input(InputEvent @event)
 	{
-		// Appuyer sur Espace ou Entrée pour passer au splash screen suivant
-		if (@event is InputEventKey keyEvent && keyEvent.Pressed)
+		// Le SplashScreenManager gère maintenant tous les inputs
+		_splashScreenManager?.HandleInput(@event);
+	}
+	
+	/// <summary>
+	/// API publique pour contrôler les crédits
+	/// </summary>
+	
+	/// <summary>
+	/// Passe au crédit suivant
+	/// </summary>
+	public void SkipToNext()
+	{
+		_splashScreenManager?.Skip();
+	}
+	
+	/// <summary>
+	/// Ignore tous les crédits
+	/// </summary>
+	public void SkipAll()
+	{
+		_splashScreenManager?.SkipAll();
+	}
+	
+	/// <summary>
+	/// Configure la vitesse des transitions
+	/// </summary>
+	public void SetFadeSpeed(float speed)
+	{
+		_splashScreenManager?.SetFadeSpeed(speed);
+	}
+	
+	/// <summary>
+	/// Redémarre la séquence de crédits
+	/// </summary>
+	public void RestartCredits()
+	{
+		if (_splashScreenManager != null)
 		{
-			if (keyEvent.Keycode == Key.Space || keyEvent.Keycode == Key.Enter)
-			{
-				GD.Print("?? Skip vers le splash screen suivant");
-				_splashScreenManager.Skip();
-				_totalSkips++;
-			}
-			// Appuyer sur Echap pour tout sauter
-			else if (keyEvent.Keycode == Key.Escape)
-			{
-				GD.Print("???? Skip de tous les crédits");
-				_splashScreenManager.SkipAll();
-				_totalSkips += _splashScreenManager.GetSplashScreenCount() - _splashScreenManager.GetCurrentIndex();
-			}
+			_splashScreenManager.SetupDefaultCredits();
+			_splashScreenManager.StartSequence();
+			GD.Print("?? Crédits redémarrés");
 		}
+	}
+	
+	/// <summary>
+	/// Configure des crédits personnalisés
+	/// </summary>
+	public void SetupCustomCredits()
+	{
+		if (_splashScreenManager == null) return;
 		
-		// Clic de souris pour passer au suivant
-		if (@event is InputEventMouseButton mouseEvent && mouseEvent.Pressed)
-		{
-			GD.Print("??? Clic souris: Skip vers le splash screen suivant");
-			_splashScreenManager.Skip();
-			_totalSkips++;
-		}
+		_splashScreenManager.Clear();
+		
+		// Exemple de crédits personnalisés
+		_splashScreenManager.AddTextSplash("SATSUKI", 2.5f, new Color(1.0f, 0.5f, 0.0f), 72);
+		_splashScreenManager.AddTextSplash("Un jeu développé avec passion", 2.0f, Colors.Cyan, 36);
+		_splashScreenManager.AddTextSplash("Développé par\nMTerance", 2.0f, Colors.LightBlue, 42);
+		_splashScreenManager.AddTextSplash("Merci d'avoir joué!", 2.0f, Colors.LightGreen, 48);
+		_splashScreenManager.AddTextSplash("Version 1.0", 1.5f, Colors.Gray, 24);
+		
+		GD.Print("?? Crédits personnalisés configurés");
 	}
 	
 	public override void _ExitTree()
@@ -169,6 +233,8 @@ public partial class Credits : Node, IScene
 		{
 			_splashScreenManager.SplashScreenCompleted -= OnSplashScreenCompleted;
 			_splashScreenManager.AllSplashScreensCompleted -= OnAllSplashScreensCompleted;
+			_splashScreenManager.SplashScreenSkipped -= OnSplashScreenSkipped;
+			_splashScreenManager.SequenceStarted -= OnSequenceStarted;
 		}
 		
 		GD.Print("?? Credits: Nettoyage terminé");
