@@ -1,5 +1,6 @@
-[gd_scene load_steps=23 format=3 uid="uid://b170u2h7p856d"]
+[gd_scene load_steps=24 format=3 uid="uid://b170u2h7p856d"]
 
+[ext_resource type="Script" uid="uid://mr7w06s3xel2" path="res://Models/LocationModel.cs" id="1_5t3so"]
 [ext_resource type="Texture2D" uid="uid://be3tm0w3yiw16" path="res://Assets/PolygonPrototype_Texture_03.png" id="1_sxak8"]
 [ext_resource type="ArrayMesh" uid="uid://dbnio6xebx0m7" path="res://Assets/SM_Buildings_Floor_5x5_01.obj" id="2_sxak8"]
 [ext_resource type="Texture2D" uid="uid://d3cg4uxo3ouh8" path="res://Assets/PolygonPrototype_Texture_10.png" id="3_5t3so"]
@@ -43,9 +44,10 @@ albedo_texture = ExtResource("10_mtkia")
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lyf50"]
 albedo_texture = ExtResource("12_k5eo8")
 
-[node name="LobbyEx" type="Node2D"]
+[node name="LobbyEx" type="Node3D"]
 
 [node name="LobbyEXNode" type="Node3D" parent="."]
+script = ExtResource("1_5t3so")
 
 [node name="SmBuildingsFloor5x501" type="MeshInstance3D" parent="LobbyEXNode"]
 transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0.233387, -0.0834503, 0.914577)
@@ -122,4 +124,5 @@ mesh = ExtResource("8_ilwuq")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.12771, 43.2149, 61.0119)
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 23.875, 10.6858, 88.3208)
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 23.875, 12.8594, 90.7542)
+current = true

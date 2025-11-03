@@ -359,61 +359,9 @@ public partial class MainGameScene : Node, IScene
 		// Configuration du menu selon l'état du jeu
 		// title.SetMenuState(GetMenuState());
 
-		// Charger automatiquement LobbyEx dans CurrentLocation lors de l'initialisation de Title
-		CallDeferred(nameof(LoadLobbyExForTitle));
-
 		GD.Print("⚙️ MainGameScene: Configuration Title appliquée");
 	}
 
-	/// <summary>
-	/// Charge LobbyEx dans CurrentLocation pour l'écran Title
-	/// </summary>
-	private void LoadLobbyExForTitle()
-	{
-		try
-		{
-			GD.Print("🏛️ MainGameScene: Chargement automatique de LobbyEx pour Title...");
-			
-			// Charger LobbyEx dans CurrentLocation
-			LoadLocationByClassName("LobbyEx");
-			
-			// Vérifier que le chargement a réussi
-			if (_currentLocation != null && _currentLocation.LocationName == "LobbyEx")
-			{
-				GD.Print("✅ MainGameScene: LobbyEx chargé avec succès pour Title");
-				
-				// Configurer LobbyEx pour l'écran titre
-				ConfigureLobbyExForTitle();
-			}
-			else
-			{
-				GD.PrintErr("❌ MainGameScene: Échec du chargement de LobbyEx");
-			}
-		}
-		catch (Exception ex)
-		{
-			GD.PrintErr($"❌ MainGameScene: Erreur lors du chargement de LobbyEx: {ex.Message}");
-		}
-	}
-
-	/// <summary>
-	/// Configure LobbyEx spécifiquement pour l'écran titre
-	/// </summary>
-	private void ConfigureLobbyExForTitle()
-	{
-		if (_currentLocation is Satsuki.Scenes.Locations.LobbyEx lobbyEx)
-		{
-			GD.Print("⚙️ MainGameScene: Configuration LobbyEx pour Title...");
-			
-			// Configuration spécifique du lobby pour l'écran titre
-			// Par exemple : masquer certains éléments, activer mode "preview", etc.
-			
-			// Ajouter un message d'activité pour indiquer que le lobby est en mode titre
-			lobbyEx.CallDeferred("UpdateLobbyActivity", "Lobby activé pour l'écran titre");
-			
-			GD.Print("✅ MainGameScene: LobbyEx configuré pour Title");
-		}
-	}
 	/// <summary>
 	/// Déchargement spécialisé pour la scène Title
 	/// </summary>
@@ -427,13 +375,6 @@ public partial class MainGameScene : Node, IScene
 		// Déconnecter les événements spécifiques si ils existent
 		// title.GameStartRequested -= OnGameStartRequested;
 		// title.OptionsRequested -= OnOptionsRequested;
-
-		// Décharger LobbyEx si il était chargé avec Title
-		if (_currentLocation != null && _currentLocation.LocationName == "LobbyEx")
-		{
-			GD.Print("🏛️ MainGameScene: Déchargement de LobbyEx avec Title...");
-			UnloadCurrentLocation();
-		}
 
 		// Logique de nettoyage spécifique à Title
 		// Par exemple : sauvegarder les préférences du menu
@@ -1124,16 +1065,6 @@ public partial class MainGameScene : Node, IScene
 					{
 						GD.Print($"  - {interactable.DisplayName} ({interactable.InteractableId})");
 					}
-					break;
-				case Key.L:
-					// Charger LobbyEx manuellement (debug)
-					LoadLocationByClassName("LobbyEx");
-					GD.Print("🏛️ LobbyEx chargé manuellement");
-					break;
-				case Key.T:
-					// Tester la configuration Title + LobbyEx (debug)
-					LoadTitleScene();
-					GD.Print("🎯 Title + LobbyEx chargés ensemble");
 					break;
 			}
 		}

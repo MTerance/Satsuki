@@ -4,6 +4,7 @@
     <EnableDynamicLoading>true</EnableDynamicLoading>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="Documentation\Changements_Retires_LobbyEx.md" />
     <None Include="Documentation\CLIENT_TYPE_AUTHENTICATION.md" />
     <None Include="Documentation\Credits_AutoLoad.md" />
     <None Include="Documentation\CREDITS_ISCENE_IMPLEMENTATION.md" />
@@ -18,7 +19,6 @@
     <None Include="Documentation\SplashScreenManager_Refactor.md" />
     <None Include="Documentation\SPLASHSCREEN_MANAGER.md" />
     <None Include="Documentation\SubViewport_Fix.md" />
-    <None Include="Documentation\Title_LobbyEx_Integration.md" />
     <None Include="Documentation\TITLE_SCENE.md" />
     <None Include="Documentation\TITLE_SCENE_SUMMARY.md" />
     <None Include="Interfaces\README.md" />
