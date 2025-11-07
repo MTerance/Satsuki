@@ -58,10 +58,10 @@ public partial class ServerManager : Node
 			if (_network.Start())
 			{
 				_isServerRunning = true;
-				GD.Print("? Serveur Satsuki démarré avec succès!");
-				GD.Print("?? Serveur TCP: 127.0.0.1:80");
-				GD.Print("?? Système de cryptage: Activé");
-				GD.Print("?? Authentification BACKEND: Activé");
+				GD.Print("Serveur Satsuki démarré avec succès!");
+				GD.Print("Serveur TCP: 127.0.0.1:80");
+				GD.Print("Système de cryptage: Activé");
+				GD.Print("Authentification BACKEND: Activé");
 				
 				EmitSignal(SignalName.ServerStarted);
 				

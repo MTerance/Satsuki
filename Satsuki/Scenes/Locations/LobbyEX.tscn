@@ -1,0 +1,128 @@
+[gd_scene load_steps=24 format=3 uid="uid://b170u2h7p856d"]
+
+[ext_resource type="Script" uid="uid://mr7w06s3xel2" path="res://Models/LocationModel.cs" id="1_qd54t"]
+[ext_resource type="Texture2D" uid="uid://blcht75lud546" path="res://Assets/PolygonPrototype_Texture_02.png" id="2_mspdk"]
+[ext_resource type="ArrayMesh" uid="uid://dbnio6xebx0m7" path="res://Assets/SM_Buildings_Floor_5x5_01.obj" id="3_ymsiv"]
+[ext_resource type="Texture2D" uid="uid://d3cg4uxo3ouh8" path="res://Assets/PolygonPrototype_Texture_10.png" id="4_bxlxo"]
+[ext_resource type="ArrayMesh" uid="uid://bmb8yq6i8px43" path="res://Assets/SM_Buildings_Wall_5x3_01P.obj" id="5_2lnst"]
+[ext_resource type="Texture2D" uid="uid://6troacshr1fb" path="res://Assets/PolygonPrototype_Texture_01.png" id="6_xb8vs"]
+[ext_resource type="ArrayMesh" uid="uid://bdwuptmfpvob" path="res://Assets/SM_Pawn_Idle_Female_01.obj" id="7_nfhly"]
+[ext_resource type="Texture2D" uid="uid://d1friq4bfmoyl" path="res://Assets/PolygonPrototype_Texture_07.png" id="8_hgmd5"]
+[ext_resource type="ArrayMesh" uid="uid://cgd33ohlvnpm8" path="res://Assets/SM_Pawn_Idle_Male_01.obj" id="9_ljw12"]
+[ext_resource type="Texture2D" uid="uid://be3tm0w3yiw16" path="res://Assets/PolygonPrototype_Texture_03.png" id="10_6sb5x"]
+[ext_resource type="Texture2D" uid="uid://cb4knjy12eq46" path="res://Assets/PolygonPrototype_Texture_06.png" id="11_syg50"]
+[ext_resource type="Texture2D" uid="uid://cfc6nu3rl8236" path="res://Assets/PolygonPrototype_Texture_05.png" id="12_sqgj7"]
+[ext_resource type="Texture2D" uid="uid://fksdbm1xey4v" path="res://Assets/PolygonPrototype_Texture_04.png" id="13_eyci3"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vu2iw"]
+albedo_texture = ExtResource("2_mspdk")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_uv3sx"]
+albedo_texture = ExtResource("2_mspdk")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cdess"]
+albedo_texture = ExtResource("4_bxlxo")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_x4ggc"]
+albedo_texture = ExtResource("6_xb8vs")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_a05p0"]
+albedo_texture = ExtResource("8_hgmd5")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jygph"]
+albedo_texture = ExtResource("10_6sb5x")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_l1u63"]
+albedo_texture = ExtResource("2_mspdk")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_o57sv"]
+albedo_texture = ExtResource("11_syg50")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ujxxr"]
+albedo_texture = ExtResource("12_sqgj7")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lyf50"]
+albedo_texture = ExtResource("13_eyci3")
+
+[node name="LobbyEx" type="Node3D"]
+
+[node name="LobbyEXNode" type="Node3D" parent="."]
+script = ExtResource("1_qd54t")
+
+[node name="SmBuildingsFloor5x501" type="MeshInstance3D" parent="LobbyEXNode"]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0.233387, -0.0834503, 0.914577)
+material_override = SubResource("StandardMaterial3D_vu2iw")
+mesh = ExtResource("3_ymsiv")
+skeleton = NodePath("../..")
+
+[node name="SmBuildingsFloor5x504" type="MeshInstance3D" parent="LobbyEXNode"]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 49.8736, -0.0834503, 0.914577)
+material_override = SubResource("StandardMaterial3D_vu2iw")
+mesh = ExtResource("3_ymsiv")
+skeleton = NodePath("../..")
+
+[node name="SmBuildingsFloor5x502" type="MeshInstance3D" parent="LobbyEXNode"]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0.0282965, -0.0834503, 50.6743)
+material_override = SubResource("StandardMaterial3D_uv3sx")
+mesh = ExtResource("3_ymsiv")
+skeleton = NodePath("../..")
+
+[node name="SmBuildingsFloor5x503" type="MeshInstance3D" parent="LobbyEXNode"]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 49.7796, -0.0834503, 50.9397)
+material_override = SubResource("StandardMaterial3D_uv3sx")
+mesh = ExtResource("3_ymsiv")
+skeleton = NodePath("../..")
+
+[node name="SmBuildingsWall5x301p" type="MeshInstance3D" parent="LobbyEXNode"]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0)
+material_override = SubResource("StandardMaterial3D_cdess")
+mesh = ExtResource("5_2lnst")
+skeleton = NodePath("../..")
+
+[node name="SmBuildingsWall5x301p2" type="MeshInstance3D" parent="LobbyEXNode"]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 49.8884, 0, 0)
+material_override = SubResource("StandardMaterial3D_cdess")
+mesh = ExtResource("5_2lnst")
+skeleton = NodePath("../..")
+
+[node name="SmPawnIdleFemale01" type="MeshInstance3D" parent="LobbyEXNode"]
+transform = Transform3D(-4.37114e-09, 0, -0.1, 0, 0.1, 0, 0.1, 0, -4.37114e-09, 35.7339, -0.331709, 83.4917)
+material_override = SubResource("StandardMaterial3D_x4ggc")
+mesh = ExtResource("7_nfhly")
+
+[node name="SmPawnIdleMale01" type="MeshInstance3D" parent="LobbyEXNode"]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, -25.2304, -0.389423, 33.5093)
+material_override = SubResource("StandardMaterial3D_a05p0")
+mesh = ExtResource("9_ljw12")
+
+[node name="SmPawnIdleMale02" type="MeshInstance3D" parent="LobbyEXNode"]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, -8.7924, -0.389423, 33.5093)
+material_override = SubResource("StandardMaterial3D_jygph")
+mesh = ExtResource("9_ljw12")
+
+[node name="SmPawnIdleMale03" type="MeshInstance3D" parent="LobbyEXNode"]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 8.86274, -0.389423, 33.5093)
+material_override = SubResource("StandardMaterial3D_l1u63")
+mesh = ExtResource("9_ljw12")
+
+[node name="SmPawnIdleMale04" type="MeshInstance3D" parent="LobbyEXNode"]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, -25.2304, -0.389423, 55.819)
+material_override = SubResource("StandardMaterial3D_o57sv")
+mesh = ExtResource("9_ljw12")
+
+[node name="SmPawnIdleMale05" type="MeshInstance3D" parent="LobbyEXNode"]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, -8.7924, -0.389423, 55.819)
+material_override = SubResource("StandardMaterial3D_ujxxr")
+mesh = ExtResource("9_ljw12")
+
+[node name="SmPawnIdleMale06" type="MeshInstance3D" parent="LobbyEXNode"]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 8.86274, -0.389423, 55.819)
+material_override = SubResource("StandardMaterial3D_lyf50")
+mesh = ExtResource("9_ljw12")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.12771, 43.2149, 61.0119)
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 23.875, 12.8594, 90.7542)
+current = true
