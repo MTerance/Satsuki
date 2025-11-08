@@ -87,6 +87,28 @@ namespace Satsuki.Scenes.Locations
 		}
 		#endregion
 
+		#region GestionCamera
+
+		public bool SetActiveCamera(CameraType cameraType)
+		{
+			string cameraNodeName = cameraType switch
+			{
+				CameraType.Lobby => "Lobby_Camera3D",
+				CameraType.Title => "Title_Camera3D",
+				CameraType.MainGame => "MainGame_Camera3D",
+				CameraType.Cinematic => "Cinematic_Camera3D",
+				_ => null
+			};
+			GD.Print($"🎥 {LocationName}: Changement de caméra vers {cameraType} ({cameraNodeName})");
+			var currentCamera = GetNode<Camera3D>($"%{cameraNodeName}");
+			if (currentCamera is not null)
+				currentCamera.Current = true;
+
+			return true;
+		}
+
+		#endregion
+
 		#region ILocation Implementation - Cycle de Vie
 		/// <summary>
 		/// Initialise la location

@@ -175,8 +175,7 @@ public partial class MainGameScene
 		
 		// Charger automatiquement Restaurant.tscn via LocationManager
 		GD.Print("🍽️ MainGameScene: Chargement de Restaurant.tscn en CurrentLocation...");
-		CallDeferred(nameof(LoadRestaurantLocation));
-		
+		CallDeferred(nameof(LoadRestaurantLocation));		
 		GD.Print("⚙️ MainGameScene: Configuration Title appliquée");
 	}
 
@@ -210,6 +209,24 @@ public partial class MainGameScene
 			if (success)
 			{
 				GD.Print($"✅ MainGameScene: Restaurant chargé dans CurrentLocation via LocationManager");
+
+				// Récupérer et activer la caméra Title via l'enum CameraType
+				if (_locationManager.CurrentLocation != null)
+				{
+					GD.Print($"📷 MainGameScene: Activation de la caméra Title...");
+					
+					// Appeler SetActiveCamera avec CameraType.Title
+					bool cameraSet = _locationManager.CurrentLocation.SetActiveCamera(CameraType.Title);
+					
+					if (cameraSet)
+					{
+						GD.Print($"✅ MainGameScene: Caméra Title activée avec succès");
+					}
+					else
+					{
+						GD.PrintErr($"❌ MainGameScene: Impossible d'activer la caméra Title");
+					}
+				}
 			}
 			else
 			{

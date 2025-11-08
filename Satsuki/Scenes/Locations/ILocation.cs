@@ -3,6 +3,15 @@ using System;
 
 namespace Satsuki.Scenes.Locations
 {
+    public enum CameraType
+    {
+        Lobby,
+        Title,
+        MainGame,
+        Cinematic
+    }
+
+
     /// <summary>
     /// Interface de base pour toutes les locations du jeu
     /// Définit les fonctionnalités communes que chaque location doit implémenter
@@ -75,6 +84,13 @@ namespace Satsuki.Scenes.Locations
         /// </summary>
         void DeactivateLocation();
         #endregion
+
+        #region Gestion Caméra
+
+        bool SetActiveCamera(CameraType cameraType);
+
+        #endregion
+
 
         #region Gestion des Joueurs
         /// <summary>
