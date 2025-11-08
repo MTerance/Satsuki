@@ -1,72 +1,61 @@
 using Godot;
 using Satsuki.Interfaces;
-using Satsuki.Systems;
 using Satsuki.Scenes.Locations;
+using Satsuki.Systems;
 using Satsuki.Manager;
 using System;
 
 /// <summary>
-/// Sc√®ne principale du jeu - Orchestrateur central
-/// Divis√©e en classes partielles pour meilleure maintenabilit√©:
-/// - MainGameScene.cs: Initialisation et √©tat
-/// - MainGameScene.SceneManagement.cs: Gestion des sc√®nes
-/// - MainGameScene.LocationManagement.cs: Gestion des locations
-/// - MainGameScene.ServerIntegration.cs: Gestion serveur et debug
+/// ScËne principale du jeu - Orchestrateur simplifiÈ
+/// GËre Credits, Title et dÈlËgue locations au LocationManager
 /// </summary>
 public partial class MainGameScene : Node, IScene
 {
 	#region Private Fields
 	private GameServerHandler _gameServerHandler;
 	private LocationManager _locationManager;
-	private bool _debugMode = true;
 	private bool _hasLoadedCredits = false;
+	private bool _debugMode = true;
 	
+	// RÈfÈrence rapide pour IScene (peut Ítre Title ou Credits)
 	private IScene _currentScene;
 	private Node _currentSceneNode;
-	
-	private ILocation _currentLocation;
-	private Node _currentLocationNode;
 	#endregion
 
 	#region Public Properties
 	/// <summary>
-	/// Propri√©t√© publique pour acc√©der √† la sc√®ne courante
+	/// Location courante (dÈlÈguÈ au LocationManager)
 	/// </summary>
-	public IScene CurrentScene 
-	{ 
-		get => _currentScene; 
-		private set => _currentScene = value; 
-	}
-
+	public ILocation CurrentLocation => _locationManager?.CurrentLocation;
+	
 	/// <summary>
-	/// Propri√©t√© publique pour acc√©der √† la location courante
+	/// ScËne UI courante (Title ou Credits)
 	/// </summary>
-	public ILocation CurrentLocation 
-	{ 
-		get => _currentLocation; 
-		private set => _currentLocation = value; 
-	}
+	public IScene CurrentScene => _currentScene;
+	
+	/// <summary>
+	/// Handler du serveur de jeu
+	/// </summary>
+	public GameServerHandler ServerHandler => _gameServerHandler;
 	#endregion
 
 	#region Godot Lifecycle
 	public override void _Ready()
 	{
-		GD.Print("üéÆ MainGameScene: Initialisation...");
+		GD.Print("?? MainGameScene: Initialisation...");
 		
-		// Cr√©er et ajouter le gestionnaire de serveur
+		// Initialiser les managers
 		_gameServerHandler = new GameServerHandler();
 		AddChild(_gameServerHandler);
 		
-		// Cr√©er et ajouter le LocationManager
 		_locationManager = new LocationManager();
 		AddChild(_locationManager);
 		
-		// Connecter aux √©v√©nements du LocationManager
-		_locationManager.LocationLoaded += OnLocationManagerLoaded;
-		_locationManager.LocationUnloaded += OnLocationManagerUnloaded;
-		_locationManager.LocationLoadFailed += OnLocationManagerLoadFailed;
+		// …vÈnements LocationManager
+		_locationManager.LocationLoaded += OnLocationLoaded;
+		_locationManager.LocationLoadFailed += OnLocationLoadFailed;
 		
-		// Connecter aux √©v√©nements du gestionnaire de serveur
+		// …vÈnements Server
 		_gameServerHandler.ServerStarted += OnServerStarted;
 		_gameServerHandler.ServerStopped += OnServerStopped;
 		_gameServerHandler.ServerError += OnServerError;
@@ -74,29 +63,24 @@ public partial class MainGameScene : Node, IScene
 		_gameServerHandler.ClientDisconnected += OnClientDisconnected;
 		_gameServerHandler.MessageReceived += OnMessageReceived;
 
-		GD.Print("‚úÖ MainGameScene: Initialis√©e avec GameServerHandler et LocationManager");
+		GD.Print("? MainGameScene: InitialisÈe");
 		
-		// Charger automatiquement la sc√®ne Credits
-		CallDeferred(nameof(LoadCreditsScene));
+		// DÈmarrer par les crÈdits
+		CallDeferred(nameof(LoadCredits));
 	}
 
 	public override void _ExitTree()
 	{
-		// D√©charger la CurrentLocation
-		UnloadCurrentLocation();
-
-		// D√©charger la CurrentScene
+		// DÈcharger la scËne UI
 		UnloadCurrentScene();
 		
-		// D√©connecter les √©v√©nements du LocationManager
+		// DÈconnecter ÈvÈnements
 		if (_locationManager != null)
 		{
-			_locationManager.LocationLoaded -= OnLocationManagerLoaded;
-			_locationManager.LocationUnloaded -= OnLocationManagerUnloaded;
-			_locationManager.LocationLoadFailed -= OnLocationManagerLoadFailed;
+			_locationManager.LocationLoaded -= OnLocationLoaded;
+			_locationManager.LocationLoadFailed -= OnLocationLoadFailed;
 		}
 
-		// D√©connecter les √©v√©nements du gestionnaire de serveur
 		if (_gameServerHandler != null)
 		{
 			_gameServerHandler.ServerStarted -= OnServerStarted;
@@ -107,117 +91,225 @@ public partial class MainGameScene : Node, IScene
 			_gameServerHandler.MessageReceived -= OnMessageReceived;
 		}
 		
-		GD.Print("üßπ MainGameScene: Nettoyage termin√©");
+		GD.Print("?? MainGameScene: Nettoyage terminÈ");
+	}
+	#endregion
+
+	#region Scene Management
+	/// <summary>
+	/// Charge Credits
+	/// </summary>
+	public void LoadCredits()
+	{
+		if (_hasLoadedCredits) return;
+		
+		try
+		{
+			GD.Print("?? MainGameScene: Chargement Credits...");
+			
+			UnloadCurrentScene();
+			
+			var credits = new Credits();
+			AddChild(credits);
+			_currentSceneNode = credits;
+			_currentScene = credits;
+			
+			// Connecter ÈvÈnements Credits
+			credits.CreditsCompleted += () => LoadTitle();
+			credits.LoadTitleSceneRequested += () => LoadTitle();
+			credits.SetFadeSpeed(2.0f);
+			
+			_hasLoadedCredits = true;
+			GD.Print("? Credits chargÈ");
+		}
+		catch (Exception ex)
+		{
+			GD.PrintErr($"? Erreur chargement Credits: {ex.Message}");
+		}
+	}
+
+	/// <summary>
+	/// Charge Title + Restaurant en arriËre-plan
+	/// </summary>
+	public void LoadTitle()
+	{
+		try
+		{
+			GD.Print("?? MainGameScene: Chargement Title...");
+			
+			UnloadCurrentScene();
+			
+			var title = new Satsuki.Scenes.Title();
+			AddChild(title);
+			_currentSceneNode = title;
+			_currentScene = title;
+			
+			GD.Print("? Title chargÈ");
+			
+			// Charger Restaurant en arriËre-plan avec camÈra Title
+			CallDeferred(nameof(LoadRestaurant));
+		}
+		catch (Exception ex)
+		{
+			GD.PrintErr($"? Erreur chargement Title: {ex.Message}");
+		}
+	}
+
+	/// <summary>
+	/// Charge Restaurant et active la camÈra Title
+	/// </summary>
+	private void LoadRestaurant()
+	{
+		try
+		{
+			const string restaurantPath = "res://Scenes/Locations/Restaurant.tscn";
+			
+			bool success = _locationManager.LoadLocationFromScene(restaurantPath, useCache: true);
+			
+			if (success && _locationManager.CurrentLocation != null)
+			{
+				GD.Print("? Restaurant chargÈ");
+				
+				// Activer camÈra Title
+				_locationManager.CurrentLocation.SetActiveCamera(CameraType.Title);
+				GD.Print("?? CamÈra Title activÈe");
+			}
+			else
+			{
+				GD.PrintErr("? …chec chargement Restaurant");
+			}
+		}
+		catch (Exception ex)
+		{
+			GD.PrintErr($"? Erreur chargement Restaurant: {ex.Message}");
+		}
+	}
+
+	/// <summary>
+	/// DÈcharge la scËne UI courante
+	/// </summary>
+	private void UnloadCurrentScene()
+	{
+		if (_currentSceneNode == null) return;
+
+		GD.Print($"??? DÈchargement {_currentSceneNode.GetType().Name}");
+
+		// DÈconnecter ÈvÈnements si Credits
+		if (_currentSceneNode is Credits credits)
+		{
+			credits.CreditsCompleted -= () => LoadTitle();
+			credits.LoadTitleSceneRequested -= () => LoadTitle();
+		}
+
+		RemoveChild(_currentSceneNode);
+		_currentSceneNode.QueueFree();
+		_currentSceneNode = null;
+		_currentScene = null;
+		
+		GD.Print("? DÈchargement terminÈ");
 	}
 	#endregion
 
 	#region LocationManager Event Handlers
-	private void OnLocationManagerLoaded(ILocation location)
+	private void OnLocationLoaded(ILocation location)
 	{
-		GD.Print($"üèóÔ∏è MainGameScene: Location '{location.LocationName}' charg√©e via LocationManager");
-		
-		// Synchroniser les r√©f√©rences MainGameScene avec LocationManager
-		_currentLocation = _locationManager.CurrentLocation;
-		_currentLocationNode = _locationManager.CurrentLocationNode;
-		
-		// Si la location est aussi une IScene, synchroniser aussi
-		if (_currentLocationNode is IScene scene)
+		GD.Print($"??? Location '{location.LocationName}' chargÈe");
+	}
+
+	private void OnLocationLoadFailed(string identifier, string reason)
+	{
+		GD.PrintErr($"? …chec chargement '{identifier}': {reason}");
+	}
+	#endregion
+
+	#region Server Event Handlers
+	private void OnServerStarted()
+	{
+		GD.Print("?? MainGameScene: Serveur dÈmarrÈ");
+	}
+
+	private void OnServerStopped()
+	{
+		GD.Print("?? MainGameScene: Serveur arrÍtÈ");
+	}
+
+	private void OnServerError(string error)
+	{
+		GD.PrintErr($"? MainGameScene: Erreur serveur - {error}");
+	}
+
+	private void OnClientConnected(string clientId)
+	{
+		GD.Print($"?? MainGameScene: Client connectÈ - {clientId}");
+	}
+
+	private void OnClientDisconnected(string clientId)
+	{
+		GD.Print($"?? MainGameScene: Client dÈconnectÈ - {clientId}");
+	}
+
+	private void OnMessageReceived(string clientId, string content)
+	{
+		if (_debugMode)
 		{
-			_currentSceneNode = _currentLocationNode;
-			_currentScene = scene;
-			GD.Print($"üì¶ MainGameScene: Location '{location.LocationName}' est aussi une IScene");
+			GD.Print($"?? MainGameScene: Message de {clientId}: {content}");
 		}
-	}
-
-	private void OnLocationManagerUnloaded(ILocation location)
-	{
-		GD.Print($"üóëÔ∏è MainGameScene: Location '{location.LocationName}' d√©charg√©e via LocationManager");
-	}
-
-	private void OnLocationManagerLoadFailed(string identifier, string reason)
-	{
-		GD.PrintErr($"‚ùå MainGameScene: √âchec de chargement de '{identifier}': {reason}");
 	}
 	#endregion
 
 	#region IScene Implementation
 	/// <summary>
-	/// Retourne l'√©tat actuel de la sc√®ne de jeu incluant CurrentScene et CurrentLocation
+	/// Retourne l'Ètat global de MainGameScene
 	/// </summary>
 	public object GetSceneState()
 	{
-		object currentSceneState = null;
-		string currentSceneName = "None";
-		string currentSceneType = "None";
-
-		if (_currentScene != null)
-		{
-			try
-			{
-				currentSceneState = _currentScene.GetSceneState();
-				currentSceneName = _currentSceneNode?.GetType().Name ?? "Unknown";
-				currentSceneType = _currentSceneNode?.GetType().FullName ?? "Unknown";
-				GD.Print($"‚úÖ √âtat de CurrentScene {currentSceneName} r√©cup√©r√©");
-			}
-			catch (Exception ex)
-			{
-				GD.PrintErr($"‚ùå Erreur lors de la r√©cup√©ration de l'√©tat de CurrentScene: {ex.Message}");
-				currentSceneState = new { Error = "Failed to get current scene state", Message = ex.Message };
-			}
-		}
-
-		object currentLocationState = null;
-		string currentLocationName = "None";
-		string currentLocationId = "None";
-		string currentLocationType = "None";
-
-		if (_currentLocation != null)
-		{
-			try
-			{
-				currentLocationState = _currentLocation.GetLocationState();
-				currentLocationName = _currentLocation.LocationName ?? "Unknown";
-				currentLocationId = _currentLocation.LocationId ?? "Unknown";
-				currentLocationType = _currentLocation.Type.ToString();
-				GD.Print($"‚úÖ √âtat de CurrentLocation {currentLocationName} r√©cup√©r√©");
-			}
-			catch (Exception ex)
-			{
-				GD.PrintErr($"‚ùå Erreur lors de la r√©cup√©ration de l'√©tat de CurrentLocation: {ex.Message}");
-				currentLocationState = new { Error = "Failed to get current location state", Message = ex.Message };
-			}
-		}
-
 		return new
 		{
 			MainGameScene = new
 			{
 				SceneName = "MainGameScene",
 				HasLoadedCredits = _hasLoadedCredits,
-				HasCurrentScene = _currentScene != null,
-				CurrentSceneName = currentSceneName,
-				CurrentSceneType = currentSceneType,
-				HasCurrentLocation = _currentLocation != null,
-				CurrentLocationName = currentLocationName,
-				CurrentLocationId = currentLocationId,
-				CurrentLocationType = currentLocationType
+				CurrentScene = _currentSceneNode?.GetType().Name ?? "None",
+				CurrentLocation = CurrentLocation?.LocationName ?? "None",
+				ConnectedClients = _gameServerHandler?.GetConnectedClientCount() ?? 0
 			},
-			CurrentScene = currentSceneState,
-			CurrentLocation = currentLocationState,
-			Debug = new
-			{
-				DebugMode = _debugMode,
-				Timestamp = DateTime.UtcNow
-			}
+			UIScene = _currentScene?.GetSceneState(),
+			Location = CurrentLocation?.GetLocationState(),
+			Timestamp = DateTime.UtcNow
 		};
 	}
 
 	/// <summary>
-	/// M√©thode publique pour obtenir l'√©tat de la sc√®ne de jeu (utilis√©e par GameServerHandler)
+	/// Alias pour compatibilitÈ
 	/// </summary>
-	public object GetGameSceneState()
+	public object GetGameSceneState() => GetSceneState();
+	#endregion
+
+	#region Input Handling (Debug)
+	public override void _Input(InputEvent @event)
 	{
-		return GetSceneState();
+		if (@event is not InputEventKey keyEvent || !keyEvent.Pressed) return;
+
+		switch (keyEvent.Keycode)
+		{
+			case Key.F1:
+				_gameServerHandler?.BroadcastToAllClients("SERVER_BROADCAST:Test", encrypt: true);
+				break;
+			case Key.F3:
+				_gameServerHandler?.ListConnectedClients();
+				break;
+			case Key.F4:
+				_debugMode = !_debugMode;
+				_gameServerHandler?.ToggleDebugMode();
+				GD.Print($"?? Mode debug: {(_debugMode ? "ON" : "OFF")}");
+				break;
+			case Key.F11:
+				LoadCredits();
+				break;
+			case Key.F12:
+				LoadTitle();
+				break;
+		}
 	}
 	#endregion
 }

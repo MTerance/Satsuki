@@ -4,6 +4,7 @@
     <EnableDynamicLoading>true</EnableDynamicLoading>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="Documentation\Camera_Management_System.md" />
     <None Include="Documentation\Changements_Retires_LobbyEx.md" />
     <None Include="Documentation\CLIENT_TYPE_AUTHENTICATION.md" />
     <None Include="Documentation\Credits_AutoLoad.md" />
@@ -18,6 +19,7 @@
     <None Include="Documentation\MainGameScene_CurrentLocation_Property.md" />
     <None Include="Documentation\MainGameScene_CurrentScene_Property.md" />
     <None Include="Documentation\MainGameScene_Refactorisation.md" />
+    <None Include="Documentation\MainGameScene_Simplification.md" />
     <None Include="Documentation\Restaurant_Fix_Summary.md" />
     <None Include="Documentation\Restaurant_Setup_Guide.md" />
     <None Include="Documentation\Restaurant_Title_Integration.md" />
