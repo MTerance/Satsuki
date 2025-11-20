@@ -13,7 +13,6 @@ public partial class ServerManager : Node
 	private GameServerHandler _gameServerHandler;
 	private bool _hasHadFirstClient = false;
 	
-	// Mot de passe pour les clients BACKEND
 	private const string BACKEND_PASSWORD = "***Satsuk1***";
 
 	[Signal] public delegate void ServerStartedEventHandler();
@@ -25,113 +24,94 @@ public partial class ServerManager : Node
 
 	public override void _Ready()
 	{
-		GD.Print("?? Server Manager: Initialisation du serveur Satsuki...");
+		GD.Print("Server Manager: Initialisation du serveur Satsuki...");
 		
-		// Démarrer le serveur automatiquement au lancement du jeu
 		CallDeferred(nameof(StartServerAsync));
 		
-		// Gérer la fermeture propre du serveur
 		GetTree().AutoAcceptQuit = false;
 	}
 
-	/// <summary>
-	/// Définit la référence au GameServerHandler
-	/// </summary>
-	/// <param name="gameServerHandler">Instance du GameServerHandler</param>
 	public void SetGameServerHandler(GameServerHandler gameServerHandler)
 	{
 		_gameServerHandler = gameServerHandler;
-		GD.Print("? ServerManager: GameServerHandler configuré");
+		GD.Print("ServerManager: GameServerHandler configure");
 	}
 
 	private async void StartServerAsync()
 	{
 		try
 		{
-			GD.Print("?? Démarrage du serveur réseau...");
+			GD.Print("Demarrage du serveur reseau...");
 			
 			_network = Network.GetInstance;
 			
-			// S'abonner aux événements de connexion de clients
 			_network.OnClientConnected += HandleClientConnected;
 			
 			if (_network.Start())
 			{
 				_isServerRunning = true;
-				GD.Print("Serveur Satsuki démarré avec succès!");
+				GD.Print("Serveur Satsuki demarre avec succes!");
 				GD.Print("Serveur TCP: 127.0.0.1:80");
-				GD.Print("Système de cryptage: Activé");
-				GD.Print("Authentification BACKEND: Activé");
+				GD.Print("Systeme de cryptage: Active");
+				GD.Print("Authentification BACKEND: Active");
 				
 				EmitSignal(SignalName.ServerStarted);
 				
-				// Envoyer un message d'état initial aux clients connectés
-				await Task.Delay(1000); // Attendre que le serveur soit complètement initialisé
+				await Task.Delay(1000);
 				await _network.BroadcastMessage("SERVER_READY: Serveur Satsuki en ligne");
 			}
 			else
 			{
-				var error = "? Échec du démarrage du serveur réseau";
+				var error = "Echec du demarrage du serveur reseau";
 				GD.PrintErr(error);
 				EmitSignal(SignalName.ServerError, error);
 			}
 		}
 		catch (Exception ex)
 		{
-			var error = $"? Erreur lors du démarrage du serveur: {ex.Message}";
+			var error = $"Erreur lors du demarrage du serveur: {ex.Message}";
 			GD.PrintErr(error);
 			EmitSignal(SignalName.ServerError, error);
 		}
 	}
 
-	/// <summary>
-	/// Gère la première connexion d'un client
-	/// </summary>
 	private async void HandleClientConnected(string clientId)
 	{
-		GD.Print($"?? ServerManager: Nouveau client connecté - {clientId}");
+		GD.Print($"ServerManager: Nouveau client connecte - {clientId}");
 		
-		// Émettre le signal
 		EmitSignal(SignalName.ClientConnected, clientId);
 		
-		// Demander le type du client
 		await RequestClientType(clientId);
 		
-		// Si c'est le premier client, récupérer l'état du jeu
 		if (!_hasHadFirstClient)
 		{
 			_hasHadFirstClient = true;
-			GD.Print("?? Premier client connecté - Récupération de l'état du jeu...");
+			GD.Print("Premier client connecte - Recuperation de l'etat du jeu...");
 			
 			if (_gameServerHandler != null)
 			{
 				try
 				{
 					var gameState = _gameServerHandler.GetCompleteGameState();
-					GD.Print("? État du jeu récupéré:");
+					GD.Print("Etat du jeu recupere:");
 					
-					// Convertir l'objet en JSON pour l'affichage
 					string gameStateJson = System.Text.Json.JsonSerializer.Serialize(gameState);
 					GD.Print($"   {gameStateJson}");
 					
-					// Envoyer l'état du jeu au client
 					await SendGameStateToClient(clientId, gameStateJson);
 				}
 				catch (Exception ex)
 				{
-					GD.PrintErr($"? Erreur lors de la récupération de l'état du jeu: {ex.Message}");
+					GD.PrintErr($"Erreur lors de la recuperation de l'etat du jeu: {ex.Message}");
 				}
 			}
 			else
 			{
-				GD.PrintErr("?? GameServerHandler non disponible, impossible de récupérer l'état du jeu");
+				GD.PrintErr("GameServerHandler non disponible, impossible de recuperer l'etat du jeu");
 			}
 		}
 	}
 
-	/// <summary>
-	/// Demande au client de s'identifier avec son type
-	/// </summary>
 	private async Task RequestClientType(string clientId)
 	{
 		try
@@ -149,73 +129,61 @@ public partial class ServerManager : Node
 
 			if (success)
 			{
-				GD.Print($"?? Demande de type envoyée au client {clientId}");
+				GD.Print($"Demande de type envoyee au client {clientId}");
 			}
 			else
 			{
-				GD.PrintErr($"? Échec de l'envoi de la demande de type au client {clientId}");
+				GD.PrintErr($"Echec de l'envoi de la demande de type au client {clientId}");
 			}
 		}
 		catch (Exception ex)
 		{
-			GD.PrintErr($"? Erreur lors de la demande de type client: {ex.Message}");
+			GD.PrintErr($"Erreur lors de la demande de type client: {ex.Message}");
 		}
 	}
 
-	/// <summary>
-	/// Traite la réponse du client concernant son type avec validation du mot de passe pour BACKEND
-	/// </summary>
 	public async void HandleClientTypeResponse(string clientId, string clientType, string password = null)
 	{
-		GD.Print($"?? Type de client reçu - {clientId}: {clientType}");
+		GD.Print($"Type de client recu - {clientId}: {clientType}");
 		
-		// Si c'est un client BACKEND, vérifier le mot de passe
 		if (clientType == "BACKEND")
 		{
 			if (string.IsNullOrEmpty(password))
 			{
-				GD.PrintErr($"?? Client {clientId} tente de se connecter en tant que BACKEND sans mot de passe");
+				GD.PrintErr($"Client {clientId} tente de se connecter en tant que BACKEND sans mot de passe");
 				await RejectBackendClient(clientId, "PASSWORD_MISSING");
 				return;
 			}
 			
 			if (password != BACKEND_PASSWORD)
 			{
-				GD.PrintErr($"?? Client {clientId} a fourni un mot de passe BACKEND invalide");
+				GD.PrintErr($"Client {clientId} a fourni un mot de passe BACKEND invalide");
 				await RejectBackendClient(clientId, "PASSWORD_INVALID");
 				return;
 			}
 			
-			GD.Print($"? Client {clientId} authentifié en tant que BACKEND avec succès");
+			GD.Print($"Client {clientId} authentifie en tant que BACKEND avec succes");
 		}
 		
-		// Valider le type de client
 		if (IsValidClientType(clientType))
 		{
-			// Émettre le signal
 			EmitSignal(SignalName.ClientTypeReceived, clientId, clientType);
 			
-			// Enregistrer le type de client
 			_network.SetClientType(clientId, clientType);
 			
-			// Envoyer la confirmation au client
 			await SendClientTypeConfirmation(clientId, clientType, true);
 			
-			GD.Print($"? Client {clientId} enregistré en tant que {clientType}");
+			GD.Print($"Client {clientId} enregistre en tant que {clientType}");
 		}
 		else
 		{
-			GD.PrintErr($"? Type de client invalide reçu de {clientId}: {clientType}");
+			GD.PrintErr($"Type de client invalide recu de {clientId}: {clientType}");
 			await SendClientTypeConfirmation(clientId, clientType, false, "INVALID_TYPE");
 		}
 	}
 
-	/// <summary>
-	/// Rejette un client BACKEND avec mot de passe invalide
-	/// </summary>
 	private async Task RejectBackendClient(string clientId, string reason)
 	{
-		// Envoyer un message d'erreur au client
 		var errorMessage = new
 		{
 			order = "ClientTypeRejected",
@@ -227,19 +195,14 @@ public partial class ServerManager : Node
 		string jsonMessage = JsonSerializer.Serialize(errorMessage);
 		await _network.SendMessageToClient(clientId, jsonMessage);
 		
-		// Émettre le signal d'échec d'authentification
 		EmitSignal(SignalName.BackendAuthenticationFailed, clientId, reason);
 		
-		// Déconnecter le client après un court délai
 		await Task.Delay(2000);
 		await _network.DisconnectClient(clientId);
 		
-		GD.Print($"?? Client {clientId} déconnecté pour authentification BACKEND échouée ({reason})");
+		GD.Print($"Client {clientId} deconnecte pour authentification BACKEND echouee ({reason})");
 	}
 
-	/// <summary>
-	/// Envoie la confirmation du type de client
-	/// </summary>
 	private async Task SendClientTypeConfirmation(string clientId, string clientType, bool success, string reason = null)
 	{
 		var confirmationMessage = new
@@ -255,12 +218,9 @@ public partial class ServerManager : Node
 		string jsonMessage = JsonSerializer.Serialize(confirmationMessage);
 		await _network.SendMessageToClient(clientId, jsonMessage);
 		
-		GD.Print($"?? Confirmation de type envoyée au client {clientId}: {(success ? "ACCEPTÉ" : "REJETÉ")}");
+		GD.Print($"Confirmation de type envoyee au client {clientId}: {(success ? "ACCEPTE" : "REJETE")}");
 	}
 
-	/// <summary>
-	/// Valide que le type de client est autorisé
-	/// </summary>
 	private bool IsValidClientType(string clientType)
 	{
 		return clientType switch
@@ -272,9 +232,6 @@ public partial class ServerManager : Node
 		};
 	}
 
-	/// <summary>
-	/// Envoie l'état du jeu à un client spécifique
-	/// </summary>
 	private async Task SendGameStateToClient(string clientId, string gameStateJson)
 	{
 		try
@@ -284,16 +241,16 @@ public partial class ServerManager : Node
 			bool success = await _network.SendMessageToClient(clientId, message);
 			if (success)
 			{
-				GD.Print($"? État du jeu envoyé au client {clientId}");
+				GD.Print($"Etat du jeu envoye au client {clientId}");
 			}
 			else
 			{
-				GD.PrintErr($"? Échec de l'envoi de l'état du jeu au client {clientId}");
+				GD.PrintErr($"Echec de l'envoi de l'etat du jeu au client {clientId}");
 			}
 		}
 		catch (Exception ex)
 		{
-			GD.PrintErr($"? Erreur lors de l'envoi de l'état du jeu: {ex.Message}");
+			GD.PrintErr($"Erreur lors de l'envoi de l'etat du jeu: {ex.Message}");
 		}
 	}
 
@@ -307,28 +264,26 @@ public partial class ServerManager : Node
 
 	private async void OnQuitRequest()
 	{
-		GD.Print("?? Arrêt du serveur en cours...");
+		GD.Print("Arret du serveur en cours...");
 		
 		if (_isServerRunning && _network != null)
 		{
 			try
 			{
-				// Se désabonner des événements
 				_network.OnClientConnected -= HandleClientConnected;
 				
-				// Notifier les clients de la fermeture
 				await _network.BroadcastMessage("SERVER_SHUTDOWN: Le serveur Satsuki va se fermer");
-				await Task.Delay(2000); // Attendre que les messages soient envoyés
+				await Task.Delay(2000);
 				
 				_network.Stop();
 				_isServerRunning = false;
 				EmitSignal(SignalName.ServerStopped);
 				
-				GD.Print("? Serveur arrêté proprement");
+				GD.Print("Serveur arrete proprement");
 			}
 			catch (Exception ex)
 			{
-				GD.PrintErr($"? Erreur lors de l'arrêt du serveur: {ex.Message}");
+				GD.PrintErr($"Erreur lors de l'arret du serveur: {ex.Message}");
 			}
 		}
 	}
@@ -368,13 +323,12 @@ public partial class ServerManager : Node
 		if (_network != null)
 		{
 			var stats = _network.GetNetworkStatistics();
-			GD.Print($"?? Statut serveur - Clients: {stats.connectedClients}, Messages en attente: {stats.pendingMessages}");
+			GD.Print($"Statut serveur - Clients: {stats.connectedClients}, Messages en attente: {stats.pendingMessages}");
 		}
 	}
 
 	public override void _ExitTree()
 	{
-		// Se désabonner des événements lors de la destruction
 		if (_network != null)
 		{
 			_network.OnClientConnected -= HandleClientConnected;

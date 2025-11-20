@@ -5,8 +5,8 @@ using System.Collections.Generic;
 namespace Satsuki.Manager
 {
 	/// <summary>
-	/// Gestionnaire de splash screens avec système de transition
-	/// Gère complètement l'affichage des crédits et séquences d'images
+	/// Gestionnaire de splash screens avec systeme de transition
+	/// Gere completement l'affichage des credits et sequences d'images
 	/// </summary>
 	public partial class SplashScreenManager : Node
 	{
@@ -20,7 +20,6 @@ namespace Satsuki.Manager
 		private bool _isTransitioning = false;
 		private float _fadeSpeed = 2.0f;
 		
-		// Statistiques et tracking
 		private DateTime _sequenceStartTime;
 		private int _totalSkips = 0;
 		private bool _isSequenceActive = false;
@@ -43,51 +42,54 @@ namespace Satsuki.Manager
 		#region Initialization
 		public override void _Ready()
 		{
-			// Créer l'overlay de fade
+			GD.Print("SplashScreenManager: Debut de l'initialisation");
+			
+			var canvasLayer = new CanvasLayer();
+			AddChild(canvasLayer);
+			
 			_fadeOverlay = new ColorRect
 			{
-				Color = new Color(0, 0, 0, 0),
-				MouseFilter = Control.MouseFilterEnum.Ignore,
-				AnchorsPreset = (int)Control.LayoutPreset.FullRect
+				Color = new Color(0, 0, 0, 1),
+				MouseFilter = Control.MouseFilterEnum.Ignore
 			};
-			AddChild(_fadeOverlay);
-
-			// Créer l'affichage d'image
+			canvasLayer.AddChild(_fadeOverlay);
+			_fadeOverlay.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+			GD.Print("FadeOverlay cree");
+			
 			_imageDisplay = new TextureRect
 			{
 				ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
 				StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
-				Visible = false,
-				AnchorsPreset = (int)Control.LayoutPreset.FullRect
+				Visible = false
 			};
-			AddChild(_imageDisplay);
+			canvasLayer.AddChild(_imageDisplay);
+			_imageDisplay.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+			
+			GD.Print($"ImageDisplay cree");
 
-			// Créer l'affichage de texte
 			_textDisplay = new Label
 			{
 				HorizontalAlignment = HorizontalAlignment.Center,
 				VerticalAlignment = VerticalAlignment.Center,
-				Visible = false,
-				AnchorsPreset = (int)Control.LayoutPreset.FullRect
+				Visible = false
 			};
 			_textDisplay.AddThemeColorOverride("font_color", Colors.White);
 			_textDisplay.AddThemeFontSizeOverride("font_size", 48);
-			AddChild(_textDisplay);
+			canvasLayer.AddChild(_textDisplay);
+			_textDisplay.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+			GD.Print("TextDisplay cree");
 
-			// Timer pour la durée d'affichage
 			_displayTimer = new Timer();
 			_displayTimer.OneShot = true;
 			_displayTimer.Timeout += OnDisplayTimerTimeout;
 			AddChild(_displayTimer);
+			GD.Print("Timer cree");
 
-			GD.Print("?? SplashScreenManager initialisé");
+			GD.Print("SplashScreenManager initialise avec succes");
 		}
 		#endregion
 
 		#region Public API - Configuration
-		/// <summary>
-		/// Ajoute un splash screen texte
-		/// </summary>
 		public void AddTextSplash(string text, float duration = 3.0f, Color? textColor = null, int fontSize = 48)
 		{
 			var splash = new SplashScreenData
@@ -99,18 +101,15 @@ namespace Satsuki.Manager
 				FontSize = fontSize
 			};
 			_splashScreens.Add(splash);
-			GD.Print($"?? Splash screen texte ajouté: {text} ({duration}s)");
+			GD.Print($"Splash screen texte ajoute: {text} ({duration}s)");
 		}
 
-		/// <summary>
-		/// Ajoute un splash screen image
-		/// </summary>
 		public void AddImageSplash(string imagePath, float duration = 3.0f)
 		{
 			var texture = GD.Load<Texture2D>(imagePath);
 			if (texture == null)
 			{
-				GD.PrintErr($"? Impossible de charger l'image: {imagePath}");
+				GD.PrintErr($"Impossible de charger l'image: {imagePath}");
 				return;
 			}
 
@@ -122,35 +121,18 @@ namespace Satsuki.Manager
 				Duration = duration
 			};
 			_splashScreens.Add(splash);
-			GD.Print($"??? Splash screen image ajouté: {imagePath} ({duration}s)");
+			GD.Print($"Splash screen image ajoute: {imagePath} ({duration}s)");
 		}
 
-		/// <summary>
-		/// Configure automatiquement les crédits par défaut
-		/// </summary>
-		public void SetupDefaultCredits()
+		public void SetupCustomCredits()
 		{
-			Clear();
-			
-			// Splash screen 1: Titre du jeu
-			AddTextSplash("SATSUKI", 2.5f, new Color(1.0f, 0.5f, 0.0f), 64);
-			
-			// Splash screen 2: Développé par
-			AddTextSplash("Développé par\nMTerance", 2.0f, Colors.Cyan, 36);
-			
-			// Splash screen 3: Remerciements
-			AddTextSplash("Merci d'avoir joué!", 2.0f, Colors.LightGreen, 42);
-			
-			// Option: Ajouter des images si disponibles
-			TryAddImageIfExists("res://Assets/logo.png", 3.0f);
-			TryAddImageIfExists("res://Assets/studio_logo.png", 2.5f);
-			
-			GD.Print($"?? {GetSplashScreenCount()} splash screens de crédits configurés");
+			Clear();		
+			GD.Print("SetupCustomCredits: Debut");
+			// Ajouter les images
+			AddCreditImagesFromFolder(5.0f);		
+			GD.Print($"Credits personnalises configures - Total: {GetSplashScreenCount()} ecrans");
 		}
 
-		/// <summary>
-		/// Tente d'ajouter une image si elle existe
-		/// </summary>
 		private void TryAddImageIfExists(string imagePath, float duration)
 		{
 			if (ResourceLoader.Exists(imagePath))
@@ -159,36 +141,27 @@ namespace Satsuki.Manager
 			}
 		}
 
-		/// <summary>
-		/// Configure la vitesse de transition
-		/// </summary>
 		public void SetFadeSpeed(float speed)
 		{
 			_fadeSpeed = Mathf.Max(0.1f, speed);
 		}
 
-		/// <summary>
-		/// Nettoie tous les splash screens
-		/// </summary>
 		public void Clear()
 		{
 			_splashScreens.Clear();
 			_currentIndex = 0;
 			_totalSkips = 0;
 			_isSequenceActive = false;
-			GD.Print("??? Splash screens effacés");
+			GD.Print("Splash screens effaces");
 		}
 		#endregion
 
-		#region Public API - Contrôle de séquence
-		/// <summary>
-		/// Démarre la séquence de splash screens
-		/// </summary>
+		#region Public API - Controle de sequence
 		public void StartSequence()
 		{
 			if (_splashScreens.Count == 0)
 			{
-				GD.PrintErr("?? Aucun splash screen à afficher");
+				GD.PrintErr("Aucun splash screen a afficher");
 				EmitSignal(SignalName.AllSplashScreensCompleted);
 				return;
 			}
@@ -198,15 +171,12 @@ namespace Satsuki.Manager
 			_sequenceStartTime = DateTime.UtcNow;
 			_isSequenceActive = true;
 			
-			GD.Print($"?? Démarrage de la séquence de {_splashScreens.Count} splash screens");
+			GD.Print($"Demarrage de la sequence de {_splashScreens.Count} splash screens");
 			EmitSignal(SignalName.SequenceStarted, _splashScreens.Count);
 			
 			ShowNextSplash();
 		}
 
-		/// <summary>
-		/// Passe au splash screen suivant (skip)
-		/// </summary>
 		public void Skip()
 		{
 			if (_isTransitioning || !_isSequenceActive)
@@ -215,15 +185,12 @@ namespace Satsuki.Manager
 			_displayTimer.Stop();
 			_totalSkips++;
 			
-			GD.Print($"?? Skip vers le splash screen suivant (Total skips: {_totalSkips})");
+			GD.Print($"Skip vers le splash screen suivant (Total skips: {_totalSkips})");
 			EmitSignal(SignalName.SplashScreenSkipped, _currentIndex);
 			
 			FadeOut();
 		}
 
-		/// <summary>
-		/// Passe directement à la fin de la séquence
-		/// </summary>
 		public void SkipAll()
 		{
 			if (!_isSequenceActive) return;
@@ -237,32 +204,26 @@ namespace Satsuki.Manager
 			_fadeOverlay.Color = new Color(0, 0, 0, 1);
 			_isSequenceActive = false;
 
-			GD.Print($"???? Toute la séquence a été sautée (Total skips: {_totalSkips})");
+			GD.Print($"Toute la sequence a ete sautee (Total skips: {_totalSkips})");
 			EmitSignal(SignalName.AllSplashScreensCompleted);
 		}
 
-		/// <summary>
-		/// Gère les inputs utilisateur pour la navigation
-		/// </summary>
 		public void HandleInput(InputEvent @event)
 		{
 			if (!_isSequenceActive) return;
 
-			// Appuyer sur Espace ou Entrée pour passer au splash screen suivant
 			if (@event is InputEventKey keyEvent && keyEvent.Pressed)
 			{
 				if (keyEvent.Keycode == Key.Space || keyEvent.Keycode == Key.Enter)
 				{
 					Skip();
 				}
-				// Appuyer sur Échap pour tout sauter
 				else if (keyEvent.Keycode == Key.Escape)
 				{
 					SkipAll();
 				}
 			}
 			
-			// Clic de souris pour passer au suivant
 			if (@event is InputEventMouseButton mouseEvent && mouseEvent.Pressed)
 			{
 				Skip();
@@ -270,10 +231,7 @@ namespace Satsuki.Manager
 		}
 		#endregion
 
-		#region Public API - État et statistiques
-		/// <summary>
-		/// Obtient l'état complet du SplashScreenManager
-		/// </summary>
+		#region Public API - Etat et statistiques
 		public object GetSplashScreenState()
 		{
 			var elapsedTime = _isSequenceActive ? (DateTime.UtcNow - _sequenceStartTime).TotalSeconds : 0;
@@ -300,7 +258,7 @@ namespace Satsuki.Manager
 				UserInteraction = new
 				{
 					TotalSkips = _totalSkips,
-					SkipRate = elapsedTime > 0 ? Math.Round(_totalSkips / elapsedTime * 60, 2) : 0 // Skips per minute
+					SkipRate = elapsedTime > 0 ? Math.Round(_totalSkips / elapsedTime * 60, 2) : 0
 				},
 				Status = new
 				{
@@ -319,41 +277,26 @@ namespace Satsuki.Manager
 			};
 		}
 
-		/// <summary>
-		/// Obtient le nombre total de splash screens
-		/// </summary>
 		public int GetSplashScreenCount()
 		{
 			return _splashScreens.Count;
 		}
 
-		/// <summary>
-		/// Obtient l'index actuel
-		/// </summary>
 		public int GetCurrentIndex()
 		{
 			return _currentIndex;
 		}
 
-		/// <summary>
-		/// Obtient le nombre total de skips
-		/// </summary>
 		public int GetTotalSkips()
 		{
 			return _totalSkips;
 		}
 
-		/// <summary>
-		/// Vérifie si la séquence est active
-		/// </summary>
 		public bool IsSequenceActive()
 		{
 			return _isSequenceActive;
 		}
 
-		/// <summary>
-		/// Formate le temps écoulé en format lisible
-		/// </summary>
 		private string FormatElapsedTime(double seconds)
 		{
 			int minutes = (int)(seconds / 60);
@@ -363,39 +306,31 @@ namespace Satsuki.Manager
 		#endregion
 
 		#region Private - Logique d'affichage
-		/// <summary>
-		/// Affiche le splash screen suivant
-		/// </summary>
 		private void ShowNextSplash()
 		{
 			if (_currentIndex >= _splashScreens.Count)
 			{
 				_isSequenceActive = false;
-				GD.Print("? Tous les splash screens terminés");
+				GD.Print("Tous les splash screens termines");
 				
-				// Log des statistiques finales
 				var finalState = GetSplashScreenState();
-				GD.Print($"?? État final: {System.Text.Json.JsonSerializer.Serialize(finalState)}");
+				GD.Print($"Etat final: {System.Text.Json.JsonSerializer.Serialize(finalState)}");
 				
 				EmitSignal(SignalName.AllSplashScreensCompleted);
 				return;
 			}
 
 			var splash = _splashScreens[_currentIndex];
-			GD.Print($"?? Affichage du splash screen {_currentIndex + 1}/{_splashScreens.Count}: {splash.Text ?? splash.ImagePath}");
+			GD.Print($"Affichage du splash screen {_currentIndex + 1}/{_splashScreens.Count}: {splash.Text ?? splash.ImagePath}");
 
 			_isTransitioning = true;
-
-			// Fade in
 			FadeIn(splash);
 		}
 
-		/// <summary>
-		/// Transition fade in
-		/// </summary>
 		private async void FadeIn(SplashScreenData splash)
 		{
-			// Préparer le contenu
+			GD.Print($"FadeIn: Debut pour type={splash.Type}");
+			
 			if (splash.Type == SplashScreenType.Text)
 			{
 				_textDisplay.Text = splash.Text;
@@ -403,38 +338,52 @@ namespace Satsuki.Manager
 				_textDisplay.AddThemeFontSizeOverride("font_size", splash.FontSize);
 				_textDisplay.Visible = true;
 				_imageDisplay.Visible = false;
+				GD.Print($"FadeIn: Texte affiche - '{splash.Text}'");
 			}
 			else if (splash.Type == SplashScreenType.Image)
 			{
+				if (splash.Texture == null)
+				{
+					GD.PrintErr($"FadeIn: Texture est null pour {splash.ImagePath}");
+					return;
+				}
+				
+				GD.Print($"FadeIn: Configuration de l'image");
+				GD.Print($"  - Chemin: {splash.ImagePath}");
+				GD.Print($"  - Taille texture: {splash.Texture.GetSize()}");
+				GD.Print($"  - ImageDisplay ExpandMode: {_imageDisplay.ExpandMode}");
+				GD.Print($"  - ImageDisplay StretchMode: {_imageDisplay.StretchMode}");
+				GD.Print($"  - ImageDisplay Size: {_imageDisplay.Size}");
+				GD.Print($"  - ImageDisplay Position: {_imageDisplay.Position}");
+				
 				_imageDisplay.Texture = splash.Texture;
 				_imageDisplay.Visible = true;
 				_textDisplay.Visible = false;
+				
+				GD.Print($"FadeIn: Image configuree et visible=true");
+				GD.Print($"  - ImageDisplay.Texture: {_imageDisplay.Texture != null}");
+				GD.Print($"  - ImageDisplay.Visible: {_imageDisplay.Visible}");
 			}
 
-			// Fade overlay de noir vers transparent
+			GD.Print("FadeIn: Debut du tween fade");
 			var tween = CreateTween();
 			tween.TweenProperty(_fadeOverlay, "color:a", 0.0f, 1.0f / _fadeSpeed);
 			await ToSignal(tween, Tween.SignalName.Finished);
+			GD.Print("FadeIn: Tween fade termine");
 
 			_isTransitioning = false;
-
-			// Démarrer le timer d'affichage
 			_displayTimer.Start(splash.Duration);
+			GD.Print($"FadeIn: Timer demarre pour {splash.Duration}s");
 		}
 
-		/// <summary>
-		/// Transition fade out
-		/// </summary>
 		private async void FadeOut()
 		{
 			_isTransitioning = true;
 
-			// Fade overlay de transparent vers noir
 			var tween = CreateTween();
 			tween.TweenProperty(_fadeOverlay, "color:a", 1.0f, 1.0f / _fadeSpeed);
 			await ToSignal(tween, Tween.SignalName.Finished);
 
-			// Cacher tout le contenu
 			_textDisplay.Visible = false;
 			_imageDisplay.Visible = false;
 
@@ -444,9 +393,6 @@ namespace Satsuki.Manager
 			ShowNextSplash();
 		}
 
-		/// <summary>
-		/// Callback du timer d'affichage
-		/// </summary>
 		private void OnDisplayTimerTimeout()
 		{
 			if (!_isTransitioning && _isSequenceActive)
@@ -455,20 +401,56 @@ namespace Satsuki.Manager
 			}
 		}
 		#endregion
+
+		public void AddCreditImagesFromFolder(float duration = 3.0f)
+		{
+			string folderPath = "res://Assets/Img/Credits";
+			
+			if (!DirAccess.DirExistsAbsolute(folderPath))
+			{
+				GD.PrintErr($"Dossier introuvable: {folderPath}");
+				GD.Print("Tentative avec res://Img/Credits...");
+				folderPath = "res://Img/Credits";
+			}
+			
+			var dir = DirAccess.Open(folderPath);
+			if (dir == null)
+			{
+				GD.PrintErr($"Impossible d'ouvrir le dossier: {folderPath}");
+				return;
+			}
+
+			int imageCount = 0;
+			dir.ListDirBegin();
+			string fileName = dir.GetNext();
+			
+			while (fileName != "")
+			{
+				if (!dir.CurrentIsDir())
+				{
+					string lowerFileName = fileName.ToLower();
+					if (lowerFileName.EndsWith(".png") || lowerFileName.EndsWith(".jpg") || 
+					    lowerFileName.EndsWith(".jpeg") || lowerFileName.EndsWith(".webp"))
+					{
+						string imagePath = folderPath + "/" + fileName;
+						AddImageSplash(imagePath, duration);
+						imageCount++;
+					}
+				}
+				fileName = dir.GetNext();
+			}
+			dir.ListDirEnd();
+			
+			GD.Print($"{imageCount} splash screens images ajoutes depuis {folderPath}");
+		}
 	}
 
-	/// <summary>
-	/// Type de splash screen
-	/// </summary>
 	public enum SplashScreenType
 	{
 		Text,
 		Image
 	}
 
-	/// <summary>
-	/// Données d'un splash screen
-	/// </summary>
 	public class SplashScreenData
 	{
 		public SplashScreenType Type { get; set; }

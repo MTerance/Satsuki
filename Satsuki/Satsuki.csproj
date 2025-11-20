@@ -18,6 +18,7 @@
     <None Include="Documentation\LocationManager_Resume.md" />
     <None Include="Documentation\MainGameScene_CurrentLocation_Property.md" />
     <None Include="Documentation\MainGameScene_CurrentScene_Property.md" />
+    <None Include="Documentation\MainGameScene_Migration_Summary.md" />
     <None Include="Documentation\MainGameScene_Refactorisation.md" />
     <None Include="Documentation\MainGameScene_Simplification.md" />
     <None Include="Documentation\Restaurant_Fix_Summary.md" />
@@ -26,6 +27,7 @@
     <None Include="Documentation\ServerArchitecture.md" />
     <None Include="Documentation\Specialized_LoadUnload_Methods.md" />
     <None Include="Documentation\SplashScreenManager_Refactor.md" />
+    <None Include="Documentation\SplashScreen_Debug_Guide.md" />
     <None Include="Documentation\SPLASHSCREEN_MANAGER.md" />
     <None Include="Documentation\SubViewport_Fix.md" />
     <None Include="Documentation\Suppression_Lobby.md" />

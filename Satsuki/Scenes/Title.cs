@@ -4,33 +4,182 @@ using System;
 
 namespace Satsuki.Scenes
 {
-	/// <summary>
-	/// Scène d'écran titre du jeu
-	/// </summary>
 	public partial class Title : Node, IScene
 	{
 		private DateTime _sceneStartTime;
-		private string _selectedMenuItem = "Start Game";
 		private int _menuItemIndex = 0;
-		private readonly string[] _menuItems = { "Start Game", "Options", "Credits", "Quit" };
+		private Button[] _menuButtons;
+		private Label _titleLabel;
 		private bool _isAnimating = false;
 		private float _titleAnimationTime = 0.0f;
-		
+
 		public override void _Ready()
 		{
 			_sceneStartTime = DateTime.UtcNow;
+			GD.Print("Title: Initialisation de l'ecran titre...");
+
+			_titleLabel = GetNode<Label>("TitleLabel");
+			var menuContainer = GetNode<VBoxContainer>("MenuContainer");
+			_menuButtons = new Button[menuContainer.GetChildCount()];
 			
-			GD.Print("?? Title: Initialisation de l'écran titre...");
+			for (int i = 0; i < menuContainer.GetChildCount(); i++)
+			{
+				_menuButtons[i] = menuContainer.GetChild<Button>(i);
+				int index = i;
+				_menuButtons[i].Pressed += () => OnMenuItemSelected(index);
+				_menuButtons[i].MouseEntered += () => OnMenuItemHover(index);
+			}
 			
-			// Initialiser l'interface utilisateur
-			InitializeUI();
-			
-			GD.Print($"?? Menu initialisé avec {_menuItems.Length} options");
+			UpdateMenuSelection();
+			GD.Print($"Menu initialise avec {_menuButtons.Length} options");
 		}
-		
-		/// <summary>
-		/// Retourne l'état actuel de la scène Title
-		/// </summary>
+
+		private void UpdateMenuSelection()
+		{
+			for (int i = 0; i < _menuButtons.Length; i++)
+			{
+				if (i == _menuItemIndex)
+				{
+					_menuButtons[i].GrabFocus();
+					_menuButtons[i].AddThemeColorOverride("font_color", Colors.Orange);
+				}
+				else
+				{
+					_menuButtons[i].AddThemeColorOverride("font_color", Colors.White);
+				}
+			}
+		}
+
+		private void OnMenuItemHover(int index)
+		{
+			_menuItemIndex = index;
+			UpdateMenuSelection();
+			GD.Print($"Menu hover: {_menuButtons[index].Text}");
+		}
+
+		private void OnMenuItemSelected(int index)
+		{
+			_menuItemIndex = index;
+			UpdateMenuSelection();
+			GD.Print($"Menu selectionne: {_menuButtons[index].Text}");
+			
+			switch (_menuButtons[index].Text)
+			{
+				case "Start Game":
+					StartGame();
+					break;
+				case "Options":
+					OpenOptions();
+					break;
+				case "Credits":
+					OpenCredits();
+					break;
+				case "Quit":
+					QuitGame();
+					break;
+			}
+		}
+
+		private void StartGame()
+		{
+			GD.Print("Demarrage du jeu...");
+			var finalState = GetSceneState();
+			GD.Print($"Etat de la scene titre: {System.Text.Json.JsonSerializer.Serialize(finalState)}");
+			
+			if (ResourceLoader.Exists("res://Scenes/MainGameScene.tscn"))
+				GetTree().ChangeSceneToFile("res://Scenes/MainGameScene.tscn");
+			else
+				GD.PrintErr("Scene MainGameScene introuvable");
+		}
+
+		private void OpenOptions()
+		{
+			GD.Print("Ouverture des options...");
+		}
+
+		private void OpenCredits()
+		{
+			GD.Print("Ouverture des credits...");
+			
+			if (ResourceLoader.Exists("res://Scenes/Credits.tscn"))
+				GetTree().ChangeSceneToFile("res://Scenes/Credits.tscn");
+			else
+				GD.PrintErr("Scene Credits introuvable");
+		}
+
+		private void QuitGame()
+		{
+			GD.Print("Fermeture du jeu...");
+			var finalState = GetSceneState();
+			GD.Print($"Etat final de la scene titre: {System.Text.Json.JsonSerializer.Serialize(finalState)}");
+			GetTree().Quit();
+		}
+
+		private string FormatElapsedTime(double seconds)
+		{
+			int minutes = (int)(seconds / 60);
+			int secs = (int)(seconds % 60);
+			return $"{minutes:D2}:{secs:D2}";
+		}
+
+		public override void _Input(InputEvent @event)
+		{
+			if (@event is InputEventKey keyEvent && keyEvent.Pressed)
+			{
+				switch (keyEvent.Keycode)
+				{
+					case Key.Up:
+						_menuItemIndex = (_menuItemIndex - 1 + _menuButtons.Length) % _menuButtons.Length;
+						UpdateMenuSelection();
+						break;
+					case Key.Down:
+						_menuItemIndex = (_menuItemIndex + 1) % _menuButtons.Length;
+						UpdateMenuSelection();
+						break;
+					case Key.Enter:
+					case Key.Space:
+						OnMenuItemSelected(_menuItemIndex);
+						break;
+					case Key.Escape:
+						QuitGame();
+						break;
+				}
+			}
+		}
+
+		public override void _Process(double delta)
+		{
+			_titleAnimationTime += (float)delta;
+			
+			if (!_isAnimating && _titleAnimationTime >= 2.0f)
+			{
+				_isAnimating = true;
+				AnimateTitle();
+			}
+		}
+
+		private async void AnimateTitle()
+		{
+			if (_titleLabel == null || !IsInstanceValid(_titleLabel))
+				return;
+
+			_titleLabel.AddThemeColorOverride("font_color", Colors.Yellow);
+			await ToSignal(GetTree().CreateTimer(0.5), SceneTreeTimer.SignalName.Timeout);
+			
+			if (_titleLabel != null && IsInstanceValid(_titleLabel))
+			{
+				_titleLabel.AddThemeColorOverride("font_color", new Color(1.0f, 0.5f, 0.0f));
+			}
+			
+			_isAnimating = false;
+			_titleAnimationTime = 0.0f;
+		}
+
+		public override void _ExitTree()
+		{
+			GD.Print("Title: Nettoyage de la scene titre");
+		}
+
 		public object GetSceneState()
 		{
 			var elapsedTime = (DateTime.UtcNow - _sceneStartTime).TotalSeconds;
@@ -47,9 +196,6 @@ namespace Satsuki.Scenes
 				},
 				Menu = new
 				{
-					Items = _menuItems,
-					TotalItems = _menuItems.Length,
-					SelectedItem = _selectedMenuItem,
 					SelectedIndex = _menuItemIndex
 				},
 				Animation = new
@@ -63,215 +209,6 @@ namespace Satsuki.Scenes
 					Timestamp = DateTime.UtcNow
 				}
 			};
-		}
-		
-		/// <summary>
-		/// Initialise l'interface utilisateur du titre
-		/// </summary>
-		private void InitializeUI()
-		{
-			// Créer le titre principal
-			var titleLabel = new Label
-			{
-				Text = "SATSUKI",
-				HorizontalAlignment = HorizontalAlignment.Center,
-				VerticalAlignment = VerticalAlignment.Top,
-				Position = new Vector2(0, 100)
-			};
-			titleLabel.AddThemeFontSizeOverride("font_size", 72);
-			titleLabel.AddThemeColorOverride("font_color", new Color(1.0f, 0.5f, 0.0f));
-			AddChild(titleLabel);
-			
-			// Créer le menu
-			var menuContainer = new VBoxContainer
-			{
-				Position = new Vector2(400, 300),
-				CustomMinimumSize = new Vector2(400, 0)
-			};
-			
-			for (int i = 0; i < _menuItems.Length; i++)
-			{
-				var button = new Button
-				{
-					Text = _menuItems[i],
-					CustomMinimumSize = new Vector2(400, 50)
-				};
-				
-				// Capturer l'index local
-				int index = i;
-				button.Pressed += () => OnMenuItemSelected(index);
-				button.MouseEntered += () => OnMenuItemHover(index);
-				
-				menuContainer.AddChild(button);
-			}
-			
-			AddChild(menuContainer);
-			
-			GD.Print("? UI initialisée");
-		}
-		
-		/// <summary>
-		/// Callback quand un élément du menu est survolé
-		/// </summary>
-		private void OnMenuItemHover(int index)
-		{
-			_menuItemIndex = index;
-			_selectedMenuItem = _menuItems[index];
-			GD.Print($"??? Menu hover: {_selectedMenuItem}");
-		}
-		
-		/// <summary>
-		/// Callback quand un élément du menu est sélectionné
-		/// </summary>
-		private void OnMenuItemSelected(int index)
-		{
-			_menuItemIndex = index;
-			_selectedMenuItem = _menuItems[index];
-			
-			GD.Print($"? Menu sélectionné: {_selectedMenuItem}");
-			
-			switch (_selectedMenuItem)
-			{
-				case "Start Game":
-					StartGame();
-					break;
-				case "Options":
-					OpenOptions();
-					break;
-				case "Credits":
-					OpenCredits();
-					break;
-				case "Quit":
-					QuitGame();
-					break;
-			}
-		}
-		
-		/// <summary>
-		/// Démarre le jeu
-		/// </summary>
-		private void StartGame()
-		{
-			GD.Print("?? Démarrage du jeu...");
-			
-			// Log l'état avant de quitter
-			var finalState = GetSceneState();
-			GD.Print($"?? État de la scène titre: {System.Text.Json.JsonSerializer.Serialize(finalState)}");
-			
-			// Charger la scène de jeu
-			GetTree().ChangeSceneToFile("res://Scenes/MainGameScene.tscn");
-		}
-		
-		/// <summary>
-		/// Ouvre les options
-		/// </summary>
-		private void OpenOptions()
-		{
-			GD.Print("?? Ouverture des options...");
-			// TODO: Implémenter la scène d'options
-			// GetTree().ChangeSceneToFile("res://Scenes/Options.tscn");
-		}
-		
-		/// <summary>
-		/// Ouvre les crédits
-		/// </summary>
-		private void OpenCredits()
-		{
-			GD.Print("?? Ouverture des crédits...");
-			GetTree().ChangeSceneToFile("res://Scenes/Credits.tscn");
-		}
-		
-		/// <summary>
-		/// Quitte le jeu
-		/// </summary>
-		private void QuitGame()
-		{
-			GD.Print("?? Fermeture du jeu...");
-			
-			// Log l'état final
-			var finalState = GetSceneState();
-			GD.Print($"?? État final de la scène titre: {System.Text.Json.JsonSerializer.Serialize(finalState)}");
-			
-			GetTree().Quit();
-		}
-		
-		/// <summary>
-		/// Formate le temps écoulé en format lisible
-		/// </summary>
-		private string FormatElapsedTime(double seconds)
-		{
-			int minutes = (int)(seconds / 60);
-			int secs = (int)(seconds % 60);
-			return $"{minutes:D2}:{secs:D2}";
-		}
-		
-		/// <summary>
-		/// Gestion des inputs clavier pour la navigation
-		/// </summary>
-		public override void _Input(InputEvent @event)
-		{
-			if (@event is InputEventKey keyEvent && keyEvent.Pressed)
-			{
-				switch (keyEvent.Keycode)
-				{
-					case Key.Up:
-						// Naviguer vers le haut
-						_menuItemIndex = (_menuItemIndex - 1 + _menuItems.Length) % _menuItems.Length;
-						_selectedMenuItem = _menuItems[_menuItemIndex];
-						GD.Print($"?? Menu: {_selectedMenuItem}");
-						break;
-						
-					case Key.Down:
-						// Naviguer vers le bas
-						_menuItemIndex = (_menuItemIndex + 1) % _menuItems.Length;
-						_selectedMenuItem = _menuItems[_menuItemIndex];
-						GD.Print($"?? Menu: {_selectedMenuItem}");
-						break;
-						
-					case Key.Enter:
-					case Key.Space:
-						// Sélectionner l'élément actuel
-						OnMenuItemSelected(_menuItemIndex);
-						break;
-						
-					case Key.Escape:
-						// Quitter directement
-						QuitGame();
-						break;
-				}
-			}
-		}
-		
-		/// <summary>
-		/// Animation du titre
-		/// </summary>
-		public override void _Process(double delta)
-		{
-			_titleAnimationTime += (float)delta;
-			
-			// Animation de pulsation du titre toutes les 2 secondes
-			if (!_isAnimating && _titleAnimationTime >= 2.0f)
-			{
-				_isAnimating = true;
-				AnimateTitle();
-			}
-		}
-		
-		/// <summary>
-		/// Anime le titre
-		/// </summary>
-		private async void AnimateTitle()
-		{
-			// Animation simple de pulsation
-			await System.Threading.Tasks.Task.Delay(500);
-			
-			_isAnimating = false;
-			_titleAnimationTime = 0.0f;
-		}
-		
-		public override void _ExitTree()
-		{
-			GD.Print("?? Title: Nettoyage de la scène titre");
 		}
 	}
 }
