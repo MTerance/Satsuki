@@ -6,11 +6,13 @@
   <ItemGroup>
     <None Include="Documentation\Camera_Management_System.md" />
     <None Include="Documentation\Changements_Retires_LobbyEx.md" />
+    <None Include="Documentation\Cleanup_Scripts_Report.md" />
     <None Include="Documentation\CLIENT_TYPE_AUTHENTICATION.md" />
     <None Include="Documentation\Credits_AutoLoad.md" />
     <None Include="Documentation\CREDITS_ISCENE_IMPLEMENTATION.md" />
     <None Include="Documentation\CREDITS_SCENARIO.md" />
     <None Include="Documentation\Credits_Title_Navigation.md" />
+    <None Include="Documentation\Fix-Unicode-Script.md" />
     <None Include="Documentation\GETGAMESTATE_SYSTEM.md" />
     <None Include="Documentation\ILocation_Interface.md" />
     <None Include="Documentation\LocationManager.md" />
@@ -21,6 +23,7 @@
     <None Include="Documentation\MainGameScene_Migration_Summary.md" />
     <None Include="Documentation\MainGameScene_Refactorisation.md" />
     <None Include="Documentation\MainGameScene_Simplification.md" />
+    <None Include="Documentation\README.md" />
     <None Include="Documentation\Restaurant_Fix_Summary.md" />
     <None Include="Documentation\Restaurant_Setup_Guide.md" />
     <None Include="Documentation\Restaurant_Title_Integration.md" />
@@ -35,7 +38,7 @@
     <None Include="Documentation\TITLE_SCENE.md" />
     <None Include="Documentation\TITLE_SCENE_SUMMARY.md" />
     <None Include="Documentation\Unicode_Fix_Complete_Report.md" />
-    <None Include="fix_unicode_precise.ps1" />
+    <None Include="fix-unicode.ps1" />
     <None Include="Interfaces\README.md" />
     <None Include="Interfaces\SUMMARY.md" />
     <None Include="Networks\README_Encryption.md" />
