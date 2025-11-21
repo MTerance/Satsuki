@@ -1,4 +1,4 @@
-using Godot;
+﻿using Godot;
 using Satsuki.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -7,8 +7,8 @@ using System.Linq;
 namespace Satsuki.Scenes.Locations
 {
 	/// <summary>
-	/// Modèle de base pour les locations du jeu
-	/// Implémente ILocation et IScene pour une intégration complète
+	/// Modele de base pour les locations du jeu
+	/// Implemente ILocation et IScene pour une integration complete
 	/// </summary>
 	public partial class LocationModel : Node3D, ILocation
 	{
@@ -43,7 +43,7 @@ namespace Satsuki.Scenes.Locations
 		public virtual string LocationId => $"{LocationName}_{GetInstanceId()}";
 
 		/// <summary>
-		/// Indique si la location est chargée
+		/// Indique si la location est chargee
 		/// </summary>
 		public bool IsLoaded => _isLoaded;
 
@@ -74,16 +74,16 @@ namespace Satsuki.Scenes.Locations
 			// Charger la location
 			LoadLocation();
 			
-			// Setup spécifique MediaScreen (code existant)
+			// Setup specifique MediaScreen (code existant)
 			CallDeferred(nameof(InitializeMediaScreen));
 		}
 
 		public override void _ExitTree()
 		{
-			// Décharger la location
+			// Decharger la location
 			UnloadLocation();
 			
-			GD.Print($"🧹 LocationModel: Nettoyage de {LocationName} terminé");
+			GD.Print($"🧹 LocationModel: Nettoyage de {LocationName} termine");
 		}
 		#endregion
 
@@ -99,7 +99,7 @@ namespace Satsuki.Scenes.Locations
 				CameraType.Cinematic => "Cinematic_Camera3D",
 				_ => null
 			};
-			GD.Print($"🎥 {LocationName}: Changement de caméra vers {cameraType} ({cameraNodeName})");
+			GD.Print($"🎥 {LocationName}: Changement de camera vers {cameraType} ({cameraNodeName})");
 			var currentCamera = GetNode<Camera3D>($"%{cameraNodeName}");
 			if (currentCamera is not null)
 				currentCamera.Current = true;
@@ -119,13 +119,13 @@ namespace Satsuki.Scenes.Locations
 
 			GD.Print($"🔧 {LocationName}: Initialisation...");
 
-			// Initialiser les systèmes de base
+			// Initialiser les systemes de base
 			InitializeInteractables();
 			InitializeSpawnPoints();
 			InitializeExits();
 
 			_hasInitialized = true;
-			GD.Print($"✅ {LocationName}: Initialisé");
+			GD.Print($"✅ {LocationName}: Initialise");
 		}
 
 		/// <summary>
@@ -140,25 +140,25 @@ namespace Satsuki.Scenes.Locations
 			// Charger les ressources
 			LoadResources();
 			
-			// Activer les systèmes
+			// Activer les systemes
 			ActivateLocation();
 
 			_isLoaded = true;
 			LocationLoaded?.Invoke(this);
 			
-			GD.Print($"✅ {LocationName}: Chargé");
+			GD.Print($"✅ {LocationName}: Charge");
 		}
 
 		/// <summary>
-		/// Décharge la location
+		/// Decharge la location
 		/// </summary>
 		public virtual void UnloadLocation()
 		{
 			if (!_isLoaded) return;
 
-			GD.Print($"🗑️ {LocationName}: Déchargement...");
+			GD.Print($"🗑️ {LocationName}: Dechargement...");
 
-			// Désactiver les systèmes
+			// Desactiver les systemes
 			DeactivateLocation();
 
 			// Nettoyer les joueurs
@@ -171,7 +171,7 @@ namespace Satsuki.Scenes.Locations
 			_isLoaded = false;
 			LocationUnloaded?.Invoke(this);
 			
-			GD.Print($"🧹 {LocationName}: Déchargé");
+			GD.Print($"🧹 {LocationName}: Decharge");
 		}
 
 		/// <summary>
@@ -184,7 +184,7 @@ namespace Satsuki.Scenes.Locations
 			// Activer les objets interactables
 			foreach (var interactable in _interactables)
 			{
-				// Logique d'activation si nécessaire
+				// Logique d'activation si necessaire
 			}
 
 			// Rendre visible
@@ -193,13 +193,13 @@ namespace Satsuki.Scenes.Locations
 		}
 
 		/// <summary>
-		/// Désactive la location
+		/// Desactive la location
 		/// </summary>
 		public virtual void DeactivateLocation()
 		{
-			GD.Print($"💤 {LocationName}: Désactivation...");
+			GD.Print($"💤 {LocationName}: Desactivation...");
 			
-			// Désactiver les systèmes actifs
+			// Desactiver les systemes actifs
 			// Cacher la location
 			Visible = false;
 			ProcessMode = ProcessModeEnum.Disabled;
@@ -208,7 +208,7 @@ namespace Satsuki.Scenes.Locations
 
 		#region ILocation Implementation - Gestion des Joueurs
 		/// <summary>
-		/// Appelé quand un joueur entre dans la location
+		/// Appele quand un joueur entre dans la location
 		/// </summary>
 		public virtual void OnPlayerEnter(string playerId)
 		{
@@ -219,12 +219,12 @@ namespace Satsuki.Scenes.Locations
 			_playersInLocation.Add(playerId);
 			PlayerEntered?.Invoke(this, playerId);
 
-			// Logique spécifique à l'entrée du joueur
+			// Logique specifique a l'entree du joueur
 			OnPlayerEnterSpecific(playerId);
 		}
 
 		/// <summary>
-		/// Appelé quand un joueur quitte la location
+		/// Appele quand un joueur quitte la location
 		/// </summary>
 		public virtual void OnPlayerExit(string playerId)
 		{
@@ -235,7 +235,7 @@ namespace Satsuki.Scenes.Locations
 			_playersInLocation.Remove(playerId);
 			PlayerExited?.Invoke(this, playerId);
 
-			// Logique spécifique à la sortie du joueur
+			// Logique specifique a la sortie du joueur
 			OnPlayerExitSpecific(playerId);
 		}
 
@@ -270,7 +270,7 @@ namespace Satsuki.Scenes.Locations
 				var result = interactable.Interact(playerId, data);
 				InteractionOccurred?.Invoke(this, playerId, interactionId);
 
-				// Traiter le résultat de l'interaction
+				// Traiter le resultat de l'interaction
 				ProcessInteractionResult(playerId, interactionId, result);
 			}
 			else
@@ -286,7 +286,7 @@ namespace Satsuki.Scenes.Locations
 		/// </summary>
 		public virtual Vector3[] GetSpawnPoints()
 		{
-			// Points de spawn par défaut
+			// Points de spawn par defaut
 			return new Vector3[]
 			{
 				Vector3.Zero,
@@ -298,7 +298,7 @@ namespace Satsuki.Scenes.Locations
 		}
 
 		/// <summary>
-		/// Obtient le point de spawn par défaut
+		/// Obtient le point de spawn par defaut
 		/// </summary>
 		public virtual Vector3 GetDefaultSpawnPoint()
 		{
@@ -330,18 +330,18 @@ namespace Satsuki.Scenes.Locations
 
 			GD.Print($"⚙️ {LocationName}: Application de la configuration");
 
-			// Appliquer les paramètres d'ambiance
+			// Appliquer les parametres d'ambiance
 			ApplyAmbianceSettings(config.AmbianceSettings);
 
-			// Appliquer les paramètres de gameplay
+			// Appliquer les parametres de gameplay
 			ApplyGameplaySettings(config.GameplaySettings);
 
-			// Précharger les ressources
+			// Precharger les ressources
 			PreloadResources(config.PreloadResources);
 		}
 
 		/// <summary>
-		/// Sauvegarde l'état de la location
+		/// Sauvegarde l'etat de la location
 		/// </summary>
 		public virtual object SaveLocationState()
 		{
@@ -360,22 +360,22 @@ namespace Satsuki.Scenes.Locations
 		}
 
 		/// <summary>
-		/// Restaure l'état de la location
+		/// Restaure l'etat de la location
 		/// </summary>
 		public virtual void RestoreLocationState(object stateData)
 		{
 			if (stateData == null) return;
 
-			GD.Print($"🔄 {LocationName}: Restauration de l'état");
+			GD.Print($"🔄 {LocationName}: Restauration de l'etat");
 
-			// Logique de restauration spécifique
-			// À implémenter selon les besoins
+			// Logique de restauration specifique
+			// À implementer selon les besoins
 		}
 		#endregion
 
 		#region ILocation Implementation - État
 		/// <summary>
-		/// Retourne l'état de la location
+		/// Retourne l'etat de la location
 		/// </summary>
 		public virtual object GetLocationState()
 		{
@@ -421,7 +421,7 @@ namespace Satsuki.Scenes.Locations
 
 		#region IScene Implementation (existing)
 		/// <summary>
-		/// Implémentation IScene - délègue à GetLocationState
+		/// Implementation IScene - delegue a GetLocationState
 		/// </summary>
 		public object GetSceneState()
 		{
@@ -650,7 +650,7 @@ namespace Satsuki.Scenes.Locations
 
 		#region Protected Virtual Methods (for inheritance)
 		/// <summary>
-		/// Initialise les objets interactables spécifiques à cette location
+		/// Initialise les objets interactables specifiques a cette location
 		/// </summary>
 		protected virtual void InitializeInteractables()
 		{
@@ -660,76 +660,76 @@ namespace Satsuki.Scenes.Locations
 			{
 				var mediaScreenInteractable = new MediaScreenInteractable(mediaScreen);
 				_interactables.Add(mediaScreenInteractable);
-				GD.Print($"📺 MediaScreen ajouté comme interactable: {mediaScreenInteractable.InteractableId}");
+				GD.Print($"📺 MediaScreen ajoute comme interactable: {mediaScreenInteractable.InteractableId}");
 			}
 		}
 
 		/// <summary>
-		/// Initialise les points de spawn spécifiques
+		/// Initialise les points de spawn specifiques
 		/// </summary>
 		protected virtual void InitializeSpawnPoints()
 		{
-			// À override dans les classes dérivées
+			// À override dans les classes derivees
 		}
 
 		/// <summary>
-		/// Initialise les sorties spécifiques
+		/// Initialise les sorties specifiques
 		/// </summary>
 		protected virtual void InitializeExits()
 		{
-			// À override dans les classes dérivées
+			// À override dans les classes derivees
 		}
 
 		/// <summary>
-		/// Charge les ressources spécifiques à la location
+		/// Charge les ressources specifiques a la location
 		/// </summary>
 		protected virtual void LoadResources()
 		{
-			// À override dans les classes dérivées
+			// À override dans les classes derivees
 		}
 
 		/// <summary>
-		/// Logique spécifique quand un joueur entre
+		/// Logique specifique quand un joueur entre
 		/// </summary>
 		protected virtual void OnPlayerEnterSpecific(string playerId)
 		{
-			// À override dans les classes dérivées
+			// À override dans les classes derivees
 		}
 
 		/// <summary>
-		/// Logique spécifique quand un joueur sort
+		/// Logique specifique quand un joueur sort
 		/// </summary>
 		protected virtual void OnPlayerExitSpecific(string playerId)
 		{
-			// À override dans les classes dérivées
+			// À override dans les classes derivees
 		}
 
 		/// <summary>
-		/// Traite le résultat d'une interaction
+		/// Traite le resultat d'une interaction
 		/// </summary>
 		protected virtual void ProcessInteractionResult(string playerId, string interactionId, object result)
 		{
-			GD.Print($"📊 {LocationName}: Résultat interaction {interactionId}: {result}");
+			GD.Print($"📊 {LocationName}: Resultat interaction {interactionId}: {result}");
 		}
 
 		/// <summary>
-		/// Applique les paramètres d'ambiance
+		/// Applique les parametres d'ambiance
 		/// </summary>
 		protected virtual void ApplyAmbianceSettings(object settings)
 		{
-			// À override dans les classes dérivées
+			// À override dans les classes derivees
 		}
 
 		/// <summary>
-		/// Applique les paramètres de gameplay
+		/// Applique les parametres de gameplay
 		/// </summary>
 		protected virtual void ApplyGameplaySettings(object settings)
 		{
-			// À override dans les classes dérivées
+			// À override dans les classes derivees
 		}
 
 		/// <summary>
-		/// Précharge les ressources spécifiées
+		/// Precharge les ressources specifiees
 		/// </summary>
 		protected virtual void PreloadResources(string[] resources)
 		{
@@ -737,13 +737,13 @@ namespace Satsuki.Scenes.Locations
 
 			foreach (var resource in resources)
 			{
-				GD.Print($"📦 {LocationName}: Préchargement de {resource}");
-				// Logique de préchargement
+				GD.Print($"📦 {LocationName}: Prechargement de {resource}");
+				// Logique de prechargement
 			}
 		}
 
 		/// <summary>
-		/// Sauvegarde l'état des interactables
+		/// Sauvegarde l'etat des interactables
 		/// </summary>
 		protected virtual object SaveInteractablesState()
 		{
@@ -758,7 +758,7 @@ namespace Satsuki.Scenes.Locations
 	}
 
 	/// <summary>
-	/// Implémentation d'un MediaScreen comme objet interactable
+	/// Implementation d'un MediaScreen comme objet interactable
 	/// </summary>
 	public class MediaScreenInteractable : IInteractable
 	{
@@ -770,8 +770,8 @@ namespace Satsuki.Scenes.Locations
 		}
 
 		public string InteractableId => $"MediaScreen_{_mediaScreen.GetInstanceId()}";
-		public string DisplayName => "Écran Média";
-		public string InteractionDescription => "Interagir avec l'écran média";
+		public string DisplayName => "Écran Media";
+		public string InteractionDescription => "Interagir avec l'ecran media";
 		public bool IsInteractable => _mediaScreen != null && _mediaScreen.IsInsideTree();
 		public Vector3 Position => _mediaScreen?.GlobalPosition ?? Vector3.Zero;
 

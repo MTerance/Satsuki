@@ -34,6 +34,8 @@
     <None Include="Documentation\Title_LobbyEx_Integration.md" />
     <None Include="Documentation\TITLE_SCENE.md" />
     <None Include="Documentation\TITLE_SCENE_SUMMARY.md" />
+    <None Include="Documentation\Unicode_Fix_Complete_Report.md" />
+    <None Include="fix_unicode_precise.ps1" />
     <None Include="Interfaces\README.md" />
     <None Include="Interfaces\SUMMARY.md" />
     <None Include="Networks\README_Encryption.md" />

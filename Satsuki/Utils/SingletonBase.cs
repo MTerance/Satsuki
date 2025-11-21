@@ -15,7 +15,7 @@ namespace Satsuki.Utils
     /// <summary>
     /// Classe de base Singleton thread-safe utilisant le pattern Lazy<T>
     /// </summary>
-    /// <typeparam name="T">Type qui hérite de SingletonBase</typeparam>
+    /// <typeparam name="T">Type qui herite de SingletonBase</typeparam>
     public abstract class SingletonBase<T>
         where T : SingletonBase<T>, new()
     {
@@ -28,31 +28,31 @@ namespace Satsuki.Utils
         public static T GetInstance => _lazyInstance.Value;
 
         /// <summary>
-        /// Constructeur protégé pour empêcher l'instanciation externe
+        /// Constructeur protege pour empecher l'instanciation externe
         /// </summary>
         protected SingletonBase()
         {
-            // Vérification pour empêcher l'instanciation multiple via réflection
+            // Verification pour empecher l'instanciation multiple via reflection
             if (_lazyInstance.IsValueCreated)
             {
-                throw new InvalidOperationException($"Une instance de {typeof(T).Name} existe déjà. Utilisez GetInstance pour y accéder.");
+                throw new InvalidOperationException($"Une instance de {typeof(T).Name} existe deja. Utilisez GetInstance pour y acceder.");
             }
         }
 
         /// <summary>
-        /// Méthode optionnelle pour réinitialiser le singleton (utile pour les tests)
-        /// ATTENTION: Cette méthode n'est pas thread-safe et ne devrait être utilisée que dans des contextes contrôlés
+        /// Methode optionnelle pour reinitialiser le singleton (utile pour les tests)
+        /// ATTENTION: Cette methode n'est pas thread-safe et ne devrait etre utilisee que dans des contextes controles
         /// </summary>
         protected static void ResetInstance()
         {
-            // Note: Lazy<T> ne peut pas être "reset" facilement
-            // Cette méthode est principalement documentaire
-            // Pour un vrai reset, il faudrait utiliser une approche différente
-            System.Diagnostics.Debug.WriteLine($"ATTENTION: ResetInstance appelé pour {typeof(T).Name}. Lazy<T> ne peut pas être reset facilement.");
+            // Note: Lazy<T> ne peut pas etre "reset" facilement
+            // Cette methode est principalement documentaire
+            // Pour un vrai reset, il faudrait utiliser une approche differente
+            System.Diagnostics.Debug.WriteLine($"ATTENTION: ResetInstance appele pour {typeof(T).Name}. Lazy<T> ne peut pas etre reset facilement.");
         }
 
         /// <summary>
-        /// Vérifie si l'instance a été créée
+        /// Verifie si l'instance a ete creee
         /// </summary>
         public static bool IsInstanceCreated => _lazyInstance.IsValueCreated;
     }

@@ -1,4 +1,4 @@
-using Godot;
+﻿using Godot;
 using Satsuki.Utils;
 using Satsuki.Networks;
 using System;
@@ -20,7 +20,7 @@ public class Network : SingletonBase<Network>, INetwork, IDisposable
 	// Dictionnaire pour stocker les types de clients
 	private readonly ConcurrentDictionary<string, string> _clientTypes;
 
-	// Événement déclenché quand un nouveau client se connecte
+	// Évenement declenche quand un nouveau client se connecte
 	public event Action<string> OnClientConnected;
 
 	public Network()
@@ -43,7 +43,7 @@ public class Network : SingletonBase<Network>, INetwork, IDisposable
 			_isRunning = false;
 			_cancellationTokenSource?.Cancel();
 			
-			// Arrête le récepteur de messages
+			// Arrete le recepteur de messages
 			MessageReceiver.GetInstance.Stop().Wait(TimeSpan.FromSeconds(5));
 			
 			// Nettoie les types de clients
@@ -56,7 +56,7 @@ public class Network : SingletonBase<Network>, INetwork, IDisposable
 			_server = null;
 		}
 		
-		Console.WriteLine("🛑 Network: Serveur arrêté");
+		Console.WriteLine("🛑 Network: Serveur arrete");
 		return true;
 	}
 
@@ -73,17 +73,17 @@ public class Network : SingletonBase<Network>, INetwork, IDisposable
 			
 			Console.WriteLine("✅ Server has started on {0}:{1}, Waiting for connections…", "127.0.0.1", 80);
 
-			// Démarre le système de réception des messages
+			// Demarre le systeme de reception des messages
 			MessageReceiver.GetInstance.Start();
 
-			// Démarre l'écoute des nouvelles connexions en arrière-plan
+			// Demarre l'ecoute des nouvelles connexions en arriere-plan
 			_serverListeningTask = Task.Run(AcceptClientsLoop, _cancellationTokenSource.Token);
 			
 			return true;
 		}
 		catch (Exception ex)
 		{
-			Console.WriteLine($"❌ Erreur lors du démarrage du serveur: {ex.Message}");
+			Console.WriteLine($"❌ Erreur lors du demarrage du serveur: {ex.Message}");
 			return false;
 		}
 	}
@@ -104,21 +104,21 @@ public class Network : SingletonBase<Network>, INetwork, IDisposable
 					
 					if (tcpClient != null)
 					{
-						Console.WriteLine($"🔌 Nouveau client connecté: {tcpClient.Client.RemoteEndPoint}");
+						Console.WriteLine($"🔌 Nouveau client connecte: {tcpClient.Client.RemoteEndPoint}");
 						
-						// Ajoute le client au système de réception de messages
+						// Ajoute le client au systeme de reception de messages
 						string clientId = MessageReceiver.GetInstance.AddClient(tcpClient);
 						
 						if (clientId != null)
 						{
-							Console.WriteLine($"✅ Client assigné avec l'ID: {clientId}");
+							Console.WriteLine($"✅ Client assigne avec l'ID: {clientId}");
 							
 							// Initialiser le type de client comme "UNKNOWN"
 							_clientTypes.TryAdd(clientId, "UNKNOWN");
 							
 							LogConnectionStats();
 							
-							// Déclencher l'événement de connexion client
+							// Declencher l'evenement de connexion client
 							OnClientConnected?.Invoke(clientId);
 						}
 						else
@@ -130,19 +130,19 @@ public class Network : SingletonBase<Network>, INetwork, IDisposable
 				}
 				catch (ObjectDisposedException)
 				{
-					// Serveur fermé, sortie normale
+					// Serveur ferme, sortie normale
 					break;
 				}
 				catch (Exception ex)
 				{
 					Console.WriteLine($"❌ Erreur lors de l'acceptation d'un client: {ex.Message}");
-					await Task.Delay(1000, _cancellationTokenSource.Token); // Attendre avant de réessayer
+					await Task.Delay(1000, _cancellationTokenSource.Token); // Attendre avant de reessayer
 				}
 			}
 		}
 		catch (OperationCanceledException)
 		{
-			Console.WriteLine("🛑 Boucle d'acceptation des clients annulée");
+			Console.WriteLine("🛑 Boucle d'acceptation des clients annulee");
 		}
 	}
 
@@ -166,14 +166,14 @@ public class Network : SingletonBase<Network>, INetwork, IDisposable
 	}
 
 	/// <summary>
-	/// Définit le type d'un client
+	/// Definit le type d'un client
 	/// </summary>
 	public bool SetClientType(string clientId, string clientType)
 	{
 		if (_clientTypes.ContainsKey(clientId))
 		{
 			_clientTypes[clientId] = clientType;
-			Console.WriteLine($"🏷️ Type de client {clientId} défini: {clientType}");
+			Console.WriteLine($"🏷️ Type de client {clientId} defini: {clientType}");
 			return true;
 		}
 		return false;
@@ -188,7 +188,7 @@ public class Network : SingletonBase<Network>, INetwork, IDisposable
 	}
 
 	/// <summary>
-	/// Obtient tous les clients d'un type spécifique
+	/// Obtient tous les clients d'un type specifique
 	/// </summary>
 	public List<string> GetClientsByType(string clientType)
 	{
@@ -217,33 +217,33 @@ public class Network : SingletonBase<Network>, INetwork, IDisposable
 	private void LogConnectionStats()
 	{
 		var stats = MessageReceiver.GetInstance.GetStatistics();
-		Console.WriteLine($"📊 Statistiques: {stats.connectedClients} clients connectés, {stats.pendingMessages} messages en attente");
+		Console.WriteLine($"📊 Statistiques: {stats.connectedClients} clients connectes, {stats.pendingMessages} messages en attente");
 	}
 
 	/// <summary>
-	/// Envoie un message à un client spécifique
+	/// Envoie un message a un client specifique
 	/// </summary>
 	/// <param name="clientId">ID du client</param>
-	/// <param name="message">Message à envoyer</param>
+	/// <param name="message">Message a envoyer</param>
 	public async Task<bool> SendMessageToClient(string clientId, string message)
 	{
 		return await MessageReceiver.GetInstance.SendMessageToClient(clientId, message);
 	}
 
 	/// <summary>
-	/// Diffuse un message à tous les clients connectés
+	/// Diffuse un message a tous les clients connectes
 	/// </summary>
-	/// <param name="message">Message à diffuser</param>
+	/// <param name="message">Message a diffuser</param>
 	public async Task BroadcastMessage(string message)
 	{
 		await MessageReceiver.GetInstance.BroadcastMessage(message);
 	}
 
 	/// <summary>
-	/// Diffuse un message à tous les clients d'un type spécifique
+	/// Diffuse un message a tous les clients d'un type specifique
 	/// </summary>
-	/// <param name="message">Message à diffuser</param>
-	/// <param name="clientType">Type de clients ciblés (BACKEND, PLAYER, OTHER)</param>
+	/// <param name="message">Message a diffuser</param>
+	/// <param name="clientType">Type de clients cibles (BACKEND, PLAYER, OTHER)</param>
 	public async Task BroadcastMessageToType(string message, string clientType)
 	{
 		var targetClients = GetClientsByType(clientType);
@@ -251,11 +251,11 @@ public class Network : SingletonBase<Network>, INetwork, IDisposable
 		{
 			await SendMessageToClient(clientId, message);
 		}
-		Console.WriteLine($"📢 Message diffusé à {targetClients.Count} clients de type {clientType}");
+		Console.WriteLine($"📢 Message diffuse a {targetClients.Count} clients de type {clientType}");
 	}
 
 	/// <summary>
-	/// Obtient la liste des clients connectés
+	/// Obtient la liste des clients connectes
 	/// </summary>
 	public List<string> GetConnectedClients()
 	{
@@ -263,7 +263,7 @@ public class Network : SingletonBase<Network>, INetwork, IDisposable
 	}
 
 	/// <summary>
-	/// Obtient les statistiques du réseau
+	/// Obtient les statistiques du reseau
 	/// </summary>
 	public (int connectedClients, int pendingMessages, bool serverRunning) GetNetworkStatistics()
 	{
@@ -272,13 +272,13 @@ public class Network : SingletonBase<Network>, INetwork, IDisposable
 	}
 
 	/// <summary>
-	/// Déconnecte un client spécifique
+	/// Deconnecte un client specifique
 	/// </summary>
-	/// <param name="clientId">ID du client à déconnecter</param>
+	/// <param name="clientId">ID du client a deconnecter</param>
 	public async Task DisconnectClient(string clientId)
 	{
 		await MessageReceiver.GetInstance.RemoveClient(clientId);
 		_clientTypes.TryRemove(clientId, out _);
-		Console.WriteLine($"🔌 Client {clientId} déconnecté");
+		Console.WriteLine($"🔌 Client {clientId} deconnecte");
 	}
 }
