@@ -1,5 +1,6 @@
-[gd_scene format=3 uid="uid://d0hmix7qbhh3n"]
+[gd_scene load_steps=2 format=3 uid="uid://title_scene_001"]
 
-[node name="Title" type="Node3D"]
+[ext_resource type="Script" path="res://Scenes/Title.cs" id="1_title"]
 
-[node name="TitleScreen" type="Node2D" parent="."]
+[node name="Title" type="Node"]
+script = ExtResource("1_title")

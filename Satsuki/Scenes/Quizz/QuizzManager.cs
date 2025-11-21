@@ -7,7 +7,7 @@ public partial class QuizzManager : Node
 {
 	private List<IQuizz> listQuizz {get;set;}
 
-    private List<IQuizz>.Enumerator currentQuizz {get;set;}
+	private List<IQuizz>.Enumerator currentQuizz {get;set;}
 	
 	
 	// Called when the node enters the scene tree for the first time.

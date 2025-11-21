@@ -1,7 +1,8 @@
-using Godot;
+﻿using Godot;
 using Satsuki.Utils;
 using Satsuki.Networks;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -15,11 +16,18 @@ public class Network : SingletonBase<Network>, INetwork, IDisposable
 	private bool _isRunning = false;
 	private CancellationTokenSource _cancellationTokenSource;
 	private Task _serverListeningTask;
+	
+	// Dictionnaire pour stocker les types de clients
+	private readonly ConcurrentDictionary<string, string> _clientTypes;
 
-    public Network()
+	// Évenement declenche quand un nouveau client se connecte
+	public event Action<string> OnClientConnected;
+
+	public Network()
 	{
 		_server = null;
 		_cancellationTokenSource = new CancellationTokenSource();
+		_clientTypes = new ConcurrentDictionary<string, string>();
 	}
 
 	public void Dispose()
@@ -35,8 +43,11 @@ public class Network : SingletonBase<Network>, INetwork, IDisposable
 			_isRunning = false;
 			_cancellationTokenSource?.Cancel();
 			
-			// Arr�te le r�cepteur de messages
+			// Arrete le recepteur de messages
 			MessageReceiver.GetInstance.Stop().Wait(TimeSpan.FromSeconds(5));
+			
+			// Nettoie les types de clients
+			_clientTypes.Clear();
 		}
 
 		if (_server != null)
@@ -45,7 +56,7 @@ public class Network : SingletonBase<Network>, INetwork, IDisposable
 			_server = null;
 		}
 		
-		Console.WriteLine("Network: Serveur arr�t�");
+		Console.WriteLine("🛑 Network: Serveur arrete");
 		return true;
 	}
 
@@ -60,19 +71,19 @@ public class Network : SingletonBase<Network>, INetwork, IDisposable
 			_server.Start();
 			_isRunning = true;
 			
-			Console.WriteLine("Server has started on {0}:{1}, Waiting for connections�", "127.0.0.1", 80);
+			Console.WriteLine("✅ Server has started on {0}:{1}, Waiting for connections…", "127.0.0.1", 80);
 
-			// D�marre le syst�me de r�ception des messages
+			// Demarre le systeme de reception des messages
 			MessageReceiver.GetInstance.Start();
 
-			// D�marre l'�coute des nouvelles connexions en arri�re-plan
+			// Demarre l'ecoute des nouvelles connexions en arriere-plan
 			_serverListeningTask = Task.Run(AcceptClientsLoop, _cancellationTokenSource.Token);
 			
 			return true;
 		}
 		catch (Exception ex)
 		{
-			Console.WriteLine($"Erreur lors du d�marrage du serveur: {ex.Message}");
+			Console.WriteLine($"❌ Erreur lors du demarrage du serveur: {ex.Message}");
 			return false;
 		}
 	}
@@ -93,38 +104,45 @@ public class Network : SingletonBase<Network>, INetwork, IDisposable
 					
 					if (tcpClient != null)
 					{
-						Console.WriteLine($"Nouveau client connect�: {tcpClient.Client.RemoteEndPoint}");
+						Console.WriteLine($"🔌 Nouveau client connecte: {tcpClient.Client.RemoteEndPoint}");
 						
-						// Ajoute le client au syst�me de r�ception de messages
+						// Ajoute le client au systeme de reception de messages
 						string clientId = MessageReceiver.GetInstance.AddClient(tcpClient);
 						
 						if (clientId != null)
 						{
-							Console.WriteLine($"Client assign� avec l'ID: {clientId}");
+							Console.WriteLine($"✅ Client assigne avec l'ID: {clientId}");
+							
+							// Initialiser le type de client comme "UNKNOWN"
+							_clientTypes.TryAdd(clientId, "UNKNOWN");
+							
 							LogConnectionStats();
+							
+							// Declencher l'evenement de connexion client
+							OnClientConnected?.Invoke(clientId);
 						}
 						else
 						{
-							Console.WriteLine("�chec de l'ajout du client au MessageReceiver");
+							Console.WriteLine("❌ Échec de l'ajout du client au MessageReceiver");
 							tcpClient.Close();
 						}
 					}
 				}
 				catch (ObjectDisposedException)
 				{
-					// Serveur ferm�, sortie normale
+					// Serveur ferme, sortie normale
 					break;
 				}
 				catch (Exception ex)
 				{
-					Console.WriteLine($"Erreur lors de l'acceptation d'un client: {ex.Message}");
-					await Task.Delay(1000, _cancellationTokenSource.Token); // Attendre avant de r�essayer
+					Console.WriteLine($"❌ Erreur lors de l'acceptation d'un client: {ex.Message}");
+					await Task.Delay(1000, _cancellationTokenSource.Token); // Attendre avant de reessayer
 				}
 			}
 		}
 		catch (OperationCanceledException)
 		{
-			Console.WriteLine("Boucle d'acceptation des clients annul�e");
+			Console.WriteLine("🛑 Boucle d'acceptation des clients annulee");
 		}
 	}
 
@@ -148,35 +166,96 @@ public class Network : SingletonBase<Network>, INetwork, IDisposable
 	}
 
 	/// <summary>
+	/// Definit le type d'un client
+	/// </summary>
+	public bool SetClientType(string clientId, string clientType)
+	{
+		if (_clientTypes.ContainsKey(clientId))
+		{
+			_clientTypes[clientId] = clientType;
+			Console.WriteLine($"🏷️ Type de client {clientId} defini: {clientType}");
+			return true;
+		}
+		return false;
+	}
+
+	/// <summary>
+	/// Obtient le type d'un client
+	/// </summary>
+	public string GetClientType(string clientId)
+	{
+		return _clientTypes.TryGetValue(clientId, out string clientType) ? clientType : null;
+	}
+
+	/// <summary>
+	/// Obtient tous les clients d'un type specifique
+	/// </summary>
+	public List<string> GetClientsByType(string clientType)
+	{
+		var clients = new List<string>();
+		foreach (var kvp in _clientTypes)
+		{
+			if (kvp.Value == clientType)
+			{
+				clients.Add(kvp.Key);
+			}
+		}
+		return clients;
+	}
+
+	/// <summary>
+	/// Obtient tous les types de clients avec leurs IDs
+	/// </summary>
+	public Dictionary<string, string> GetAllClientTypes()
+	{
+		return new Dictionary<string, string>(_clientTypes);
+	}
+
+	/// <summary>
 	/// Affiche les statistiques de connexion
 	/// </summary>
 	private void LogConnectionStats()
 	{
 		var stats = MessageReceiver.GetInstance.GetStatistics();
-		Console.WriteLine($"Statistiques: {stats.connectedClients} clients connect�s, {stats.pendingMessages} messages en attente");
+		Console.WriteLine($"📊 Statistiques: {stats.connectedClients} clients connectes, {stats.pendingMessages} messages en attente");
 	}
 
 	/// <summary>
-	/// Envoie un message � un client sp�cifique
+	/// Envoie un message a un client specifique
 	/// </summary>
 	/// <param name="clientId">ID du client</param>
-	/// <param name="message">Message � envoyer</param>
+	/// <param name="message">Message a envoyer</param>
 	public async Task<bool> SendMessageToClient(string clientId, string message)
 	{
 		return await MessageReceiver.GetInstance.SendMessageToClient(clientId, message);
 	}
 
 	/// <summary>
-	/// Diffuse un message � tous les clients connect�s
+	/// Diffuse un message a tous les clients connectes
 	/// </summary>
-	/// <param name="message">Message � diffuser</param>
+	/// <param name="message">Message a diffuser</param>
 	public async Task BroadcastMessage(string message)
 	{
 		await MessageReceiver.GetInstance.BroadcastMessage(message);
 	}
 
 	/// <summary>
-	/// Obtient la liste des clients connect�s
+	/// Diffuse un message a tous les clients d'un type specifique
+	/// </summary>
+	/// <param name="message">Message a diffuser</param>
+	/// <param name="clientType">Type de clients cibles (BACKEND, PLAYER, OTHER)</param>
+	public async Task BroadcastMessageToType(string message, string clientType)
+	{
+		var targetClients = GetClientsByType(clientType);
+		foreach (var clientId in targetClients)
+		{
+			await SendMessageToClient(clientId, message);
+		}
+		Console.WriteLine($"📢 Message diffuse a {targetClients.Count} clients de type {clientType}");
+	}
+
+	/// <summary>
+	/// Obtient la liste des clients connectes
 	/// </summary>
 	public List<string> GetConnectedClients()
 	{
@@ -184,7 +263,7 @@ public class Network : SingletonBase<Network>, INetwork, IDisposable
 	}
 
 	/// <summary>
-	/// Obtient les statistiques du r�seau
+	/// Obtient les statistiques du reseau
 	/// </summary>
 	public (int connectedClients, int pendingMessages, bool serverRunning) GetNetworkStatistics()
 	{
@@ -193,12 +272,13 @@ public class Network : SingletonBase<Network>, INetwork, IDisposable
 	}
 
 	/// <summary>
-	/// D�connecte un client sp�cifique
+	/// Deconnecte un client specifique
 	/// </summary>
-	/// <param name="clientId">ID du client � d�connecter</param>
+	/// <param name="clientId">ID du client a deconnecter</param>
 	public async Task DisconnectClient(string clientId)
 	{
 		await MessageReceiver.GetInstance.RemoveClient(clientId);
-		Console.WriteLine($"Client {clientId} d�connect�");
+		_clientTypes.TryRemove(clientId, out _);
+		Console.WriteLine($"🔌 Client {clientId} deconnecte");
 	}
 }

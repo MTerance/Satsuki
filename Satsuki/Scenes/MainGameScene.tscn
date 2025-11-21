@@ -1,48 +1,6 @@
-[gd_scene load_steps=8 format=3 uid="uid://cj6ew4ns2j6bl"]
+[gd_scene load_steps=2 format=3 uid="uid://cj6ew4ns2j6bl"]
 
 [ext_resource type="Script" uid="uid://ypyguhd3r0md" path="res://Scenes/MainGameScene.cs" id="1_cp132"]
-[ext_resource type="PackedScene" uid="uid://br7jfj63p0fjp" path="res://Scenes/Quizz/QuestionAnswer/QuestionAswerQuizzScene.tscn" id="2_2axvc"]
-[ext_resource type="PackedScene" uid="uid://rdxlqu68ov8x" path="res://Scenes/Locations/StageEx.tscn" id="2_7px2j"]
-[ext_resource type="Script" uid="uid://bp48mlai2d6xb" path="res://Scenes/Locations/LocationManager.cs" id="3_qla6v"]
-
-[sub_resource type="ViewportTexture" id="ViewportTexture_qla6v"]
-viewport_path = NodePath("SubViewport")
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_undaa"]
-resource_local_to_scene = true
-albedo_color = Color(0, 0, 0, 1)
-emission_enabled = true
-emission_texture = SubResource("ViewportTexture_qla6v")
-
-[sub_resource type="PlaneMesh" id="PlaneMesh_qlmn3"]
-flip_faces = true
-size = Vector2(200, 200)
-orientation = 2
 
 [node name="MainGameScene" type="Node"]
 script = ExtResource("1_cp132")
-
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 673.827, -258.282)
-light_energy = 3.01
-light_angular_distance = 3.6
-shadow_enabled = true
-
-[node name="StageEx" parent="." instance=ExtResource("2_7px2j")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -73.0469, 0, 0)
-script = ExtResource("3_qla6v")
-
-[node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 28.4969, 51.7756, -89.3752)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.355, 0, 0, 0, 0.355, 0, 0, 0, 0.355, 2.53861, 57.5128, 29.0896)
-material_override = SubResource("StandardMaterial3D_undaa")
-mesh = SubResource("PlaneMesh_qlmn3")
-
-[node name="SubViewport" type="SubViewport" parent="."]
-gui_disable_input = true
-gui_embed_subwindows = true
-size = Vector2i(1536, 1024)
-
-[node name="QuestionAswerQuizzScene" parent="SubViewport" instance=ExtResource("2_2axvc")]

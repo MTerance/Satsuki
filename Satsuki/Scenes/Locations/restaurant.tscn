@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=3 uid="uid://vyb5rm4ejxo8"]
+
+[ext_resource type="PackedScene" uid="uid://ckyacvxcpe7ao" path="res://Assets/Restaurant/scene.gltf" id="1_wrjgv"]
+[ext_resource type="Script" uid="uid://bbjmvqtfq1d2j" path="res://Scenes/Locations/LocationModel.cs" id="2_qrf5t"]
+
+[node name="Restaurant" type="Node3D"]
+script = ExtResource("2_qrf5t")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.3087, 14.7786, 3.68321)
+
+[node name="Restaurant_Scene" parent="." instance=ExtResource("1_wrjgv")]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, -270.942, 0, 314.333)
+script = ExtResource("2_qrf5t")
+
+[node name="Lobby_Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.929776, 0.368125, 0, -0.368125, 0.929776, -24.9722, 9.54031, 27.7257)
+
+[node name="Title_Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.61098, 6.13089, 7.58148)
