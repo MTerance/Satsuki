@@ -17,4 +17,4 @@ script = ExtResource("2_qrf5t")
 transform = Transform3D(1, 0, 0, 0, 0.929776, 0.368125, 0, -0.368125, 0.929776, -24.9722, 9.54031, 27.7257)
 
 [node name="Title_Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.61098, 6.13089, 7.58148)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.61098, 6.13089, 58.7656)

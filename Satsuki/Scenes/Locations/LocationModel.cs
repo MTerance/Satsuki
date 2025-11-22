@@ -99,13 +99,108 @@ namespace Satsuki.Scenes.Locations
 				CameraType.Cinematic => "Cinematic_Camera3D",
 				_ => null
 			};
-			GD.Print($"🎥 {LocationName}: Changement de camera vers {cameraType} ({cameraNodeName})");
-			var currentCamera = GetNode<Camera3D>($"%{cameraNodeName}");
-			if (currentCamera is not null)
-				currentCamera.Current = true;
-
-			return true;
+			
+			if (cameraNodeName == null)
+			{
+				GD.PrintErr($"{LocationName}: Type de camera inconnu: {cameraType}");
+				return false;
+			}
+			
+			GD.Print($"{LocationName}: Recherche de la camera {cameraType} ({cameraNodeName})");
+			
+			try
+			{
+				// Essayer d'abord avec le marqueur unique %
+				Camera3D currentCamera = GetNodeOrNull<Camera3D>($"%{cameraNodeName}");
+				
+				// Si non trouve, essayer avec chemin direct (enfant direct)
+				if (currentCamera == null)
+				{
+					GD.Print($"{LocationName}: Camera non trouvee avec %, essai chemin direct...");
+					currentCamera = GetNodeOrNull<Camera3D>(cameraNodeName);
+				}
+				
+				// Si toujours pas trouve, essayer recherche recursive
+				if (currentCamera == null)
+				{
+					GD.Print($"{LocationName}: Camera non trouvee en enfant direct, recherche recursive...");
+					currentCamera = FindCameraRecursive(this, cameraNodeName);
+				}
+				
+				if (currentCamera != null)
+				{
+					// Desactiver toutes les autres cameras
+					DeactivateAllCameras();
+					
+					// Activer la camera cible
+					currentCamera.Current = true;
+					GD.Print($"{LocationName}: Camera {cameraNodeName} activee avec succes");
+					GD.Print($"  - Position: {currentCamera.GlobalPosition}");
+					GD.Print($"  - Rotation: {currentCamera.GlobalRotation}");
+					GD.Print($"  - Chemin: {currentCamera.GetPath()}");
+					return true;
+				}
+				else
+				{
+					GD.PrintErr($"{LocationName}: Camera {cameraNodeName} introuvable (null)");
+					return false;
+				}
+			}
+			catch (Exception ex)
+			{
+				GD.PrintErr($"{LocationName}: Erreur lors de l'activation de {cameraNodeName}: {ex.Message}");
+				return false;
+			}
 		}
+		
+		private Camera3D FindCameraRecursive(Node node, string cameraName)
+		{
+			// Verifier si le noeud actuel est la camera recherchee
+			if (node is Camera3D camera && node.Name == cameraName)
+			{
+				GD.Print($"  - Camera trouvee: {node.GetPath()}");
+				return camera;
+			}
+			
+			// Rechercher dans les enfants
+			foreach (Node child in node.GetChildren())
+			{
+				var result = FindCameraRecursive(child, cameraName);
+				if (result != null)
+					return result;
+			}
+			
+			return null;
+		}
+		
+		private void DeactivateAllCameras()
+		{
+			// Trouver et desactiver toutes les cameras dans la location
+			var cameras = new List<Camera3D>();
+			FindAllCamerasRecursive(this, cameras);
+			
+			foreach (var camera in cameras)
+			{
+				if (camera.Current)
+				{
+					camera.Current = false;
+					GD.Print($"  - Camera {camera.Name} desactivee");
+				}
+			}
+		}
+		
+		private void FindAllCamerasRecursive(Node node, List<Camera3D> cameras)
+		{
+		if (node is Camera3D camera)
+		{
+			cameras.Add(camera);
+		}
+		
+		foreach (Node child in node.GetChildren())
+		{
+			FindAllCamerasRecursive(child, cameras);
+		}
+	}
 
 		#endregion
 

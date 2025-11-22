@@ -4,7 +4,11 @@ using System;
 
 namespace Satsuki.Scenes
 {
-	public partial class Title : Node, IScene
+	/// <summary>
+	/// Menu principal du jeu apres selection "Start Game" depuis Title
+	/// Permet de choisir entre differents modes de jeu
+	/// </summary>
+	public partial class MainMenu : Node, IScene
 	{
 		private DateTime _sceneStartTime;
 		private int _menuItemIndex = 0;
@@ -12,27 +16,30 @@ namespace Satsuki.Scenes
 		private Label _titleLabel;
 		private bool _isAnimating = false;
 		private float _titleAnimationTime = 0.0f;
-		private readonly string[] _menuItems = { "Start Game", "Options", "Credits", "Quit" };
+		private readonly string[] _menuItems = { "Solo Play", "Multiplayer", "Mini-Games", "Back to Title" };
 
 		#region Signals
 		[Signal]
-		public delegate void StartGameRequestedEventHandler();
+		public delegate void SoloPlayRequestedEventHandler();
 		
 		[Signal]
-		public delegate void OptionsRequestedEventHandler();
+		public delegate void MultiplayerRequestedEventHandler();
 		
 		[Signal]
-		public delegate void CreditsRequestedEventHandler();
+		public delegate void MiniGamesRequestedEventHandler();
+		
+		[Signal]
+		public delegate void BackToTitleRequestedEventHandler();
 		#endregion
 
 		public override void _Ready()
 		{
 			_sceneStartTime = DateTime.UtcNow;
-			GD.Print("Title: Initialisation de l'ecran titre...");
+			GD.Print("MainMenu: Initialisation du menu principal...");
 
 			CreateUI();
 			
-			GD.Print($"Menu initialise avec {_menuButtons.Length} options");
+			GD.Print($"MainMenu: Menu initialise avec {_menuButtons.Length} options");
 		}
 
 		private void CreateUI()
@@ -40,19 +47,21 @@ namespace Satsuki.Scenes
 			var canvasLayer = new CanvasLayer();
 			AddChild(canvasLayer);
 
+			// Titre du menu principal
 			_titleLabel = new Label
 			{
-				Text = "SATSUKI",
+				Text = "MAIN MENU",
 				HorizontalAlignment = HorizontalAlignment.Center,
 				VerticalAlignment = VerticalAlignment.Top
 			};
-			_titleLabel.AddThemeFontSizeOverride("font_size", 72);
-			_titleLabel.AddThemeColorOverride("font_color", new Color(1.0f, 0.5f, 0.0f));
+			_titleLabel.AddThemeFontSizeOverride("font_size", 64);
+			_titleLabel.AddThemeColorOverride("font_color", new Color(0.2f, 0.8f, 1.0f));
 			canvasLayer.AddChild(_titleLabel);
 			_titleLabel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.TopWide);
-			_titleLabel.OffsetTop = 100;
-			_titleLabel.OffsetBottom = 200;
+			_titleLabel.OffsetTop = 80;
+			_titleLabel.OffsetBottom = 180;
 
+			// Container du menu
 			var menuContainer = new VBoxContainer
 			{
 				Alignment = BoxContainer.AlignmentMode.Center
@@ -62,15 +71,16 @@ namespace Satsuki.Scenes
 			menuContainer.GrowHorizontal = Control.GrowDirection.Both;
 			menuContainer.GrowVertical = Control.GrowDirection.Both;
 
+			// Creation des boutons
 			_menuButtons = new Button[_menuItems.Length];
 			for (int i = 0; i < _menuItems.Length; i++)
 			{
 				var button = new Button
 				{
 					Text = _menuItems[i],
-					CustomMinimumSize = new Vector2(300, 60)
+					CustomMinimumSize = new Vector2(350, 70)
 				};
-				button.AddThemeFontSizeOverride("font_size", 24);
+				button.AddThemeFontSizeOverride("font_size", 26);
 				
 				int index = i;
 				button.Pressed += () => OnMenuItemSelected(index);
@@ -81,7 +91,7 @@ namespace Satsuki.Scenes
 			}
 
 			UpdateMenuSelection();
-			GD.Print("UI creee avec succes");
+			GD.Print("MainMenu: UI creee avec succes");
 		}
 
 		private void UpdateMenuSelection()
@@ -91,7 +101,7 @@ namespace Satsuki.Scenes
 				if (i == _menuItemIndex)
 				{
 					_menuButtons[i].GrabFocus();
-					_menuButtons[i].AddThemeColorOverride("font_color", Colors.Orange);
+					_menuButtons[i].AddThemeColorOverride("font_color", new Color(0.2f, 0.8f, 1.0f));
 				}
 				else
 				{
@@ -104,60 +114,64 @@ namespace Satsuki.Scenes
 		{
 			_menuItemIndex = index;
 			UpdateMenuSelection();
-			GD.Print($"Menu hover: {_menuButtons[index].Text}");
+			GD.Print($"MainMenu hover: {_menuButtons[index].Text}");
 		}
 
 		private void OnMenuItemSelected(int index)
 		{
 			_menuItemIndex = index;
 			UpdateMenuSelection();
-			GD.Print($"Menu selectionne: {_menuButtons[index].Text}");
+			GD.Print($"MainMenu selectionne: {_menuButtons[index].Text}");
 			
 			switch (_menuButtons[index].Text)
 			{
-				case "Start Game":
-					StartGame();
+				case "Solo Play":
+					StartSoloPlay();
 					break;
-				case "Options":
-					OpenOptions();
+				case "Multiplayer":
+					StartMultiplayer();
 					break;
-				case "Credits":
-					OpenCredits();
+				case "Mini-Games":
+					OpenMiniGames();
 					break;
-				case "Quit":
-					QuitGame();
+				case "Back to Title":
+					BackToTitle();
 					break;
 			}
 		}
 
-		private void StartGame()
+		private void StartSoloPlay()
 		{
-			GD.Print("Title: Demande de demarrage du jeu...");
+			GD.Print("MainMenu: Demande de demarrage Solo Play...");
 			var finalState = GetSceneState();
-			GD.Print($"Etat de la scene titre: {System.Text.Json.JsonSerializer.Serialize(finalState)}");
+			GD.Print($"MainMenu: Etat de la scene: {System.Text.Json.JsonSerializer.Serialize(finalState)}");
 			
-			EmitSignal(SignalName.StartGameRequested);
-			GD.Print("Title: Signal StartGameRequested emis");
+			EmitSignal(SignalName.SoloPlayRequested);
+			GD.Print("MainMenu: Signal SoloPlayRequested emis");
 		}
 
-		private void OpenOptions()
+		private void StartMultiplayer()
 		{
-			GD.Print("Title: Demande d'ouverture des options...");
-			EmitSignal(SignalName.OptionsRequested);
+			GD.Print("MainMenu: Demande de demarrage Multiplayer...");
+			EmitSignal(SignalName.MultiplayerRequested);
+			GD.Print("MainMenu: Signal MultiplayerRequested emis");
 		}
 
-		private void OpenCredits()
+		private void OpenMiniGames()
 		{
-			GD.Print("Title: Demande d'ouverture des credits...");
-			EmitSignal(SignalName.CreditsRequested);
+			GD.Print("MainMenu: Ouverture des Mini-Games...");
+			EmitSignal(SignalName.MiniGamesRequested);
+			GD.Print("MainMenu: Signal MiniGamesRequested emis");
 		}
 
-		private void QuitGame()
+		private void BackToTitle()
 		{
-			GD.Print("Fermeture du jeu...");
+			GD.Print("MainMenu: Retour au menu titre...");
 			var finalState = GetSceneState();
-			GD.Print($"Etat final de la scene titre: {System.Text.Json.JsonSerializer.Serialize(finalState)}");
-			GetTree().Quit();
+			GD.Print($"MainMenu: Etat final: {System.Text.Json.JsonSerializer.Serialize(finalState)}");
+			
+			EmitSignal(SignalName.BackToTitleRequested);
+			GD.Print("MainMenu: Signal BackToTitleRequested emis");
 		}
 
 		private string FormatElapsedTime(double seconds)
@@ -186,7 +200,7 @@ namespace Satsuki.Scenes
 						OnMenuItemSelected(_menuItemIndex);
 						break;
 					case Key.Escape:
-						QuitGame();
+						BackToTitle();
 						break;
 				}
 			}
@@ -208,12 +222,12 @@ namespace Satsuki.Scenes
 			if (_titleLabel == null || !IsInstanceValid(_titleLabel))
 				return;
 
-			_titleLabel.AddThemeColorOverride("font_color", Colors.Yellow);
+			_titleLabel.AddThemeColorOverride("font_color", Colors.Cyan);
 			await ToSignal(GetTree().CreateTimer(0.5), SceneTreeTimer.SignalName.Timeout);
 			
 			if (_titleLabel != null && IsInstanceValid(_titleLabel))
 			{
-				_titleLabel.AddThemeColorOverride("font_color", new Color(1.0f, 0.5f, 0.0f));
+				_titleLabel.AddThemeColorOverride("font_color", new Color(0.2f, 0.8f, 1.0f));
 			}
 			
 			_isAnimating = false;
@@ -222,7 +236,7 @@ namespace Satsuki.Scenes
 
 		public override void _ExitTree()
 		{
-			GD.Print("Title: Nettoyage de la scene titre");
+			GD.Print("MainMenu: Nettoyage de la scene menu principal");
 		}
 
 		public object GetSceneState()
@@ -233,15 +247,16 @@ namespace Satsuki.Scenes
 			{
 				SceneInfo = new
 				{
-					SceneName = "Title",
-					SceneType = "MainMenu",
+					SceneName = "MainMenu",
+					SceneType = "GameModeSelection",
 					StartTime = _sceneStartTime,
 					ElapsedTime = Math.Round(elapsedTime, 2),
 					ElapsedTimeFormatted = FormatElapsedTime(elapsedTime)
 				},
 				Menu = new
 				{
-					SelectedIndex = _menuItemIndex
+					SelectedIndex = _menuItemIndex,
+					SelectedOption = _menuItems[_menuItemIndex]
 				},
 				Animation = new
 				{

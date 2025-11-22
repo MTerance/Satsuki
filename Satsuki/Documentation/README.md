@@ -6,26 +6,38 @@
 |----------|-------------|
 | [Fix-Unicode-Script.md](Fix-Unicode-Script.md) | Script de correction Unicode |
 | [Unicode_Fix_Complete_Report.md](Unicode_Fix_Complete_Report.md) | Rapport complet de correction Unicode |
+| [Cleanup_Scripts_Report.md](Cleanup_Scripts_Report.md) | Rapport de nettoyage des scripts |
 
 ## ?? Scènes & Navigation
 
+### Title & MainMenu
 | Document | Description |
 |----------|-------------|
-| [TITLE_SCENE.md](TITLE_SCENE.md) | Documentation de la scène Title |
-| [TITLE_SCENE_SUMMARY.md](TITLE_SCENE_SUMMARY.md) | Résumé de Title |
-| [Title_LobbyEx_Integration.md](Title_LobbyEx_Integration.md) | Intégration Title/LobbyEx |
-| [CREDITS_SCENARIO.md](CREDITS_SCENARIO.md) | Scénario des crédits |
-| [CREDITS_ISCENE_IMPLEMENTATION.md](CREDITS_ISCENE_IMPLEMENTATION.md) | Implémentation IScene |
+| [Title_Menu_Display_Fix.md](Title_Menu_Display_Fix.md) | Correction affichage menu Title |
+| [MainMenu_Complete_Implementation.md](MainMenu_Complete_Implementation.md) | Implémentation complète MainMenu |
 | [Credits_AutoLoad.md](Credits_AutoLoad.md) | Chargement auto des crédits |
 | [Credits_Title_Navigation.md](Credits_Title_Navigation.md) | Navigation Credits/Title |
+
+### Crédits
+| Document | Description |
+|----------|-------------|
+| [CREDITS_SCENARIO.md](CREDITS_SCENARIO.md) | Scénario des crédits |
+| [CREDITS_ISCENE_IMPLEMENTATION.md](CREDITS_ISCENE_IMPLEMENTATION.md) | Implémentation IScene |
 
 ## ?? SplashScreen
 
 | Document | Description |
 |----------|-------------|
-| [SPLASHSCREEN_MANAGER.md](SPLASHSCREEN_MANAGER.md) | Manager des splash screens |
-| [SplashScreenManager_Refactor.md](SplashScreenManager_Refactor.md) | Refactorisation |
+| [SplashScreen_Fade_Fix.md](SplashScreen_Fade_Fix.md) | Correction fade in/out |
 | [SplashScreen_Debug_Guide.md](SplashScreen_Debug_Guide.md) | Guide de debug |
+
+## ?? Système de Caméras
+
+| Document | Description |
+|----------|-------------|
+| [Camera_Context_System.md](Camera_Context_System.md) | Système de caméras contextuelles |
+| [Camera_System_Improvement.md](Camera_System_Improvement.md) | Améliorations système caméras |
+| [Title_Camera_Activation.md](Title_Camera_Activation.md) | Activation Title_Camera3D |
 
 ## ?? Locations
 
@@ -43,12 +55,7 @@
 
 | Document | Description |
 |----------|-------------|
-| [MainGameScene_Refactorisation.md](MainGameScene_Refactorisation.md) | Refactorisation |
-| [MainGameScene_Simplification.md](MainGameScene_Simplification.md) | Simplification |
-| [MainGameScene_Migration_Summary.md](MainGameScene_Migration_Summary.md) | Résumé migration |
-| [MainGameScene_CurrentLocation_Property.md](MainGameScene_CurrentLocation_Property.md) | Propriété CurrentLocation |
-| [MainGameScene_CurrentScene_Property.md](MainGameScene_CurrentScene_Property.md) | Propriété CurrentScene |
-| [Specialized_LoadUnload_Methods.md](Specialized_LoadUnload_Methods.md) | Méthodes Load/Unload |
+| [MainGameScene_Complete_Architecture.md](MainGameScene_Complete_Architecture.md) | Architecture complète (? RÉCENT) |
 
 ## ?? Réseau & Serveur
 
@@ -57,21 +64,23 @@
 | [ServerArchitecture.md](ServerArchitecture.md) | Architecture serveur |
 | [CLIENT_TYPE_AUTHENTICATION.md](CLIENT_TYPE_AUTHENTICATION.md) | Authentification clients |
 | [CryptageSystem.md](CryptageSystem.md) | Système de cryptage |
-
-## ?? Changements & Suppressions
-
-| Document | Description |
-|----------|-------------|
-| [Changements_Retires_LobbyEx.md](Changements_Retires_LobbyEx.md) | Retrait de LobbyEx |
-| [Suppression_Lobby.md](Suppression_Lobby.md) | Suppression du lobby |
+| [MESSAGE_ROUTING_SYSTEM.md](MESSAGE_ROUTING_SYSTEM.md) | Système de routage messages |
+| [MESSAGE_ROUTING_SUMMARY.md](MESSAGE_ROUTING_SUMMARY.md) | Résumé routage messages |
 
 ## ?? Corrections Techniques
 
 | Document | Description |
 |----------|-------------|
 | [SubViewport_Fix.md](SubViewport_Fix.md) | Correction SubViewport |
-| [Camera_Management_System.md](Camera_Management_System.md) | Gestion des caméras |
 | [GETGAMESTATE_SYSTEM.md](GETGAMESTATE_SYSTEM.md) | Système GetGameState |
+| [Application_Close_Fix.md](Application_Close_Fix.md) | Correction fermeture app |
+| [UTF8_ENCODING_FIX.md](UTF8_ENCODING_FIX.md) | Correction encodage UTF-8 |
+
+## ?? Guides
+
+| Document | Description |
+|----------|-------------|
+| [EMOJI_LOG_GUIDE.md](EMOJI_LOG_GUIDE.md) | Guide des emojis dans les logs |
 
 ---
 
@@ -79,23 +88,56 @@
 
 ### Pour les développeurs
 - Consultez les sections par fonctionnalité
-- Les documents "Summary" et "Resume" donnent une vue d'ensemble
+- Les documents "Complete" donnent une vue d'ensemble complète
 - Les guides "Setup" et "Integration" sont pratiques pour l'implémentation
 
 ### Pour la maintenance
 - `Fix-Unicode-Script.md` pour les corrections Unicode
-- `Unicode_Fix_Complete_Report.md` pour l'historique complet
+- `Cleanup_Scripts_Report.md` pour l'historique de nettoyage
+- Documents "Fix" pour les corrections spécifiques
 
 ### Structure recommandée
 ```
 Documentation/
-??? Maintenance (Unicode, Scripts)
+??? Maintenance (Unicode, Scripts, Cleanup)
 ??? Architecture (MainGameScene, LocationManager)
-??? Scènes (Title, Credits, Restaurant)
+??? Scènes (Title, MainMenu, Credits, Restaurant)
 ??? Systèmes (SplashScreen, Camera, Network)
-??? Historique (Changements, Suppressions)
+??? Corrections (SubViewport, Encoding, Close)
 ```
 
 ---
 
-*Dernière mise à jour : 2024*
+## ??? Nettoyage récent (22/11/2025)
+
+### Documents supprimés (obsolètes/doublons)
+- ? MainGameScene_Refactorisation.md
+- ? MainGameScene_Simplification.md
+- ? MainGameScene_Migration_Summary.md
+- ? MainGameScene_CurrentLocation_Property.md
+- ? MainGameScene_CurrentScene_Property.md
+- ? Camera_Management_System.md
+- ? TITLE_SCENE.md
+- ? TITLE_SCENE_SUMMARY.md
+- ? SPLASHSCREEN_MANAGER.md
+- ? SplashScreenManager_Refactor.md
+- ? SESSION_SUMMARY.md
+- ? Changements_Retires_LobbyEx.md
+- ? Suppression_Lobby.md
+- ? Specialized_LoadUnload_Methods.md
+
+**Total** : 14 fichiers obsolètes supprimés
+
+### Documents conservés (à jour)
+- ? MainGameScene_Complete_Architecture.md (architecture complète)
+- ? Camera_Context_System.md (système de caméras)
+- ? Title_Menu_Display_Fix.md (menu Title)
+- ? MainMenu_Complete_Implementation.md (MainMenu)
+- ? SplashScreen_Fade_Fix.md (fade in/out)
+- ? Application_Close_Fix.md (fermeture app)
+
+---
+
+*Dernière mise à jour : 22/11/2025*  
+*Fichiers actifs : 33*  
+*Fichiers supprimés : 14*
