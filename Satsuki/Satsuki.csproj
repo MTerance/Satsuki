@@ -4,6 +4,14 @@
     <EnableDynamicLoading>true</EnableDynamicLoading>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="Configs\Restaurant_config_example.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ACTION-REQUISE-REDEMARRAGE.md" />
+    <None Include="addons\decor_manager\plugin.cfg" />
+    <None Include="APRES-REDEMARRAGE-CHECKLIST.md" />
+    <None Include="DECORMANAGER-MAINTENANT.md" />
+    <None Include="DECORMANAGER-RESOLU.md" />
     <None Include="Documentation\Application_Close_Fix.md" />
     <None Include="Documentation\Camera_Context_System.md" />
     <None Include="Documentation\Camera_System_Improvement.md" />
@@ -13,6 +21,14 @@
     <None Include="Documentation\CREDITS_ISCENE_IMPLEMENTATION.md" />
     <None Include="Documentation\CREDITS_SCENARIO.md" />
     <None Include="Documentation\Credits_Title_Navigation.md" />
+    <None Include="Documentation\DecorManagerTool_Guide.md" />
+    <None Include="Documentation\DecorManagerTool_Summary.md" />
+    <None Include="Documentation\DecorManager_Final_Solution.md" />
+    <None Include="Documentation\DecorManager_Fix.md" />
+    <None Include="Documentation\DecorManager_Path_Fix.md" />
+    <None Include="Documentation\DecorManager_SpawnPoints_Feature.md" />
+    <None Include="Documentation\DecorManager_SpawnPoints_Summary.md" />
+    <None Include="Documentation\DecorManager_Test_Guide.md" />
     <None Include="Documentation\Documentation_Cleanup_Report.md" />
     <None Include="Documentation\Fix-Unicode-Script.md" />
     <None Include="Documentation\GETGAMESTATE_SYSTEM.md" />
@@ -34,14 +50,19 @@
     <None Include="Documentation\Title_LobbyEx_Integration.md" />
     <None Include="Documentation\Title_Menu_Display_Fix.md" />
     <None Include="Documentation\Unicode_Fix_Complete_Report.md" />
+    <None Include="fix-decormanager-cache.ps1" />
+    <None Include="fix-decormanager-ultimate.ps1" />
     <None Include="fix-unicode.ps1" />
     <None Include="Interfaces\README.md" />
     <None Include="Interfaces\SUMMARY.md" />
     <None Include="Networks\README_Encryption.md" />
     <None Include="Networks\README_MessageSystem.md" />
+    <None Include="reset-decormanager.ps1" />
     <None Include="Scenes\Locations\LobbyEx.tscn" />
     <None Include="Scenes\Locations\StageEx.tscn" />
     <None Include="Scenes\Title.tscn" />
+    <None Include="Tools\DecorManager_QuickStart.md" />
+    <None Include="Tools\SpawnPoints_QuickStart.md" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="9.0.7" />
