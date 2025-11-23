@@ -6,6 +6,10 @@
 |----------|-------------|
 | [DecorManagerTool_Guide.md](DecorManagerTool_Guide.md) | ?? Outil de gestion des décors et caméras |
 | [DecorManager_SpawnPoints_Feature.md](DecorManager_SpawnPoints_Feature.md) | ?? Placement points d'apparition joueurs |
+| [DecorManager_MenuRendering_Guide.md](DecorManager_MenuRendering_Guide.md) | ?? Affichage menus UI sur surfaces 3D |
+| [DecorLoader_Guide.md](DecorLoader_Guide.md) | ?? Classe utilitaire pour charger décors+JSON |
+| [DecorLoader_Summary.md](DecorLoader_Summary.md) | ?? Récapitulatif DecorLoader |
+| [DecorLoader_MainGameScene_Example.md](DecorLoader_MainGameScene_Example.md) | ?? Exemple d'intégration MainGameScene |
 | [DecorManager_Final_Solution.md](DecorManager_Final_Solution.md) | ?? Solution définitive problème activation |
 
 ## ?? Maintenance & Outils

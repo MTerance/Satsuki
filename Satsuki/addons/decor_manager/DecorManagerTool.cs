@@ -57,11 +57,17 @@ public partial class DecorManagerTool : EditorPlugin
 	
 	public override bool _Handles(GodotObject @object)
 	{
-		return _isSpawnPointMode && @object is Node3D;
+		return (_isSpawnPointMode || _isMenuRenderingMode) && @object is Node3D;
 	}
 	
 	public override int _Forward3DGuiInput(Camera3D camera, InputEvent @event)
 	{
+		// GÃƒÆ’Ã‚Â©rer le mode movie rendering en prioritÃƒÆ’Ã‚Â©
+		var movieResult = HandleMenuRenderingInput(camera, @event);
+		if (movieResult != (int)EditorPlugin.AfterGuiInput.Pass)
+			return movieResult;
+		
+		// Puis le mode spawn points
 		if (!_isSpawnPointMode) return (int)EditorPlugin.AfterGuiInput.Pass;
 		
 		if (@event is InputEventMouseButton mouseButton && mouseButton.Pressed && mouseButton.ButtonIndex == MouseButton.Left)
@@ -117,6 +123,10 @@ public partial class DecorManagerTool : EditorPlugin
 		AddSeparator();
 		
 		CreateSpawnPointsSection();
+		
+		AddSeparator();
+		
+		CreateMovieRenderingSection();
 		
 		AddSeparator();
 
@@ -324,7 +334,7 @@ public partial class DecorManagerTool : EditorPlugin
 					_spawnPoints.AddRange(config.SpawnPoints);
 					UpdateSpawnPointsList();
 					
-					// Recr�er les marqueurs visuels
+					// RecrÃƒÆ’Ã‚Â©er les marqueurs visuels
 					foreach (var sp in _spawnPoints)
 					{
 						CreateSpawnPointMarker(sp);
@@ -791,6 +801,7 @@ public class DecorConfiguration
 	public string ScenePath { get; set; }
 	public string SceneName { get; set; }
 	public List<SpawnPointData> SpawnPoints { get; set; }
+	public List<MenuRenderSurfaceData> MenuRenderSurfaces { get; set; }
 	public DateTime SavedAt { get; set; }
 }
 
