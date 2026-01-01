@@ -2,7 +2,7 @@
 import { RouterLink, RouterView } from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
 import MainStatusNavBar from './components/MainStatusNavBar.vue'
-import MainGameMenu from './components/MainGameMenu.vue'
+import MainGameMenu from './components/gameMenu/MainGameMenu.vue'
 </script>
 
 <template>

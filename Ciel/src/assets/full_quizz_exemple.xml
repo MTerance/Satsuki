@@ -1,5324 +1,1131 @@
 <?xml version="1.0" encoding="utf-8"?>
 <quiz version="1.0" lang="fr" date="2025-09-21">
-  
-  
-  
-  
-  <summary>
-    
-    
-    
-    
+  <summary>    
     <quiz_name>Quiz Général – 4 Manches (80 uniques, difficultés mélangées)</quiz_name>
-    
-    
-    
-    
     <number_of_players>2</number_of_players>
-    
-    
-    
-    
     <number_of_rounds>4</number_of_rounds>
-    
-    
-    
-    
     <number_of_questions>80</number_of_questions>
-    
-    
-  
-  
   </summary>
-  
-  
-  
-  
   <questions>
-    
-    
-    
-    
     <question id="1" round="1" type="qcm" difficulty="easy">
-      
-      
-      
-      
       <category>Géographie</category>
-      
-      
-      
-      
       <text>Quelle est la capitale du Canada ?</text>
-      
-      
-      
-      
       <choices>
-        
-        
-        
-        
         <option id="1">Toronto</option>
-        
-        
-        
-        
         <option id="2" correct="true">Ottawa</option>
-        
-        
-        
-        
         <option id="3">Montréal</option>
-        
-        
-        
-        
         <option id="4">Vancouver</option>
-        
-        
-      
-      
       </choices>
-      
-      
-      
-      
       <answer>Ottawa</answer>
-      
-      
-      
-      
       <explanation>Ottawa est la capitale fédérale du Canada.</explanation>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <time_limit>25</time_limit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="2" round="1" type="qcm" difficulty="medium">
-      
-      
-      
-      
       <category>Sciences</category>
-      
-      
-      
-      
       <text>Quel métal est liquide à température ambiante ?</text>
-      
-      
-      
-      
       <choices>
-        
-        
-        
-        
         <option id="1" correct="true">Mercure</option>
-        
-        
-        
-        
         <option id="2">Sodium</option>
-        
-        
-        
-        
         <option id="3">Gallium</option>
-        
-        
-        
-        
         <option id="4">Potassium</option>
-        
-        
-      
-      
       </choices>
-      
-      
-      
-      
       <answer>Mercure</answer>
-      
-      
-      
-      
       <explanation>Le mercure (Hg) est liquide à 20°C.</explanation>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <time_limit>35</time_limit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="3" round="1" type="qcm" difficulty="easy">
-      
-      
-      
-      
       <category>Littérature</category>
-      
-      
-      
-      
       <text>Quel auteur a écrit '1984' ?</text>
-      
-      
-      
-      
       <choices>
-        
-        
-        
-        
         <option id="1" correct="true">George Orwell</option>
-        
-        
-        
-        
         <option id="2">Aldous Huxley</option>
-        
-        
-        
-        
         <option id="3">Ray Bradbury</option>
-        
-        
-        
-        
         <option id="4">J.R.R. Tolkien</option>
-      
       </choices>
-      
-      
-      
-      
       <answer>George Orwell</answer>
-      
-      
-      
-      
       <explanation>Publié en 1949 par George Orwell.</explanation>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <time_limit>25</time_limit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="4" round="1" type="qcm" difficulty="easy">
-      
-      
-      
-      
       <category>Histoire</category>
-      
-      
-      
-      
       <text>En quelle année a eu lieu la prise de la Bastille ?</text>
-      
-      
-      
-      
       <choices>
-        
-        
-        
-        
         <option id="1">1776</option>
-        
-        
-        
-        
         <option id="2" correct="true">1789</option>
-        
-        
-        
-        
         <option id="3">1799</option>
-        
-        
-        
-        
         <option id="4">1815</option>
-        
-        
-      
-      
       </choices>
-      
-      
-      
-      
       <answer>1789</answer>
-      
-      
-      
-      
       <explanation>Événement majeur de la Révolution française: 14 juillet 1789.</explanation>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <time_limit>25</time_limit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="5" manche="1" type="qcm" difficulte="facile">
-      
-      
-      
-      
       <categorie>Sciences</categorie>
-      
-      
-      
-      
       <texte>Quelle planète possède les anneaux les plus visibles ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Jupiter</option>
-        
-        
-        
-        
         <option id="2">Uranus</option>
-        
-        
-        
-        
         <option id="3" correcte="true">Saturne</option>
-        
-        
-        
-        
         <option id="4">Neptune</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Saturne</reponse>
-      
-      
-      
-      
       <explication>Les anneaux de Saturne sont très étendus et brillants.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>25</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="6" manche="1" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Art</categorie>
-      
-      
-      
-      
       <texte>Quel peintre est associé au cubisme ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Paul Cézanne</option>
-        
-        
-        
-        
         <option id="2">Henri Matisse</option>
-        
-        
-        
-        
         <option id="3" correcte="true">Pablo Picasso</option>
-        
-        
-        
-        
         <option id="4">Salvador Dalí</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Pablo Picasso</reponse>
-      
-      
-      
-      
       <explication>Picasso et Braque sont les pionniers du cubisme.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="7" manche="1" type="qcm" difficulte="facile">
-      
-      
-      
-      
       <categorie>Géographie</categorie>
-      
-      
-      
-      
       <texte>Quel est l’océan au large de la côte ouest de l’Amérique du Sud ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Atlantique</option>
-        
-        
-        
-        
         <option id="2" correcte="true">Pacifique</option>
-        
-        
-        
-        
         <option id="3">Indien</option>
-        
-        
-        
-        
         <option id="4">Arctique</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Pacifique</reponse>
-      
-      
-      
-      
       <explication>La côte ouest est baignée par le Pacifique.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>25</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="8" manche="1" type="qcm" difficulte="facile">
-      
-      
-      
-      
       <categorie>Maths</categorie>
-      
-      
-      
-      
       <texte>Combien vaut la racine carrée de 144 ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">10</option>
-        
-        
-        
-        
         <option id="2">11</option>
-        
-        
-        
-        
         <option id="3" correcte="true">12</option>
-        
-        
-        
-        
         <option id="4">13</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>12</reponse>
-      
-      
-      
-      
       <explication>12 × 12 = 144.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>25</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="9" manche="1" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Histoire</categorie>
-      
-      
-      
-      
       <texte>Quel pays a inventé le papier ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Égypte</option>
-        
-        
-        
-        
         <option id="2">Grèce</option>
-        
-        
-        
-        
         <option id="3" correcte="true">Chine</option>
-        
-        
-        
-        
         <option id="4">Inde</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Chine</reponse>
-      
-      
-      
-      
       <explication>Le papier apparaît en Chine au IIᵉ siècle av. J.-C./Iᵉr ap. J.-C.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="10" manche="1" type="qcm" difficulte="difficile">
-      
-      
-      
-      
       <categorie>Sciences</categorie>
-      
-      
-      
-      
       <texte>Quel est le groupe sanguin receveur universel ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">O−</option>
-        
-        
-        
-        
         <option id="2">O+</option>
-        
-        
-        
-        
         <option id="3" correcte="true">AB+</option>
-        
-        
-        
-        
         <option id="4">AB−</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>AB+</reponse>
-      
-      
-      
-      
       <explication>AB+ peut recevoir de tous les groupes.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>45</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="11" manche="1" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Géographie</categorie>
-      
-      
-      
-      
       <texte>Le Mont Kilimandjaro se situe dans quel pays ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Kenya</option>
-        
-        
-        
-        
         <option id="2" correcte="true">Tanzanie</option>
-        
-        
-        
-        
         <option id="3">Éthiopie</option>
-        
-        
-        
-        
         <option id="4">Ouganda</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Tanzanie</reponse>
-      
-      
-      
-      
       <explication>Kibo, Mawenzi et Shira en Tanzanie.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="12" manche="1" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Art</categorie>
-      
-      
-      
-      
       <texte>Qui a composé 'La Flûte enchantée' ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Beethoven</option>
-        
-        
-        
-        
         <option id="2" correcte="true">Mozart</option>
-        
-        
-        
-        
         <option id="3">Haydn</option>
-        
-        
-        
-        
         <option id="4">Chopin</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Mozart</reponse>
-      
-      
-      
-      
       <explication>Opéra de Mozart, 1791.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="13" manche="1" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Technologie</categorie>
-      
-      
-      
-      
       <texte>Quelle entreprise a créé le langage Java ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1" correcte="true">Sun Microsystems</option>
-        
-        
-        
-        
         <option id="2">Microsoft</option>
-        
-        
-        
-        
         <option id="3">IBM</option>
-        
-        
-        
-        
         <option id="4">Oracle</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Sun Microsystems</reponse>
-      
-      
-      
-      
       <explication>Créé par Sun; Oracle rachètera plus tard Sun.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="14" manche="1" type="qcm" difficulte="facile">
-      
-      
-      
-      
       <categorie>Sciences</categorie>
-      
-      
-      
-      
       <texte>Quelle est la molécule responsable de la photosynthèse (pigment) ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Hémoglobine</option>
-        
-        
-        
-        
         <option id="2" correcte="true">Chlorophylle</option>
-        
-        
-        
-        
         <option id="3">Mélanine</option>
-        
-        
-        
-        
         <option id="4">Carotène</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Chlorophylle</reponse>
-      
-      
-      
-      
       <explication>La chlorophylle capte la lumière.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>25</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="15" manche="1" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Sciences</categorie>
-      
-      
-      
-      
       <texte>Quel est l’élément le plus abondant dans l’Univers observable ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1" correcte="true">Hydrogène</option>
-        
-        
-        
-        
         <option id="2">Hélium</option>
-        
-        
-        
-        
         <option id="3">Oxygène</option>
-        
-        
-        
-        
         <option id="4">Carbone</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Hydrogène</reponse>
-      
-      
-      
-      
       <explication>L’hydrogène domine la baryonique.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="16" manche="1" type="qcm" difficulte="facile">
-      
-      
-      
-      
       <categorie>Histoire</categorie>
-      
-      
-      
-      
       <texte>Quelle ville accueille le Colisée ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Athènes</option>
-        
-        
-        
-        
         <option id="2" correcte="true">Rome</option>
-        
-        
-        
-        
         <option id="3">Istanbul</option>
-        
-        
-        
-        
         <option id="4">Naples</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Rome</reponse>
-      
-      
-      
-      
       <explication>Le Colisée est à Rome.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>25</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="17" manche="1" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Sport</categorie>
-      
-      
-      
-      
       <texte>Quel pays a gagné l’Euro 2000 de football ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1" correcte="true">France</option>
-        
-        
-        
-        
         <option id="2">Italie</option>
-        
-        
-        
-        
         <option id="3">Espagne</option>
-        
-        
-        
-        
         <option id="4">Allemagne</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>France</reponse>
-      
-      
-      
-      
       <explication>La France bat l’Italie en or (but en or).</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="18" manche="1" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Littérature</categorie>
-      
-      
-      
-      
       <texte>Qui est l’auteur de 'L’Étranger' ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1" correcte="true">Albert Camus</option>
-        
-        
-        
-        
         <option id="2">Jean-Paul Sartre</option>
-        
-        
-        
-        
         <option id="3">Marcel Proust</option>
-        
-        
-        
-        
         <option id="4">André Gide</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Albert Camus</reponse>
-      
-      
-      
-      
       <explication>Roman publié en 1942.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="19" manche="1" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Géographie</categorie>
-      
-      
-      
-      
       <texte>Quelle est la capitale de l’Australie ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Sydney</option>
-        
-        
-        
-        
         <option id="2">Melbourne</option>
-        
-        
-        
-        
         <option id="3" correcte="true">Canberra</option>
-        
-        
-        
-        
         <option id="4">Perth</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Canberra</reponse>
-      
-      
-      
-      
       <explication>Canberra fut choisie comme compromis.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="20" manche="1" type="qcm" difficulte="facile">
-      
-      
-      
-      
       <categorie>Sciences</categorie>
-      
-      
-      
-      
       <texte>Quel gaz compose la majorité de l’air ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Oxygène</option>
-        
-        
-        
-        
         <option id="2" correcte="true">Azote</option>
-        
-        
-        
-        
         <option id="3">Argon</option>
-        
-        
-        
-        
         <option id="4">CO₂</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Azote</reponse>
-      
-      
-      
-      
       <explication>≈78% d’azote.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>25</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="21" manche="2" type="qcm" difficulte="difficile">
-      
-      
-      
-      
       <categorie>Géographie</categorie>
-      
-      
-      
-      
       <texte>Quelle est la plus longue rivière du monde (mesures modernes) ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1" correcte="true">Amazone</option>
-        
-        
-        
-        
         <option id="2">Nil</option>
-        
-        
-        
-        
         <option id="3">Yangzi Jiang</option>
-        
-        
-        
-        
         <option id="4">Mississippi</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Amazone</reponse>
-      
-      
-      
-      
       <explication>L’Amazone rivalise avec le Nil; mesures récentes la donnent plus longue.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>45</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="22" manche="2" type="qcm" difficulte="facile">
-      
-      
-      
-      
       <categorie>Littérature</categorie>
-      
-      
-      
-      
       <texte>Qui a écrit 'Le Petit Prince' ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1" correcte="true">Saint-Exupéry</option>
-        
-        
-        
-        
         <option id="2">Jules Verne</option>
-        
-        
-        
-        
         <option id="3">Colette</option>
-        
-        
-        
-        
         <option id="4">Maupassant</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Saint-Exupéry</reponse>
-      
-      
-      
-      
       <explication>Publié en 1943 par Antoine de Saint-Exupéry.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>25</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="23" manche="2" type="qcm" difficulte="facile">
-      
-      
-      
-      
       <categorie>Technologie</categorie>
-      
-      
-      
-      
       <texte>Que signifie l’acronyme 'CPU' ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Central Process Unit</option>
-        
-        
-        
-        
         <option id="2" correcte="true">Central Processing Unit</option>
-        
-        
-        
-        
         <option id="3">Core Processing Utility</option>
-        
-        
-        
-        
         <option id="4">Compute Processing Unit</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Central Processing Unit</reponse>
-      
-      
-      
-      
       <explication>Processeur central d’un ordinateur.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>25</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="24" manche="2" type="qcm" difficulte="difficile">
-      
-      
-      
-      
       <categorie>Géographie</categorie>
-      
-      
-      
-      
       <texte>Quel pays compte le plus de fuseaux horaires officiels ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">États-Unis</option>
-        
-        
-        
-        
         <option id="2" correcte="true">France</option>
-        
-        
-        
-        
         <option id="3">Russie</option>
-        
-        
-        
-        
         <option id="4">Chine</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>France</reponse>
-      
-      
-      
-      
       <explication>La France (métropole + outre-mer) en compte le plus.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>45</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="25" manche="2" type="qcm" difficulte="facile">
-      
-      
-      
-      
       <categorie>Sciences</categorie>
-      
-      
-      
-      
       <texte>Quelle est la formule chimique de l’eau ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1" correcte="true">H2O</option>
-        
-        
-        
-        
         <option id="2">H2O2</option>
-        
-        
-        
-        
         <option id="3">HO</option>
-        
-        
-        
-        
         <option id="4">OH2O</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>H2O</reponse>
-      
-      
-      
-      
       <explication>Deux hydrogènes pour un oxygène.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>25</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="26" manche="2" type="qcm" difficulte="facile">
-      
-      
-      
-      
       <categorie>Sport</categorie>
-      
-      
-      
-      
       <texte>Dans quel sport s’illustra Michael Phelps ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Athlétisme</option>
-        
-        
-        
-        
         <option id="2" correcte="true">Natation</option>
-        
-        
-        
-        
         <option id="3">Cyclisme</option>
-        
-        
-        
-        
         <option id="4">Ski</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Natation</reponse>
-      
-      
-      
-      
       <explication>Recordman de médailles olympiques en natation.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>25</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="27" manche="2" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Art</categorie>
-      
-      
-      
-      
       <texte>Qui a peint 'Guernica' ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1" correcte="true">Picasso</option>
-        
-        
-        
-        
         <option id="2">Dalí</option>
-        
-        
-        
-        
         <option id="3">Miró</option>
-        
-        
-        
-        
         <option id="4">Goya</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Picasso</reponse>
-      
-      
-      
-      
       <explication>Tableau majeur de 1937.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="28" manche="2" type="qcm" difficulte="facile">
-      
-      
-      
-      
       <categorie>Géographie</categorie>
-      
-      
-      
-      
       <texte>Quel pays a pour capitale Reykjavik ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Norvège</option>
-        
-        
-        
-        
         <option id="2" correcte="true">Islande</option>
-        
-        
-        
-        
         <option id="3">Irlande</option>
-        
-        
-        
-        
         <option id="4">Danemark</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Islande</reponse>
-      
-      
-      
-      
       <explication>Reykjavik est en Islande.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>25</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="29" manche="2" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Sciences</categorie>
-      
-      
-      
-      
       <texte>Quelle est la plus petite particule conservant les propriétés d’un élément ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Molécule</option>
-        
-        
-        
-        
         <option id="2" correcte="true">Atome</option>
-        
-        
-        
-        
         <option id="3">Proton</option>
-        
-        
-        
-        
         <option id="4">Neutron</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Atome</reponse>
-      
-      
-      
-      
       <explication>L’atome est l’unité d’un élément chimique.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="30" manche="2" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Sciences</categorie>
-      
-      
-      
-      
       <texte>Qui a découvert la pénicilline ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1" correcte="true">Alexander Fleming</option>
-        
-        
-        
-        
         <option id="2">Louis Pasteur</option>
-        
-        
-        
-        
         <option id="3">Marie Curie</option>
-        
-        
-        
-        
         <option id="4">Edward Jenner</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Alexander Fleming</reponse>
-      
-      
-      
-      
       <explication>Découverte en 1928 par Fleming.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="31" manche="2" type="qcm" difficulte="facile">
-      
-      
-      
-      
       <categorie>Art</categorie>
-      
-      
-      
-      
       <texte>Combien de cordes possède un violon ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1" correcte="true">4</option>
-        
-        
-        
-        
         <option id="2">5</option>
-        
-        
-        
-        
         <option id="3">6</option>
-        
-        
-        
-        
         <option id="4">7</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>4</reponse>
-      
-      
-      
-      
       <explication>Un violon standard a 4 cordes.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>25</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="32" manche="2" type="qcm" difficulte="facile">
-      
-      
-      
-      
       <categorie>Économie</categorie>
-      
-      
-      
-      
       <texte>Quel est le symbole monétaire du yen ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1" correcte="true">¥</option>
-        
-        
-        
-        
         <option id="2">₩</option>
-        
-        
-        
-        
         <option id="3">₫</option>
-        
-        
-        
-        
         <option id="4">₹</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>¥</reponse>
-      
-      
-      
-      
       <explication>Le yen utilise le symbole ¥.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>25</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="33" manche="2" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Littérature</categorie>
-      
-      
-      
-      
       <texte>Quel écrivain est l’auteur de 'Madame Bovary' ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Balzac</option>
-        
-        
-        
-        
         <option id="2">Stendhal</option>
-        
-        
-        
-        
         <option id="3" correcte="true">Flaubert</option>
-        
-        
-        
-        
         <option id="4">Zola</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Flaubert</reponse>
-      
-      
-      
-      
       <explication>Roman de Gustave Flaubert, 1857.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="34" manche="2" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Sport</categorie>
-      
-      
-      
-      
       <texte>Quel pays a remporté la Coupe du Monde 2014 ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Argentine</option>
-        
-        
-        
-        
         <option id="2" correcte="true">Allemagne</option>
-        
-        
-        
-        
         <option id="3">Brésil</option>
-        
-        
-        
-        
         <option id="4">Espagne</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Allemagne</reponse>
-      
-      
-      
-      
       <explication>L’Allemagne bat l’Argentine en finale.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="35" manche="2" type="qcm" difficulte="facile">
-      
-      
-      
-      
       <categorie>Sciences</categorie>
-      
-      
-      
-      
       <texte>Quel est le point d’ébullition de l’eau à 1 atm ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">90°C</option>
-        
-        
-        
-        
         <option id="2">95°C</option>
-        
-        
-        
-        
         <option id="3" correcte="true">100°C</option>
-        
-        
-        
-        
         <option id="4">110°C</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>100°C</reponse>
-      
-      
-      
-      
       <explication>100°C au niveau de la mer.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>25</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="36" manche="2" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Nature</categorie>
-      
-      
-      
-      
       <texte>Où se situe la Grande Barrière de corail ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Philippines</option>
-        
-        
-        
-        
         <option id="2" correcte="true">Australie</option>
-        
-        
-        
-        
         <option id="3">Mexique</option>
-        
-        
-        
-        
         <option id="4">Indonésie</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Australie</reponse>
-      
-      
-      
-      
       <explication>Au large du Queensland, Australie.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="37" manche="2" type="qcm" difficulte="facile">
-      
-      
-      
-      
       <categorie>Art</categorie>
-      
-      
-      
-      
       <texte>Quel compositeur est sourd en fin de vie ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Bach</option>
-        
-        
-        
-        
         <option id="2" correcte="true">Beethoven</option>
-        
-        
-        
-        
         <option id="3">Schubert</option>
-        
-        
-        
-        
         <option id="4">Liszt</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Beethoven</reponse>
-      
-      
-      
-      
       <explication>Beethoven perd l’ouïe progressivement.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>25</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="38" manche="2" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Géographie</categorie>
-      
-      
-      
-      
       <texte>Quel pays a pour capitale Ankara ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Grèce</option>
-        
-        
-        
-        
         <option id="2">Azerbaïdjan</option>
-        
-        
-        
-        
         <option id="3" correcte="true">Turquie</option>
-        
-        
-        
-        
         <option id="4">Bulgarie</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Turquie</reponse>
-      
-      
-      
-      
       <explication>Capitale de la Turquie depuis 1923.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="39" manche="2" type="qcm" difficulte="facile">
-      
-      
-      
-      
       <categorie>Sciences</categorie>
-      
-      
-      
-      
       <texte>Quelle particule porte une charge négative ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Proton</option>
-        
-        
-        
-        
         <option id="2">Neutron</option>
-        
-        
-        
-        
         <option id="3" correcte="true">Électron</option>
-        
-        
-        
-        
         <option id="4">Positron</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Électron</reponse>
-      
-      
-      
-      
       <explication>L’électron est négatif.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>25</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="40" manche="2" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Littérature</categorie>
-      
-      
-      
-      
       <texte>Qu’est-ce qu’un haïku ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Roman</option>
-        
-        
-        
-        
         <option id="2" correcte="true">Poème court</option>
-        
-        
-        
-        
         <option id="3">Épopée</option>
-        
-        
-        
-        
         <option id="4">Proverbe</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Poème court</reponse>
-      
-      
-      
-      
       <explication>Poème japonais de 17 mores (5-7-5).</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="41" manche="3" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Géographie</categorie>
-      
-      
-      
-      
       <texte>Quelle est la capitale de la Suisse ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Genève</option>
-        
-        
-        
-        
         <option id="2">Zurich</option>
-        
-        
-        
-        
         <option id="3" correcte="true">Berne</option>
-        
-        
-        
-        
         <option id="4">Bâle</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Berne</reponse>
-      
-      
-      
-      
       <explication>Berne est la capitale fédérale.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="42" manche="3" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Sciences</categorie>
-      
-      
-      
-      
       <texte>Quel scientifique a proposé la relativité restreinte ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Newton</option>
-        
-        
-        
-        
         <option id="2" correcte="true">Einstein</option>
-        
-        
-        
-        
         <option id="3">Maxwell</option>
-        
-        
-        
-        
         <option id="4">Bohr</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Einstein</reponse>
-      
-      
-      
-      
       <explication>Einstein en 1905.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="43" manche="3" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Géographie</categorie>
-      
-      
-      
-      
       <texte>Quelle mer borde la Jordanie et Israël à l’ouest ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Mer Rouge</option>
-        
-        
-        
-        
         <option id="2">Mer Noire</option>
-        
-        
-        
-        
         <option id="3">Mer Caspienne</option>
-        
-        
-        
-        
         <option id="4" correcte="true">Mer Morte</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Mer Morte</reponse>
-      
-      
-      
-      
       <explication>La mer Morte est un lac salé endoréique.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="44" manche="3" type="qcm" difficulte="facile">
-      
-      
-      
-      
       <categorie>Culture pop</categorie>
-      
-      
-      
-      
       <texte>Dans 'Harry Potter', quelle école les sorciers fréquentent-ils ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Ilvermorny</option>
-        
-        
-        
-        
         <option id="2">Durmstrang</option>
-        
-        
-        
-        
         <option id="3" correcte="true">Poudlard</option>
-        
-        
-        
-        
         <option id="4">Beauxbâtons</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Poudlard</reponse>
-      
-      
-      
-      
       <explication>Hogwarts = Poudlard en français.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>25</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="45" manche="3" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Littérature</categorie>
-      
-      
-      
-      
       <texte>Qui a écrit 'La Métamorphose' ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1" correcte="true">Kafka</option>
-        
-        
-        
-        
         <option id="2">Nietzsche</option>
-        
-        
-        
-        
         <option id="3">Camus</option>
-        
-        
-        
-        
         <option id="4">Hesse</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Kafka</reponse>
-      
-      
-      
-      
       <explication>Novella de Franz Kafka.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="46" manche="3" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Sciences</categorie>
-      
-      
-      
-      
       <texte>Quel organe filtre le sang chez l’humain ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1" correcte="true">Foie</option>
-        
-        
-        
-        
         <option id="2">Poumon</option>
-        
-        
-        
-        
         <option id="3">Rate</option>
-        
-        
-        
-        
         <option id="4">Estomac</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Foie</reponse>
-      
-      
-      
-      
       <explication>Le foie détoxifie et métabolise.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="47" manche="3" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Culture</categorie>
-      
-      
-      
-      
       <texte>Quel pays est surnommé 'le pays du Matin calme' ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Chine</option>
-        
-        
-        
-        
         <option id="2">Japon</option>
-        
-        
-        
-        
         <option id="3" correcte="true">Corée du Sud</option>
-        
-        
-        
-        
         <option id="4">Mongolie</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Corée du Sud</reponse>
-      
-      
-      
-      
       <explication>Surnom poétique de la Corée.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="48" manche="3" type="qcm" difficulte="facile">
-      
-      
-      
-      
       <categorie>Art</categorie>
-      
-      
-      
-      
       <texte>Quel peintre a coupé une partie de son oreille ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1" correcte="true">Van Gogh</option>
-        
-        
-        
-        
         <option id="2">Rembrandt</option>
-        
-        
-        
-        
         <option id="3">Manet</option>
-        
-        
-        
-        
         <option id="4">Renoir</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Van Gogh</reponse>
-      
-      
-      
-      
       <explication>Van Gogh à Arles en 1888.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>25</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="49" manche="3" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Sport</categorie>
-      
-      
-      
-      
       <texte>Combien de joueurs sur le terrain pour une équipe de volley ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">5</option>
-        
-        
-        
-        
         <option id="2" correcte="true">6</option>
-        
-        
-        
-        
         <option id="3">7</option>
-        
-        
-        
-        
         <option id="4">9</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>6</reponse>
-      
-      
-      
-      
       <explication>6 joueurs par équipe.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="50" manche="3" type="qcm" difficulte="difficile">
-      
-      
-      
-      
       <categorie>Sciences</categorie>
-      
-      
-      
-      
       <texte>Quelle planète a le jour le plus court ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1" correcte="true">Jupiter</option>
-        
-        
-        
-        
         <option id="2">Mars</option>
-        
-        
-        
-        
         <option id="3">Terre</option>
-        
-        
-        
-        
         <option id="4">Mercure</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Jupiter</reponse>
-      
-      
-      
-      
       <explication>Jupiter tourne en ≈9h56.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>45</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="51" manche="3" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Économie</categorie>
-      
-      
-      
-      
       <texte>Quel pays a pour monnaie le real ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Argentine</option>
-        
-        
-        
-        
         <option id="2" correcte="true">Brésil</option>
-        
-        
-        
-        
         <option id="3">Portugal</option>
-        
-        
-        
-        
         <option id="4">Pérou</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Brésil</reponse>
-      
-      
-      
-      
       <explication>Le real brésilien (BRL).</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="52" manche="3" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Géographie</categorie>
-      
-      
-      
-      
       <texte>Quelle capitale européenne est traversée par le Danube ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Prague</option>
-        
-        
-        
-        
         <option id="2" correcte="true">Vienne</option>
-        
-        
-        
-        
         <option id="3">Varsovie</option>
-        
-        
-        
-        
         <option id="4">Madrid</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Vienne</reponse>
-      
-      
-      
-      
       <explication>Le Danube traverse Vienne.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="53" manche="3" type="qcm" difficulte="difficile">
-      
-      
-      
-      
       <categorie>Technologie</categorie>
-      
-      
-      
-      
       <texte>Quel est l’inventeur du téléphone (brevet US) ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Edison</option>
-        
-        
-        
-        
         <option id="2" correcte="true">Bell</option>
-        
-        
-        
-        
         <option id="3">Tesla</option>
-        
-        
-        
-        
         <option id="4">Marconi</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Bell</reponse>
-      
-      
-      
-      
       <explication>Alexander Graham Bell obtient un brevet en 1876.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>45</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="54" manche="3" type="qcm" difficulte="facile">
-      
-      
-      
-      
       <categorie>Littérature</categorie>
-      
-      
-      
-      
       <texte>Quel écrivain est associé au roman 'Le Seigneur des anneaux' ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">C.S. Lewis</option>
-        
-        
-        
-        
         <option id="2">J.K. Rowling</option>
-        
-        
-        
-        
         <option id="3" correcte="true">J.R.R. Tolkien</option>
-        
-        
-        
-        
         <option id="4">Philip Pullman</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>J.R.R. Tolkien</reponse>
-      
-      
-      
-      
       <explication>Trilogie de Tolkien.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>25</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="55" manche="3" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Sciences</categorie>
-      
-      
-      
-      
       <texte>Quel gaz est utilisé pour gonfler les ballons qui flottent ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Oxygène</option>
-        
-        
-        
-        
         <option id="2">Azote</option>
-        
-        
-        
-        
         <option id="3" correcte="true">Hélium</option>
-        
-        
-        
-        
         <option id="4">Hydrogène</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Hélium</reponse>
-      
-      
-      
-      
       <explication>L’hélium est plus léger que l’air et inerte.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="56" manche="3" type="qcm" difficulte="facile">
-      
-      
-      
-      
       <categorie>Géographie</categorie>
-      
-      
-      
-      
       <texte>Quelle est la capitale de la Norvège ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1" correcte="true">Oslo</option>
-        
-        
-        
-        
         <option id="2">Bergen</option>
-        
-        
-        
-        
         <option id="3">Trondheim</option>
-        
-        
-        
-        
         <option id="4">Stavanger</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Oslo</reponse>
-      
-      
-      
-      
       <explication>Oslo.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>25</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="57" manche="3" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Sport</categorie>
-      
-      
-      
-      
       <texte>Quel sport utilise un 'shuttlecock' ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Tennis</option>
-        
-        
-        
-        
         <option id="2">Squash</option>
-        
-        
-        
-        
         <option id="3" correcte="true">Badminton</option>
-        
-        
-        
-        
         <option id="4">Cricket</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Badminton</reponse>
-      
-      
-      
-      
       <explication>Shuttlecock = volant de badminton.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="58" manche="3" type="qcm" difficulte="facile">
-      
-      
-      
-      
       <categorie>Société</categorie>
-      
-      
-      
-      
       <texte>Quelle est la langue officielle du Brésil ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Espagnol</option>
-        
-        
-        
-        
         <option id="2" correcte="true">Portugais</option>
-        
-        
-        
-        
         <option id="3">Français</option>
-        
-        
-        
-        
         <option id="4">Italien</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Portugais</reponse>
-      
-      
-      
-      
       <explication>Le Brésil parle portugais.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>25</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="59" manche="3" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Art</categorie>
-      
-      
-      
-      
       <texte>Quel peintre est maître de l’impressionnisme français ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1" correcte="true">Monet</option>
-        
-        
-        
-        
         <option id="2">Delacroix</option>
-        
-        
-        
-        
         <option id="3">Raphaël</option>
-        
-        
-        
-        
         <option id="4">Botticelli</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Monet</reponse>
-      
-      
-      
-      
       <explication>Claude Monet, figure centrale.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="60" manche="3" type="qcm" difficulte="facile">
-      
-      
-      
-      
       <categorie>Sciences</categorie>
-      
-      
-      
-      
       <texte>Quel est l’organe principal de la respiration ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Cœur</option>
-        
-        
-        
-        
         <option id="2" correcte="true">Poumons</option>
-        
-        
-        
-        
         <option id="3">Foie</option>
-        
-        
-        
-        
         <option id="4">Reins</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Poumons</reponse>
-      
-      
-      
-      
       <explication>Les poumons assurent les échanges gazeux.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>25</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="61" manche="4" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Géographie</categorie>
-      
-      
-      
-      
       <texte>Quel pays a pour capitale Nairobi ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1" correcte="true">Kenya</option>
-        
-        
-        
-        
         <option id="2">Tanzanie</option>
-        
-        
-        
-        
         <option id="3">Ouganda</option>
-        
-        
-        
-        
         <option id="4">Zambie</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Kenya</reponse>
-      
-      
-      
-      
       <explication>Nairobi est la capitale du Kenya.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="62" manche="4" type="qcm" difficulte="facile">
-      
-      
-      
-      
       <categorie>Maths</categorie>
-      
-      
-      
-      
       <texte>Quel mathématicien a formulé le théorème a²+b²=c² ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1" correcte="true">Pythagore</option>
-        
-        
-        
-        
         <option id="2">Euclide</option>
-        
-        
-        
-        
         <option id="3">Archimède</option>
-        
-        
-        
-        
         <option id="4">Gauss</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Pythagore</reponse>
-      
-      
-      
-      
       <explication>Théorème attribué à Pythagore.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>25</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="63" manche="4" type="qcm" difficulte="difficile">
-      
-      
-      
-      
       <categorie>Sciences</categorie>
-      
-      
-      
-      
       <texte>Quel métal est le plus conducteur de l’électricité ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Cuivre</option>
-        
-        
-        
-        
         <option id="2">Aluminium</option>
-        
-        
-        
-        
         <option id="3" correcte="true">Argent</option>
-        
-        
-        
-        
         <option id="4">Or</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Argent</reponse>
-      
-      
-      
-      
       <explication>L’argent a la meilleure conductivité électrique.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>45</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="64" manche="4" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Littérature</categorie>
-      
-      
-      
-      
       <texte>Quel romancier a écrit 'À la recherche du temps perdu' ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1" correcte="true">Proust</option>
-        
-        
-        
-        
         <option id="2">Zola</option>
-        
-        
-        
-        
         <option id="3">Hugo</option>
-        
-        
-        
-        
         <option id="4">Flaubert</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Proust</reponse>
-      
-      
-      
-      
       <explication>Cycle romanesque de Marcel Proust.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="65" manche="4" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Sport</categorie>
-      
-      
-      
-      
       <texte>Quel pays a remporté la Coupe du Monde 2022 ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1" correcte="true">Argentine</option>
-        
-        
-        
-        
         <option id="2">France</option>
-        
-        
-        
-        
         <option id="3">Allemagne</option>
-        
-        
-        
-        
         <option id="4">Brésil</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Argentine</reponse>
-      
-      
-      
-      
       <explication>L’Argentine bat la France au Qatar.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="66" manche="4" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Géographie</categorie>
-      
-      
-      
-      
       <texte>Quel est le plus grand désert chaud du monde ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Gobi</option>
-        
-        
-        
-        
         <option id="2" correcte="true">Sahara</option>
-        
-        
-        
-        
         <option id="3">Arabie</option>
-        
-        
-        
-        
         <option id="4">Kalahari</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Sahara</reponse>
-      
-      
-      
-      
       <explication>Le Sahara en Afrique du Nord.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="67" manche="4" type="qcm" difficulte="facile">
-      
-      
-      
-      
       <categorie>Géographie</categorie>
-      
-      
-      
-      
       <texte>Quelle mer sépare l’Europe de l’Afrique au détroit de Gibraltar ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Mer Noir</option>
-        
-        
-        
-        
         <option id="2">Mer Égée</option>
-        
-        
-        
-        
         <option id="3" correcte="true">Mer Méditerranée</option>
-        
-        
-        
-        
         <option id="4">Mer Rouge</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Mer Méditerranée</reponse>
-      
-      
-      
-      
       <explication>Le détroit relie Atlantique et Méditerranée.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>25</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="68" manche="4" type="qcm" difficulte="difficile">
-      
-      
-      
-      
       <categorie>Sciences</categorie>
-      
-      
-      
-      
       <texte>Quel scientifique a découvert la radioactivité naturelle du polonium ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Rutherford</option>
-        
-        
-        
-        
         <option id="2" correcte="true">Marie Curie</option>
-        
-        
-        
-        
         <option id="3">Becquerel</option>
-        
-        
-        
-        
         <option id="4">Pierre Curie</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Marie Curie</reponse>
-      
-      
-      
-      
       <explication>Marie Curie isola le polonium et le radium.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>45</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="69" manche="4" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Art</categorie>
-      
-      
-      
-      
       <texte>Quel pays est à l’origine du Kabuki ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Chine</option>
-        
-        
-        
-        
         <option id="2">Corée</option>
-        
-        
-        
-        
         <option id="3" correcte="true">Japon</option>
-        
-        
-        
-        
         <option id="4">Vietnam</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Japon</reponse>
-      
-      
-      
-      
       <explication>Théâtre traditionnel japonais.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="70" manche="4" type="qcm" difficulte="facile">
-      
-      
-      
-      
       <categorie>Économie</categorie>
-      
-      
-      
-      
       <texte>Quelle est la monnaie officielle de la Suisse ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Euro</option>
-        
-        
-        
-        
         <option id="2" correcte="true">Franc suisse</option>
-        
-        
-        
-        
         <option id="3">Couronne</option>
-        
-        
-        
-        
         <option id="4">Livre</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Franc suisse</reponse>
-      
-      
-      
-      
       <explication>Le franc suisse (CHF).</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>25</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="71" manche="4" type="qcm" difficulte="facile">
-      
-      
-      
-      
       <categorie>Géographie</categorie>
-      
-      
-      
-      
       <texte>Quel océan borde l’Inde à l’ouest ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Pacifique</option>
-        
-        
-        
-        
         <option id="2" correcte="true">Indien</option>
-        
-        
-        
-        
         <option id="3">Atlantique</option>
-        
-        
-        
-        
         <option id="4">Arctique</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Indien</reponse>
-      
-      
-      
-      
       <explication>La côte ouest de l’Inde est sur l’océan Indien.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>25</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="72" manche="4" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Littérature</categorie>
-      
-      
-      
-      
       <texte>Qui a écrit 'Le Nom de la rose' ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1" correcte="true">Umberto Eco</option>
-        
-        
-        
-        
         <option id="2">Italo Calvino</option>
-        
-        
-        
-        
         <option id="3">Primo Levi</option>
-        
-        
-        
-        
         <option id="4">Alberto Moravia</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Umberto Eco</reponse>
-      
-      
-      
-      
       <explication>Roman d’Umberto Eco (1980).</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="73" manche="4" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Géographie</categorie>
-      
-      
-      
-      
       <texte>Quelle est la capitale de la Nouvelle-Zélande ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1" correcte="true">Wellington</option>
-        
-        
-        
-        
         <option id="2">Auckland</option>
-        
-        
-        
-        
         <option id="3">Christchurch</option>
-        
-        
-        
-        
         <option id="4">Dunedin</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Wellington</reponse>
-      
-      
-      
-      
       <explication>Wellington, pas Auckland.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="74" manche="4" type="qcm" difficulte="facile">
-      
-      
-      
-      
       <categorie>Technologie</categorie>
-      
-      
-      
-      
       <texte>Quel langage s’exécute dans les navigateurs pour le web ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Java</option>
-        
-        
-        
-        
         <option id="2">C#</option>
-        
-        
-        
-        
         <option id="3" correcte="true">JavaScript</option>
-        
-        
-        
-        
         <option id="4">Python</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>JavaScript</reponse>
-      
-      
-      
-      
       <explication>JavaScript côté client dans le navigateur.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>25</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="75" manche="4" type="qcm" difficulte="facile">
-      
-      
-      
-      
       <categorie>Sciences</categorie>
-      
-      
-      
-      
       <texte>Quel est l’organe qui pompe le sang ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Poumons</option>
-        
-        
-        
-        
         <option id="2">Reins</option>
-        
-        
-        
-        
         <option id="3" correcte="true">Cœur</option>
-        
-        
-        
-        
         <option id="4">Foie</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Cœur</reponse>
-      
-      
-      
-      
       <explication>Le cœur propulse le sang.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>25</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="76" manche="4" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Art</categorie>
-      
-      
-      
-      
       <texte>Quel peintre espagnol est célèbre pour ses montres molles ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Picasso</option>
-        
-        
-        
-        
         <option id="2" correcte="true">Dalí</option>
-        
-        
-        
-        
         <option id="3">Velázquez</option>
-        
-        
-        
-        
         <option id="4">El Greco</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Dalí</reponse>
-      
-      
-      
-      
       <explication>Salvador Dalí (surréalisme).</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="77" manche="4" type="qcm" difficulte="facile">
-      
-      
-      
-      
       <categorie>Géographie</categorie>
-      
-      
-      
-      
       <texte>Quel pays a pour capitale Varsovie ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Lituanie</option>
-        
-        
-        
-        
         <option id="2">Ukraine</option>
-        
-        
-        
-        
         <option id="3" correcte="true">Pologne</option>
-        
-        
-        
-        
         <option id="4">Biélorussie</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Pologne</reponse>
-      
-      
-      
-      
       <explication>Varsovie est en Pologne.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>25</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="78" manche="4" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Sciences</categorie>
-      
-      
-      
-      
       <texte>Quelle unité mesure la fréquence ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Watt</option>
-        
-        
-        
-        
         <option id="2">Volt</option>
-        
-        
-        
-        
         <option id="3" correcte="true">Hertz</option>
-        
-        
-        
-        
         <option id="4">Ohm</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Hertz</reponse>
-      
-      
-      
-      
       <explication>Le hertz (Hz).</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="79" manche="4" type="qcm" difficulte="moyen">
-      
-      
-      
-      
       <categorie>Littérature</categorie>
-      
-      
-      
-      
       <texte>Quel écrivain russe a écrit 'Crime et Châtiment' ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Tolstoï</option>
-        
-        
-        
-        
         <option id="2" correcte="true">Dostoïevski</option>
-        
-        
-        
-        
         <option id="3">Tchekhov</option>
-        
-        
-        
-        
         <option id="4">Gogol</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Dostoïevski</reponse>
-      
-      
-      
-      
       <explication>Romans de Fiodor Dostoïevski.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>35</timelimit>
-      
-    
     </question>
-    
-    
-    
-    
     <question id="80" manche="4" type="qcm" difficulte="facile">
-      
-      
-      
-      
       <categorie>Géographie</categorie>
-      
-      
-      
-      
       <texte>Quel est le plus grand océan de la Terre ?</texte>
-      
-      
-      
-      
       <choix>
-        
-        
-        
-        
         <option id="1">Atlantique</option>
-        
-        
-        
-        
         <option id="2" correcte="true">Pacifique</option>
-        
-        
-        
-        
         <option id="3">Indien</option>
-        
-        
-        
-        
         <option id="4">Arctique</option>
-        
-        
-      
-      
       </choix>
-      
-      
-      
-      
       <reponse>Pacifique</reponse>
-      
-      
-      
-      
       <explication>Le Pacifique est le plus vaste.</explication>
-      
-      
-    
-      
       <points>10</points>
-      
-      
       <timelimit>25</timelimit>
-      
-    
     </question>
-    
-    
-  
-  
   </questions>
-  
-  
-
-
 </quiz>
