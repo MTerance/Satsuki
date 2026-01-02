@@ -10,19 +10,13 @@
             <!-- Options du menu principal -->
             <div class="menu-options">
                 <PlayerSection @player-added="onPlayerAdded" @player-removed="onPlayerRemoved" />
-
                 <GameSection @quiz-added="sendQuizAdded" @quiz-removed="sendQuizRemoved" />
-
                 <button class="btn-base btn-success start-button" :disabled="players.length === 0">
                     Start
                 </button>
             </div>
         </div>
-
-        <!-- Player section moved to its own component -->
-    </div>
-
-    
+    </div>    
 </template>
 
 <script setup lang="ts">
@@ -117,12 +111,14 @@ const playerColors = [
 
 // État réactif
 const players = ref<Player[]>([]);
+/* TEMP: modal/form/id logic moved to PlayerSection.vue — commented out here during migration
 const isPlayerModalOpen = ref<boolean>(false);
 const newPlayerForm = ref<PlayerForm>({
     name: '',
     gender: ''
 });
 let playerIdCounter = 1;
+*/
 
 // Quiz section moved to GameSection component (gameSection/GameSection.vue)
 
@@ -214,6 +210,10 @@ const handleSocketResponse = (event: CustomEvent) => {
 };
 
 // Fonctions
+/* TEMP: player modal and manual add/remove functions moved to PlayerSection.vue. Commented out here while
+   the new component takes responsibility. Keeping parent handlers `onPlayerAdded`/`onPlayerRemoved` that
+   synchronize `players` and forward to the socket. If rollback needed, uncomment this block.
+
 const openPlayerModal = (): void => {
     isPlayerModalOpen.value = true;
     // Réinitialiser le formulaire
@@ -287,6 +287,8 @@ const removePlayer = (index: number): void => {
         player.color = playerColors[idx];
     });
 };
+
+*/
 
 // Quiz logic moved to GameSection component; parent keeps only socket forwarding helpers below
 
