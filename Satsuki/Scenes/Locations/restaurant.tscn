@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://vyb5rm4ejxo8"]
 
-[ext_resource type="PackedScene" uid="uid://ckyacvxcpe7ao" path="res://Assets/Restaurant/scene.gltf" id="1_wrjgv"]
+[ext_resource type="PackedScene" uid="uid://cr8n1g3hmj56d" path="res://Assets/Restaurant/scene.gltf" id="1_wrjgv"]
 [ext_resource type="Script" uid="uid://bbjmvqtfq1d2j" path="res://Scenes/Locations/LocationModel.cs" id="2_qrf5t"]
 
 [node name="Restaurant" type="Node3D"]

@@ -32,6 +32,11 @@ const router = createRouter({
       name: 'screen-detector',
       component: () => import('../views/ScreenDetector.vue'),
     },
+    {
+      path: '/satsuki-launcher',
+      name: 'satsuki-launcher',
+      component: () => import('../views/SatsukiLauncher.vue'),
+    },
   ],
 })
 

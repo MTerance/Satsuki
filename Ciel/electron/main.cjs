@@ -1,6 +1,6 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
-const { websocketClient, databaseClient } = require('./modules/index.cjs');
+const { websocketClient, databaseClient, processChecker, screenManager } = require('./modules/index.cjs');
 
 let mainWindow;
 
@@ -58,6 +58,80 @@ function createWindow() {
   ipcMain.handle('db-delete-user', async (event, userId) => {
     try {
       return await databaseClient.deleteUser(userId);
+    } catch (error) {
+      throw error;
+    }
+  });
+
+  // Process Checker IPC handlers
+  ipcMain.handle('process-check-satsuki', async () => {
+    try {
+      return await processChecker.checkSatsukiProcess();
+    } catch (error) {
+      throw error;
+    }
+  });
+
+  ipcMain.handle('process-get-detailed-info', async () => {
+    try {
+      return await processChecker.getDetailedProcessInfo();
+    } catch (error) {
+      throw error;
+    }
+  });
+
+  ipcMain.handle('process-get-all-satsuki', async () => {
+    try {
+      return await processChecker.getAllSatsukiProcesses();
+    } catch (error) {
+      throw error;
+    }
+  });
+
+  // Screen Manager IPC handlers
+  ipcMain.handle('screen-get-all-displays', async () => {
+    try {
+      return screenManager.getAllDisplays();
+    } catch (error) {
+      throw error;
+    }
+  });
+
+  ipcMain.handle('screen-get-primary-display', async () => {
+    try {
+      return screenManager.getPrimaryDisplay();
+    } catch (error) {
+      throw error;
+    }
+  });
+
+  ipcMain.handle('screen-launch-satsuki-on-display', async (event, displayId, satsukiPath) => {
+    try {
+      return await screenManager.launchSatsukiOnDisplay(displayId, satsukiPath);
+    } catch (error) {
+      throw error;
+    }
+  });
+
+  ipcMain.handle('screen-launch-satsuki', async (event, satsukiPath) => {
+    try {
+      return await screenManager.launchSatsuki(satsukiPath);
+    } catch (error) {
+      throw error;
+    }
+  });
+
+  ipcMain.handle('screen-get-capabilities', async () => {
+    try {
+      return screenManager.getDisplayCapabilities();
+    } catch (error) {
+      throw error;
+    }
+  });
+
+  ipcMain.handle('screen-get-best-display', async (event, preferences) => {
+    try {
+      return screenManager.getBestDisplayForSatsuki(preferences);
     } catch (error) {
       throw error;
     }
