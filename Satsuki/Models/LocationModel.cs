@@ -38,12 +38,12 @@ namespace Satsuki.Models
 
 		public LocationResourceModel (string name, string description,
 			List<Tuple<Vector3I, PlayerSpot>> quizzSpots,
-			List<Tuple<Vector3I, PlayerSpot>> playerSpots)
+			List<Tuple<Vector3I, PlayerSpot>> lobbySpots)
 		{
 			this.Name = name;
 			this.Description = description;
 			this.QuizzSpots = quizzSpots;
-			this.LobbySpots = playerSpots;
+			this.LobbySpots = lobbySpots;
         }
 
     }
