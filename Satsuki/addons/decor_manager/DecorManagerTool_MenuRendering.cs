@@ -297,7 +297,7 @@ public partial class DecorManagerTool
 		UpdateStatus($"Menu {menuType} applique sur {meshInstance.Name}", Colors.Green);
 		
 		// Marquer la scène comme modifiée
-		var editorInterface = GetEditorInterface();
+		var editorInterface = EditorInterface.Singleton;
 		editorInterface.MarkSceneAsUnsaved();
 	}
 	

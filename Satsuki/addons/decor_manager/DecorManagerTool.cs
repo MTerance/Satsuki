@@ -283,8 +283,8 @@ public partial class DecorManagerTool : EditorPlugin
 
 			var sceneResource = GD.Load<PackedScene>(scenePath);
 			_loadedScene = sceneResource.Instantiate<Node3D>();
-			
-			var editorInterface = GetEditorInterface();
+
+			var editorInterface = EditorInterface.Singleton;
 			var editedSceneRoot = editorInterface.GetEditedSceneRoot();
 			
 			if (editedSceneRoot != null)
@@ -396,7 +396,7 @@ public partial class DecorManagerTool : EditorPlugin
 		_loadedScene.AddChild(marker);
 		marker.Owner = _loadedScene;
 		
-		var editorInterface = GetEditorInterface();
+		var editorInterface = EditorInterface.Singleton;
 		editorInterface.MarkSceneAsUnsaved();
 	}
 	
@@ -563,7 +563,7 @@ public partial class DecorManagerTool : EditorPlugin
 
 			UpdateStatus($"Camera {cameraName} mise a jour", Colors.Green);
 			
-			var editorInterface = GetEditorInterface();
+			var editorInterface = EditorInterface.Singleton;
 			editorInterface.MarkSceneAsUnsaved();
 		}
 		catch (Exception ex)
@@ -595,7 +595,7 @@ public partial class DecorManagerTool : EditorPlugin
 			UpdateCameraPanels();
 			UpdateStatus($"Camera {cameraName} creee", Colors.Green);
 
-			var editorInterface = GetEditorInterface();
+			var editorInterface = EditorInterface.Singleton;
 			editorInterface.MarkSceneAsUnsaved();
 		}
 		catch (Exception ex)
