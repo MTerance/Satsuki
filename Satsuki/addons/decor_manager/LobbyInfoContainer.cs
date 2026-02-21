@@ -10,6 +10,7 @@ namespace Satsuki.addons.decor_manager
     public partial class LobbyInfoContainer
     {
         private CheckBox _isLobbyCompatible;
+        private VBoxContainer _mainContainer;
     }
 
     public partial class  GameInfoContainer

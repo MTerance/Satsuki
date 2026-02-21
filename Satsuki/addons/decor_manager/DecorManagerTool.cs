@@ -59,30 +59,15 @@ public partial class DecorManagerTool : EditorPlugin
 	{
 		_dockPanel = new Control();
 		_dockPanel.Name = "Decor Manager";
-
-		var scrollContainer = new ScrollContainer();
+		GD.Print("DecorManagerTool: Creation du panneau de dock...");
+        var scrollContainer = new ScrollContainer();
 		scrollContainer.SizeFlagsHorizontal = Control.SizeFlags.Fill;
 		scrollContainer.SizeFlagsVertical = Control.SizeFlags.Fill;
 		_dockPanel.AddChild(scrollContainer);
-
+		GD.Print("DecorManagerTool: ScrollContainer ajoute");
 		_mainContainer = new VBoxContainer();
-		_mainContainer.SizeFlagsHorizontal = Control.SizeFlags.Fill;
-		scrollContainer.AddChild(_mainContainer);
+    }
 
-		var titleLabel = new Label();
-		titleLabel.Text = "DECOR MANAGER";
-		titleLabel.AddThemeFontSizeOverride("font_size", 20);
-		_mainContainer.AddChild(titleLabel);
-
-		AddSeparator();
-	}
-
-	private void AddSeparator()
-	{
-		var separator = new HSeparator();
-		separator.CustomMinimumSize = new Vector2(0, 10);
-		_mainContainer.AddChild(separator);
-	}
 }
 
 public enum SpawnPointType
