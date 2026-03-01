@@ -144,7 +144,7 @@ Satsuki/
 - ? Une nouvelle Camera3D est créée
 - ? Position par défaut : (0, 0, 0)
 - ? Rotation par défaut : (0, 0, 0)
-- ? Le panel passe à "Trouvee" avec bouton "Appliquer"
+- ? Le panel passe à "Trouée" avec bouton "Appliquer"
 - ? Status : "Camera [nom] creee" (vert)
 
 ---
@@ -528,3 +528,28 @@ _camera.Fov = (float)_fovInput.Value;
 *Date de création : 22 novembre 2025*  
 *Version : 1.0*  
 *Build : ? Réussi*
+
+---
+
+## ?? Crédits
+
+### Icônes
+
+Les icônes utilisées dans cet addon proviennent de :
+
+| Source | Auteur | Lien |
+|--------|--------|------|
+| **Smashicons** | Smashicons | [https://smashicons.com/](https://smashicons.com/) |
+
+**Licence** : Les icônes sont utilisées conformément aux conditions de licence de Smashicons.
+
+### Remerciements
+
+- **Smashicons** pour les icônes de haute qualité
+- **Équipe Satsuki** pour le développement de l'addon
+- **Godot Engine** pour le moteur de jeu
+
+---
+
+*Decor Manager Tool - Projet Satsuki*  
+*© 2025 Satsuki Team*

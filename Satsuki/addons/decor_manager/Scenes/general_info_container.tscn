@@ -1,0 +1,50 @@
+[gd_scene load_steps=2 format=3 uid="uid://x8t1hfjknd8d"]
+
+[ext_resource type="Script" uid="uid://dbcsf7ec0nhhc" path="res://addons/decor_manager/GeneralInfoContainer.cs" id="1_3p6bq"]
+
+[node name="GeneralInfoContainer" type="VBoxContainer"]
+script = ExtResource("1_3p6bq")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="NewResourceInfoButton" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+text = "New"
+
+[node name="LoadResourceInfoButton" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+text = "Open"
+
+[node name="SaveResourceInfoButton" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+text = "Save"
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer2"]
+layout_mode = 2
+text = "Name"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBoxContainer2"]
+layout_mode = 2
+alignment = 3
+max_length = 255
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer3"]
+layout_mode = 2
+text = "Path"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBoxContainer3"]
+layout_mode = 2
+alignment = 3
+max_length = 255
+editable = false

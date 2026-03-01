@@ -13,6 +13,7 @@
     <None Include="add-menu-surfaces.ps1" />
     <None Include="addons\decor_manager\INTEGRATION_INSTRUCTIONS.md" />
     <None Include="addons\decor_manager\plugin.cfg" />
+    <None Include="addons\decor_manager\README.md" />
     <None Include="APRES-REDEMARRAGE-CHECKLIST.md" />
     <None Include="cleanup-obsolete-docs.ps1" />
     <None Include="CLEANUP_SUCCESS.md" />

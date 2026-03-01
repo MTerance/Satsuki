@@ -1,4 +1,6 @@
 using Godot;
+using Godot.Collections;
+using Satsuki.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -27,9 +29,18 @@ public partial class DecorManagerTool : EditorPlugin
 	private Button _removeSpawnPointButton;
 	
 	private Node3D _loadedScene;
-	private readonly Dictionary<string, Camera3D> _cameras = new Dictionary<string, Camera3D>();
+	// private readonly Dictionary<string, Camera3D> _cameras = new Dictionary<string, Camera3D>();
 	private readonly List<SpawnPointData> _spawnPoints = new List<SpawnPointData>();
-	private bool _isSpawnPointMode = false;
+
+    /**/
+
+    private readonly System.Collections.Generic.Dictionary<Sprite3D, SpawnPointData> _markerToSpawnPoint = new();
+    private readonly System.Collections.Generic.Dictionary<SpawnPointData, Sprite3D> _spawnPointToMarker = new();
+    private readonly System.Collections.Generic.Dictionary<SpawnPointData, Label3D> _spawnPointToLabel = new();
+
+    /**/
+
+    private bool _isSpawnPointMode = false;
 	private string _currentScenePath = "";
 
 	public override void _EnterTree()
@@ -60,28 +71,169 @@ public partial class DecorManagerTool : EditorPlugin
 		_dockPanel = new Control();
 		_dockPanel.Name = "Decor Manager";
 		GD.Print("DecorManagerTool: Creation du panneau de dock...");
-        var scrollContainer = new ScrollContainer();
-		scrollContainer.SizeFlagsHorizontal = Control.SizeFlags.Fill;
-		scrollContainer.SizeFlagsVertical = Control.SizeFlags.Fill;
-		_dockPanel.AddChild(scrollContainer);
-		GD.Print("DecorManagerTool: ScrollContainer ajoute");
-		_mainContainer = new VBoxContainer();
+		string controlPath = "res://addons/decor_manager/Scenes/control.tscn";
+		if (!ResourceLoader.Exists(controlPath))
+		{
+			GD.PrintErr("ERROR");
+			return;
+		}
+		PackedScene controlScene = GD.Load<PackedScene>(controlPath);
+		Control control = controlScene.Instantiate<Control>();
+		_dockPanel.AddChild(control);
+		//SetuploadStageButton(control);
+        GD.Print("DecorManagerTool: VBoxContainer ajoute");
+	}
+
+	private T FindNodeByName<T>(Control parent, string nodeName) where T : Node
+	{
+		var node = parent.GetNodeOrNull<T>(nodeName);
+		if (node == null)
+		{
+			GD.PrintErr($"DecorManagerTool: Noeud '{nodeName}' de type {typeof(T).Name} non trouve dans le control.");
+		}
+		else
+		{
+			GD.Print($"DecorManagerTool: Noeud '{nodeName}' de type {typeof(T).Name} trouve.");
+		}
+		return node;
     }
 
+	/*
+    private void SetupLoadStageButton(Control control)
+	{
+		var controlNode = FindNodeByName<Button>(control, "UploadStageButton");
+	}
+	*/
+	private Label3D CreateLabelForPointMarker(SpawnPointData spawnPoint)
+	{
+		var label = new Label3D();
+		var labelText = $"SpawnPoint_{spawnPoint.Index}\nPos: {spawnPoint.Position}\nRot: {spawnPoint.Rotation}\n Type: {spawnPoint.Type}";
+		label.Text = labelText;
+		label.Position = spawnPoint.Position + new Vector3(0, 1.5f, 0); // Positionner le label au-dessus du marqueur
+		label.FontSize = 24;
+		label.NoDepthTest = true;
+
+		return label;
+	}
+
+	private Sprite3D CreateSpawnPointMarker(SpawnPointData spawnPoint)
+	{
+		Sprite3D marker = new Sprite3D();
+		marker.Name = $"SpawnPoint_{spawnPoint.Index}";
+		marker.Texture = GD.Load<Texture2D>("res://addons/decor_manager/Assets/spawn_point_marker.png");
+		marker.Scale = new Vector3(0.5f, 0.5f, 0.5f);
+		marker.Position = spawnPoint.Position;
+		marker.RotationDegrees = spawnPoint.Rotation;
+
+		return marker;
+	}
+
+	private void UpdateLabelFromSpawnPoint(SpawnPointData spawnPoint)
+	{
+		if (!(_spawnPointToLabel.TryGetValue(spawnPoint, out var label)))
+		{
+			return;
+		}
+		var labelText = $"SpawnPoint_{spawnPoint.Index}\nPos: {spawnPoint.Position}\nRot: {spawnPoint.Rotation}\n Type: {spawnPoint.Type}";
+		label.Text = labelText;
+		label.Position = spawnPoint.Position + new Vector3(0, 1.5f, 0); // Positionner le label au-dessus du marqueur
+    }
+
+
+    private void UpdateSpawnPointFromMarker(Sprite3D sprite)
+	{
+        if (!(_markerToSpawnPoint.TryGetValue(sprite,out var spawnPoint)))
+        {
+			return;
+        }
+
+		spawnPoint.Position = sprite.Position;
+		spawnPoint.Rotation = sprite.RotationDegrees;
+		UpdateLabelFromSpawnPoint(spawnPoint);
+    }
+
+
+    private void SaveStageResource()
+    {
+        if (string.IsNullOrEmpty(_currentScenePath))
+        {
+            GD.PrintErr("Aucune scene chargee");
+            return;
+        }
+
+        // Creer la resource
+        var stageResource = new StageResource
+        {
+            Id = GenerateStageId(),
+            Name = Path.GetFileNameWithoutExtension(_currentScenePath),
+            SceneName = Path.GetFileNameWithoutExtension(_currentScenePath),
+            ScenePath = _currentScenePath,
+            SpawnPoints = new Godot.Collections.Array<SpawnPointData>()
+        };
+
+        // Ajouter les spawn points
+        foreach (var sp in _spawnPoints)
+        {
+            stageResource.SpawnPoints.Add(sp);
+        }
+
+
+        string savePath = $"res://Resources/Stages/{stageResource.Name}.tres";
+
+        // Sauvegarder
+        stageResource.Save(savePath);
+    }
+
+    private int GenerateStageId()
+    {
+        return (int)(DateTime.UtcNow.Ticks % int.MaxValue);
+    }
+
+
+    public override void _Process(double delta)
+    {
+        base._Process(delta);
+		SyncSelectedMarkers();
+    }
+
+	private void SyncSelectedMarkers()
+	{
+        foreach (var kvp in _markerToSpawnPoint)
+        {
+            var marker = kvp.Key;
+            var spawnPoint = kvp.Value;
+
+            // Verifier si la position ou rotation a change
+            if (marker.Position != spawnPoint.Position || marker.RotationDegrees != spawnPoint.Rotation)
+            {
+                UpdateSpawnPointFromMarker(marker);
+            }
+        }
+    }
+
+
+    /*
+	private void LoadCustomControl()
+	{
+		string controlPath = "res://addons/decor_manager/Scenes/control.tscn";
+		if (!ResourceLoader.Exists(controlPath))
+		{
+			GD.PrintErr("ERROR");
+			return;
+		}
+		PackedScene controlScene = GD.Load<PackedScene>(controlPath);
+		Control control = controlScene.Instantiate<Control>();
+		_mainContainer.AddChild(control);
+		GD.Print("DecorManagerTool: Control personnalise ajoute");
+	}
+	*/
 }
 
-public enum SpawnPointType
-{
-	Standard_Idle,
-	Seated_Idle
-}
 
-public class SpawnPointData
-{
-	public Vector3 Position { get; set; }
-	public SpawnPointType Type { get; set; }
-	public int Index { get; set; }
-}
+
+
+
+
 
 public class DecorConfiguration
 {

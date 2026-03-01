@@ -1,0 +1,201 @@
+[gd_scene load_steps=5 format=3 uid="uid://bexsfa6gl75f4"]
+
+[ext_resource type="PackedScene" uid="uid://x8t1hfjknd8d" path="res://addons/decor_manager/Scenes/general_info_container.tscn" id="1_5uppg"]
+[ext_resource type="PackedScene" uid="uid://drt6bgtsk5o6g" path="res://addons/decor_manager/Scenes/stage_info_container.tscn" id="1_hhylf"]
+[ext_resource type="Script" uid="uid://egot5kly21n7" path="res://addons/decor_manager/Templates/CameraPlacementTemplate.cs" id="1_wl3aw"]
+[ext_resource type="PackedScene" uid="uid://bccyr7sm4fib3" path="res://addons/decor_manager/Scenes/player_spawn_container.tscn" id="2_wl3aw"]
+
+[node name="Control" type="Control"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -149.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="AspectRatioContainer" type="AspectRatioContainer" parent="."]
+layout_mode = 0
+offset_right = 838.0
+offset_bottom = 648.0
+stretch_mode = 3
+alignment_vertical = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="AspectRatioContainer"]
+layout_mode = 2
+
+[node name="MainTitleLabel" type="Label" parent="AspectRatioContainer/VBoxContainer"]
+layout_mode = 2
+text = "Lobby Info Manager"
+horizontal_alignment = 1
+
+[node name="MainCommandsLabel" type="Label" parent="AspectRatioContainer/VBoxContainer"]
+layout_mode = 2
+text = "Main Commands"
+
+[node name="GeneralInfoContainer" parent="AspectRatioContainer/VBoxContainer" instance=ExtResource("1_5uppg")]
+layout_mode = 2
+script = null
+
+[node name="HSeparator" type="HSeparator" parent="AspectRatioContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="StageInfoAssetLabel" type="Label" parent="AspectRatioContainer/VBoxContainer"]
+layout_mode = 2
+text = "Stage Info Assets"
+
+[node name="StageInfoContainer" parent="AspectRatioContainer/VBoxContainer" instance=ExtResource("1_hhylf")]
+layout_mode = 2
+
+[node name="HSeparator2" type="HSeparator" parent="AspectRatioContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Title CameraPlacement Section" type="Label" parent="AspectRatioContainer/VBoxContainer"]
+layout_mode = 2
+text = "Camera Placement"
+
+[node name="CameraPlacementContainer" type="PanelContainer" parent="AspectRatioContainer/VBoxContainer"]
+layout_mode = 2
+script = ExtResource("1_wl3aw")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="AspectRatioContainer/VBoxContainer/CameraPlacementContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="CoordBoxContainer" type="VBoxContainer" parent="AspectRatioContainer/VBoxContainer/CameraPlacementContainer/HBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="PositionBoxContainer" type="HBoxContainer" parent="AspectRatioContainer/VBoxContainer/CameraPlacementContainer/HBoxContainer/CoordBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="AspectRatioContainer/VBoxContainer/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/PositionBoxContainer"]
+layout_mode = 2
+text = "Coord. Camera"
+
+[node name="SpinBox" type="SpinBox" parent="AspectRatioContainer/VBoxContainer/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/PositionBoxContainer"]
+layout_mode = 2
+
+[node name="SpinBox2" type="SpinBox" parent="AspectRatioContainer/VBoxContainer/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/PositionBoxContainer"]
+layout_mode = 2
+
+[node name="SpinBox3" type="SpinBox" parent="AspectRatioContainer/VBoxContainer/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/PositionBoxContainer"]
+layout_mode = 2
+
+[node name="TargetPositionBoxContainer" type="HBoxContainer" parent="AspectRatioContainer/VBoxContainer/CameraPlacementContainer/HBoxContainer/CoordBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="AspectRatioContainer/VBoxContainer/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/TargetPositionBoxContainer"]
+layout_mode = 2
+text = "Coord. Target"
+
+[node name="SpinBox" type="SpinBox" parent="AspectRatioContainer/VBoxContainer/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/TargetPositionBoxContainer"]
+layout_mode = 2
+
+[node name="SpinBox2" type="SpinBox" parent="AspectRatioContainer/VBoxContainer/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/TargetPositionBoxContainer"]
+layout_mode = 2
+
+[node name="SpinBox3" type="SpinBox" parent="AspectRatioContainer/VBoxContainer/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/TargetPositionBoxContainer"]
+layout_mode = 2
+
+[node name="HSeparator3" type="HSeparator" parent="AspectRatioContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Title Spawns Section" type="Label" parent="AspectRatioContainer/VBoxContainer"]
+layout_mode = 2
+text = "Spawn Point"
+
+[node name="PlayersSpawnsContainer" type="VBoxContainer" parent="AspectRatioContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="PlayerSpawnContainer" parent="AspectRatioContainer/VBoxContainer/PlayersSpawnsContainer" instance=ExtResource("2_wl3aw")]
+layout_mode = 2
+
+[node name="AddPlayerSpawnButton" type="Button" parent="AspectRatioContainer/VBoxContainer"]
+layout_mode = 2
+text = "+"
+
+[node name="HSeparator4" type="HSeparator" parent="AspectRatioContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="QuizzGameInfoManager" type="Label" parent="AspectRatioContainer/VBoxContainer"]
+layout_mode = 2
+text = "Quizz Game Info Manager"
+
+[node name="CameraPlacementContainerLobby" type="VBoxContainer" parent="AspectRatioContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="CameraPlacementContainerGame" type="VBoxContainer" parent="AspectRatioContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="CameraPlacementContainer2" type="PanelContainer" parent="AspectRatioContainer/VBoxContainer/CameraPlacementContainerGame"]
+layout_mode = 2
+script = ExtResource("1_wl3aw")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="AspectRatioContainer/VBoxContainer/CameraPlacementContainerGame/CameraPlacementContainer2"]
+layout_mode = 2
+alignment = 1
+
+[node name="CoordBoxContainer" type="VBoxContainer" parent="AspectRatioContainer/VBoxContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="CameraPositionBoxContainer" type="HBoxContainer" parent="AspectRatioContainer/VBoxContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer"]
+layout_mode = 2
+
+[node name="Container" type="MarginContainer" parent="AspectRatioContainer/VBoxContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="AspectRatioContainer/VBoxContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer/Container"]
+layout_mode = 2
+text = "Coord. Camera"
+
+[node name="CameraPositionX" type="LineEdit" parent="AspectRatioContainer/VBoxContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
+layout_mode = 2
+text = "X"
+placeholder_text = "000"
+alignment = 1
+
+[node name="CameraPositionY" type="LineEdit" parent="AspectRatioContainer/VBoxContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
+layout_mode = 2
+text = "Y"
+placeholder_text = "000"
+alignment = 1
+
+[node name="CameraPositionZ" type="LineEdit" parent="AspectRatioContainer/VBoxContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
+layout_mode = 2
+text = "Z"
+placeholder_text = "000"
+alignment = 1
+
+[node name="TargetCameraBoxContainer" type="HBoxContainer" parent="AspectRatioContainer/VBoxContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="AspectRatioContainer/VBoxContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="AspectRatioContainer/VBoxContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer/MarginContainer"]
+layout_mode = 2
+text = "Coord. Target"
+
+[node name="TargetCameraX" type="LineEdit" parent="AspectRatioContainer/VBoxContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
+layout_mode = 2
+text = "X"
+placeholder_text = "000"
+alignment = 1
+
+[node name="TargetCameraY" type="LineEdit" parent="AspectRatioContainer/VBoxContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
+layout_mode = 2
+text = "Y"
+placeholder_text = "000"
+alignment = 1
+
+[node name="TargetCameraZ" type="LineEdit" parent="AspectRatioContainer/VBoxContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
+layout_mode = 2
+text = "Z"
+placeholder_text = "000"
+alignment = 1
+
+[connection signal="pressed" from="AspectRatioContainer/VBoxContainer/AddPlayerSpawnButton" to="AspectRatioContainer/VBoxContainer/CameraPlacementContainer" method="_on_add_player_spawn_button_pressed"]

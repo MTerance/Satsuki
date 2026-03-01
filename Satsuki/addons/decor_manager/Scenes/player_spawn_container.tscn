@@ -1,0 +1,72 @@
+[gd_scene load_steps=2 format=3 uid="uid://bccyr7sm4fib3"]
+
+[ext_resource type="Script" uid="uid://cneiatb85s3m8" path="res://addons/decor_manager/Templates/PlayerSpawnTemplate.cs" id="1_u1ex8"]
+
+[node name="PlayerSpawnContainer" type="PanelContainer"]
+script = ExtResource("1_u1ex8")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+alignment = 1
+
+[node name="IdSpawnPoint" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CoordBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="PositionBoxContainer" type="HBoxContainer" parent="HBoxContainer/CoordBoxContainer"]
+layout_mode = 2
+
+[node name="positionX" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/PositionBoxContainer"]
+layout_mode = 2
+text = "X"
+placeholder_text = "000"
+
+[node name="positionY" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/PositionBoxContainer"]
+layout_mode = 2
+text = "Y"
+placeholder_text = "000"
+
+[node name="positionZ" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/PositionBoxContainer"]
+layout_mode = 2
+text = "Z"
+placeholder_text = "000"
+
+[node name="RotationBoxContainer" type="HBoxContainer" parent="HBoxContainer/CoordBoxContainer"]
+layout_mode = 2
+
+[node name="rotationX" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/RotationBoxContainer"]
+layout_mode = 2
+text = "X"
+placeholder_text = "000"
+
+[node name="rotationY" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/RotationBoxContainer"]
+layout_mode = 2
+text = "Y"
+placeholder_text = "000"
+
+[node name="rotationZ" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/RotationBoxContainer"]
+layout_mode = 2
+text = "Z"
+placeholder_text = "000"
+
+[node name="OptionButton" type="OptionButton" parent="HBoxContainer"]
+layout_mode = 2
+alignment = 1
+selected = 0
+allow_reselect = true
+item_count = 2
+popup/item_0/text = "Stand"
+popup/item_0/id = 1
+popup/item_1/text = "Seat"
+popup/item_1/id = 0
+
+[node name="Button" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+text = "X"
+icon_alignment = 1
