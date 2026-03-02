@@ -42,5 +42,4 @@ alignment = 3
 max_length = 255
 editable = false
 
-[connection signal="pressed" from="HBoxContainer/LoadStageAssetButton" to="." method="_on_load_stage_asset_button_pressed"]
 [connection signal="mouse_entered" from="HBoxContainer2/Label" to="." method="_on_label_mouse_entered"]

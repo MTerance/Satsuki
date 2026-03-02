@@ -18,6 +18,14 @@ namespace Satsuki.Models
         [Export]
         public SpawnPointType Type { get; set; }
 
+        public SpawnPointData()
+        {
+            Index = 0;
+            Position = Vector3.Zero;
+            Rotation = Vector3.Zero;
+            Type = SpawnPointType.Standard_Idle;
+        }
+
         public SpawnPointData(int index, Vector3 position, Vector3 rotation, SpawnPointType type)
         {
             Index = index;

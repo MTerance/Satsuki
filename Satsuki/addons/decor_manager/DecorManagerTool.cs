@@ -3,6 +3,7 @@ using Godot.Collections;
 using Satsuki.Models;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -19,7 +20,9 @@ public partial class DecorManagerTool : EditorPlugin
 	private VBoxContainer _mainContainer;
 	private LineEdit _scenePathInput;
 	private Button _loadSceneButton;
-	private Label _statusLabel;
+	private Button _loadStageAssetButton;
+	private Button _addSpawnPointButton;
+    private Label _statusLabel;
 	
 	// Gestion des points d'apparition
 	private CheckBox _spawnPointModeCheckbox;
@@ -40,6 +43,9 @@ public partial class DecorManagerTool : EditorPlugin
 
     /**/
 
+	private readonly System.Collections.Generic.Dictionary<SpawnPointData,Control> _spawnPointToUIControl = new();
+
+    /**/
     private bool _isSpawnPointMode = false;
 	private string _currentScenePath = "";
 
@@ -51,14 +57,30 @@ public partial class DecorManagerTool : EditorPlugin
 		GD.Print("DecorManagerTool: Dock ajoute");
 	}
 
-	public override void _ExitTree()
+	private void Cleanup()
 	{
-		if (_dockPanel != null)
-		{
-			RemoveControlFromDocks(_dockPanel);
-			_dockPanel.QueueFree();
-		}
-		GD.Print("DecorManagerTool: Nettoyage termine");
+        if (_dockPanel != null)
+        {
+			if (_loadStageAssetButton != null)
+			{
+				_loadStageAssetButton.Pressed -= OnLoadStageAssetButtonPressed;
+				_loadStageAssetButton = null;
+            }
+            if (_addSpawnPointButton != null)
+            {
+                _addSpawnPointButton.Pressed -= OnSpawnPointButtonPressed;
+                _addSpawnPointButton = null;
+            }
+            RemoveControlFromDocks(_dockPanel);
+            _dockPanel.QueueFree();
+        }
+
+    }
+
+    public override void _ExitTree()
+	{
+		Cleanup();
+        GD.Print("DecorManagerTool: Nettoyage termine");
 	}
 	
 	public override bool _Handles(GodotObject @object)
@@ -77,12 +99,39 @@ public partial class DecorManagerTool : EditorPlugin
 			GD.PrintErr("ERROR");
 			return;
 		}
-		PackedScene controlScene = GD.Load<PackedScene>(controlPath);
+        PackedScene controlScene = GD.Load<PackedScene>(controlPath);
 		Control control = controlScene.Instantiate<Control>();
 		_dockPanel.AddChild(control);
-		//SetuploadStageButton(control);
+
+		SetuploadStageButton(control);
+        CreateSpawnPointPanel(control);
         GD.Print("DecorManagerTool: VBoxContainer ajoute");
 	}
+
+	private void SetuploadStageButton(Control control)
+	{
+        _loadStageAssetButton = control.FindChild("LoadStageAssetButton", true, false) as Button;
+        if (_loadStageAssetButton != null)
+        {
+            _loadStageAssetButton.Pressed += OnLoadStageAssetButtonPressed;
+        }
+        else
+            GD.PrintErr("StageInfoContainer: LoadStageAssetButton introuvable");
+
+    }
+
+    private void CreateSpawnPointPanel(Control control)
+	{
+        _addSpawnPointButton = control.FindChild("AddPlayerSpawnButton", true, false) as Button;
+		if (_addSpawnPointButton != null)
+		{
+			_addSpawnPointButton.Pressed += OnSpawnPointButtonPressed;
+        }
+		else
+            GD.PrintErr("DecorManagerTool: AddSpawnPointButton trouve");
+
+    }
+
 
 	private T FindNodeByName<T>(Control parent, string nodeName) where T : Node
 	{
@@ -97,6 +146,37 @@ public partial class DecorManagerTool : EditorPlugin
 		}
 		return node;
     }
+
+
+	private void AddNewSpawnPoint()
+	{
+        GD.Print("AddNewSpawnPoint: Begin");
+        var spawnPoint = new SpawnPointData(GenerateStageId(), Vector3.Zero, Vector3.Zero, SpawnPointType.Standard_Idle);
+		_spawnPoints.Add(spawnPoint);
+
+		var spawnPointControlPath = "res://addons/decor_manager/Scenes/player_spawn_container.tscn";
+        if (!ResourceLoader.Exists(spawnPointControlPath))
+        {
+            GD.PrintErr("ERROR");
+            return;
+        }
+        PackedScene controlScene = GD.Load<PackedScene>(spawnPointControlPath);
+        Control control = controlScene.Instantiate<Control>();
+		var container = _dockPanel.FindChild("PlayersSpawnsContainer", true, false) as VBoxContainer;
+
+		if (container != null)
+		{
+			GD.Print("AddNewSpawnPoint: Ajout du spawn point dans la liste");
+            ((PlayerSpawnTemplate)control).InitPlayerSpawnTemplate(spawnPoint);
+            container.AddChild(control);
+            GD.Print("AddNewSpawnPoint: Spawn point ajoute dans la liste");	
+        }
+		else
+			GD.PrintErr("AddNewSpawnPoint: Container pour les spawn points introuvable");
+    }
+
+
+
 
 	/*
     private void SetupLoadStageButton(Control control)
@@ -211,6 +291,24 @@ public partial class DecorManagerTool : EditorPlugin
         }
     }
 
+	private void OnSpawnPointButtonPressed()
+	{
+		GD.Print("DecorManagerTool: AddSpawnPointButton pousse");
+		AddNewSpawnPoint();
+        GD.Print("DecorManagerTool: Add NewSpawnPoint termine");
+    }
+
+    private void OnLoadStageAssetButtonPressed()
+    {
+        GD.Print("DecorManagerTool: UploadStageButton pousse");
+        GD.PrintErr("DecorManagerTool: Fonction de chargement de stage non implementee");
+    }
+
+    private void _on_label_mouse_entered()
+    {
+        GD.Print("DecorManagerTool: Souris entre dans le label");
+    }
+
 
     /*
 	private void LoadCustomControl()
@@ -227,6 +325,7 @@ public partial class DecorManagerTool : EditorPlugin
 		GD.Print("DecorManagerTool: Control personnalise ajoute");
 	}
 	*/
+
 }
 
 
