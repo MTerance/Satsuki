@@ -23,9 +23,12 @@ public partial class DecorManagerTool : EditorPlugin
 	private Button _loadStageAssetButton;
 	private Button _addSpawnPointButton;
     private Label _statusLabel;
-	
-	// Gestion des points d'apparition
-	private CheckBox _spawnPointModeCheckbox;
+	//
+
+	private Node3D _currentSceneRoot;
+
+    // Gestion des points d'apparition
+    private CheckBox _spawnPointModeCheckbox;
 	private OptionButton _spawnPointTypeOption;
 	private Button _saveConfigButton;
 	private ItemList _spawnPointsList;
@@ -42,8 +45,10 @@ public partial class DecorManagerTool : EditorPlugin
     private readonly System.Collections.Generic.Dictionary<SpawnPointData, Label3D> _spawnPointToLabel = new();
 
     /**/
+    private GeneralInfoContainer _generalInfoContainer;
 
-	private readonly System.Collections.Generic.Dictionary<SpawnPointData,Control> _spawnPointToUIControl = new();
+    /**/
+    private readonly System.Collections.Generic.Dictionary<SpawnPointData,Control> _spawnPointToUIControl = new();
 
     /**/
     private bool _isSpawnPointMode = false;
@@ -52,7 +57,8 @@ public partial class DecorManagerTool : EditorPlugin
 	public override void _EnterTree()
 	{
 		GD.Print("DecorManagerTool: Initialisation...");
-		CreateDockPanel();
+		SetupRootSceneNode();
+        CreateDockPanel();
 		AddControlToDock(DockSlot.RightUl, _dockPanel);
 		GD.Print("DecorManagerTool: Dock ajoute");
 	}
@@ -71,6 +77,15 @@ public partial class DecorManagerTool : EditorPlugin
                 _addSpawnPointButton.Pressed -= OnSpawnPointButtonPressed;
                 _addSpawnPointButton = null;
             }
+
+            if (_generalInfoContainer != null)
+            {
+                _generalInfoContainer.NewStageResourceRequested -= OnNewStageResourceRequested;
+                _generalInfoContainer.LoadStageResourceRequested -= OnLoadStageResourceRequested;
+                _generalInfoContainer.SaveStageResourceRequested -= OnSaveStageResourceRequested;
+                _generalInfoContainer = null;
+            }
+
             RemoveControlFromDocks(_dockPanel);
             _dockPanel.QueueFree();
         }
@@ -102,13 +117,58 @@ public partial class DecorManagerTool : EditorPlugin
         PackedScene controlScene = GD.Load<PackedScene>(controlPath);
 		Control control = controlScene.Instantiate<Control>();
 		_dockPanel.AddChild(control);
-
-		SetuploadStageButton(control);
+		SetupGeneralInfoContainer(control);
+        SetupLoadStageButton(control);
         CreateSpawnPointPanel(control);
         GD.Print("DecorManagerTool: VBoxContainer ajoute");
 	}
 
-	private void SetuploadStageButton(Control control)
+	private void SetupGeneralInfoContainer(Control control)
+	{
+		_generalInfoContainer = control.FindChild("GeneralInfoContainer", true, false) as GeneralInfoContainer;
+		if (_generalInfoContainer != null)
+		{
+			_generalInfoContainer.NewStageResourceRequested += OnNewStageResourceRequested;
+			_generalInfoContainer.LoadStageResourceRequested += OnLoadStageResourceRequested;
+			_generalInfoContainer.SaveStageResourceRequested += OnSaveStageResourceRequested;
+        }
+		else
+			GD.PrintErr("DecorManagerTool: GeneralInfoContainer introuvable");
+    }
+
+	private void OnNewStageResourceRequested()
+	{
+		GD.Print("DecorManagerTool: New stage resource requested");
+	}
+
+    private void OnLoadStageResourceRequested()
+    {
+        GD.Print("DecorManagerTool: Load stage resource requested");
+    }
+
+    private void OnSaveStageResourceRequested()
+    {
+        GD.Print("DecorManagerTool: Save stage resource requested");
+    }
+
+    private void SetupRootSceneNode()
+	{
+		_currentSceneRoot = new Node3D();
+        _currentSceneRoot.Name = "DecorManagerSetup";
+        _currentSceneRoot.Position = Vector3.Zero;
+		GetTree().Root.AddChild(_currentSceneRoot);
+		GD.Print("DecorManagerTool: Noeud racine pour le decor manager cree");
+    }
+
+	private void ResetRootSceneNode()
+	{      if (_currentSceneRoot != null)
+		{
+			_currentSceneRoot.QueueFree();
+		}
+		SetupRootSceneNode();
+    }
+
+	private void SetupLoadStageButton(Control control)
 	{
         _loadStageAssetButton = control.FindChild("LoadStageAssetButton", true, false) as Button;
         if (_loadStageAssetButton != null)
@@ -291,7 +351,46 @@ public partial class DecorManagerTool : EditorPlugin
         }
     }
 
-	private void OnSpawnPointButtonPressed()
+	private void OpenFileLoadStageScene()
+	{
+		var fileDialog = new EditorFileDialog();
+		fileDialog.FileMode = EditorFileDialog.FileModeEnum.OpenFile;
+		fileDialog.Filters = new string[] { "*.tscn" };
+		fileDialog.Access = EditorFileDialog.AccessEnum.Resources;
+		fileDialog.CurrentDir = "res://Resources/Stages/";
+		fileDialog.Title = "Charger une scene";
+
+		fileDialog.FileSelected += OnStageFileSelected;
+		fileDialog.Canceled += () => fileDialog.QueueFree();
+        EditorInterface.Singleton.GetBaseControl().AddChild(fileDialog);
+        fileDialog.PopupCentered(new Vector2I(800, 600));
+
+        GD.Print("DecorManagerTool: Chargement de la scene...");
+    }
+
+	private void OnStageFileSelected(string path)
+	{
+		_currentScenePath = path;
+		LoadStageScene(path);
+    }
+
+	private void LoadStageScene(string path)
+	{
+		if (!ResourceLoader.Exists(path))
+		{
+			GD.PrintErr($"DecorManagerTool: Scene introuvable - {path}");
+			return;
+        }
+		var scene = GD.Load<PackedScene>(path);
+        if ( (scene != null))
+        {
+            _loadedScene = scene.Instantiate<Node3D>();
+			_currentSceneRoot.AddChild(_loadedScene);
+			GD.Print($"DecorManagerTool: Scene chargee - {path}");
+        }
+    }
+
+    private void OnSpawnPointButtonPressed()
 	{
 		GD.Print("DecorManagerTool: AddSpawnPointButton pousse");
 		AddNewSpawnPoint();
@@ -301,7 +400,7 @@ public partial class DecorManagerTool : EditorPlugin
     private void OnLoadStageAssetButtonPressed()
     {
         GD.Print("DecorManagerTool: UploadStageButton pousse");
-        GD.PrintErr("DecorManagerTool: Fonction de chargement de stage non implementee");
+		OpenFileLoadStageScene();
     }
 
     private void _on_label_mouse_entered()

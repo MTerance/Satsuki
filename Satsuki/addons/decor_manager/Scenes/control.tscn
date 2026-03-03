@@ -31,7 +31,6 @@ text = "Main Commands"
 
 [node name="GeneralInfoContainer" parent="VBoxContainer" instance=ExtResource("1_5uppg")]
 layout_mode = 2
-script = null
 
 [node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
 layout_mode = 2
@@ -46,147 +45,166 @@ layout_mode = 2
 [node name="HSeparator2" type="HSeparator" parent="VBoxContainer"]
 layout_mode = 2
 
-[node name="Title CameraPlacement Section" type="Label" parent="VBoxContainer"]
+[node name="GeneralMenuContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="LobbyMenuContainer" type="VBoxContainer" parent="VBoxContainer/GeneralMenuContainer"]
+layout_mode = 2
+
+[node name="LobbyMenuTitleLabel" type="Label" parent="VBoxContainer/GeneralMenuContainer/LobbyMenuContainer"]
+layout_mode = 2
+text = "Lobby Info"
+horizontal_alignment = 1
+
+[node name="Title CameraPlacement Section" type="Label" parent="VBoxContainer/GeneralMenuContainer/LobbyMenuContainer"]
 layout_mode = 2
 text = "Camera Placement"
 
-[node name="CameraPlacementContainer" type="PanelContainer" parent="VBoxContainer"]
+[node name="CameraPlacementContainer" type="PanelContainer" parent="VBoxContainer/GeneralMenuContainer/LobbyMenuContainer"]
 layout_mode = 2
 script = ExtResource("1_wl3aw")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/CameraPlacementContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/GeneralMenuContainer/LobbyMenuContainer/CameraPlacementContainer"]
 layout_mode = 2
 alignment = 1
 
-[node name="CoordBoxContainer" type="VBoxContainer" parent="VBoxContainer/CameraPlacementContainer/HBoxContainer"]
+[node name="CoordBoxContainer" type="VBoxContainer" parent="VBoxContainer/GeneralMenuContainer/LobbyMenuContainer/CameraPlacementContainer/HBoxContainer"]
 layout_mode = 2
 alignment = 1
 
-[node name="PositionBoxContainer" type="HBoxContainer" parent="VBoxContainer/CameraPlacementContainer/HBoxContainer/CoordBoxContainer"]
+[node name="PositionBoxContainer" type="HBoxContainer" parent="VBoxContainer/GeneralMenuContainer/LobbyMenuContainer/CameraPlacementContainer/HBoxContainer/CoordBoxContainer"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="VBoxContainer/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/PositionBoxContainer"]
+[node name="Label" type="Label" parent="VBoxContainer/GeneralMenuContainer/LobbyMenuContainer/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/PositionBoxContainer"]
 layout_mode = 2
 text = "Coord. Camera"
 
-[node name="SpinBox" type="SpinBox" parent="VBoxContainer/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/PositionBoxContainer"]
+[node name="SpinBox" type="SpinBox" parent="VBoxContainer/GeneralMenuContainer/LobbyMenuContainer/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/PositionBoxContainer"]
 layout_mode = 2
 
-[node name="SpinBox2" type="SpinBox" parent="VBoxContainer/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/PositionBoxContainer"]
+[node name="SpinBox2" type="SpinBox" parent="VBoxContainer/GeneralMenuContainer/LobbyMenuContainer/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/PositionBoxContainer"]
 layout_mode = 2
 
-[node name="SpinBox3" type="SpinBox" parent="VBoxContainer/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/PositionBoxContainer"]
+[node name="SpinBox3" type="SpinBox" parent="VBoxContainer/GeneralMenuContainer/LobbyMenuContainer/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/PositionBoxContainer"]
 layout_mode = 2
 
-[node name="TargetPositionBoxContainer" type="HBoxContainer" parent="VBoxContainer/CameraPlacementContainer/HBoxContainer/CoordBoxContainer"]
+[node name="TargetPositionBoxContainer" type="HBoxContainer" parent="VBoxContainer/GeneralMenuContainer/LobbyMenuContainer/CameraPlacementContainer/HBoxContainer/CoordBoxContainer"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="VBoxContainer/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/TargetPositionBoxContainer"]
+[node name="Label" type="Label" parent="VBoxContainer/GeneralMenuContainer/LobbyMenuContainer/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/TargetPositionBoxContainer"]
 layout_mode = 2
 text = "Coord. Target"
 
-[node name="SpinBox" type="SpinBox" parent="VBoxContainer/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/TargetPositionBoxContainer"]
+[node name="SpinBox" type="SpinBox" parent="VBoxContainer/GeneralMenuContainer/LobbyMenuContainer/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/TargetPositionBoxContainer"]
 layout_mode = 2
 
-[node name="SpinBox2" type="SpinBox" parent="VBoxContainer/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/TargetPositionBoxContainer"]
+[node name="SpinBox2" type="SpinBox" parent="VBoxContainer/GeneralMenuContainer/LobbyMenuContainer/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/TargetPositionBoxContainer"]
 layout_mode = 2
 
-[node name="SpinBox3" type="SpinBox" parent="VBoxContainer/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/TargetPositionBoxContainer"]
+[node name="SpinBox3" type="SpinBox" parent="VBoxContainer/GeneralMenuContainer/LobbyMenuContainer/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/TargetPositionBoxContainer"]
 layout_mode = 2
 
-[node name="HSeparator3" type="HSeparator" parent="VBoxContainer"]
+[node name="HSeparator3" type="HSeparator" parent="VBoxContainer/GeneralMenuContainer/LobbyMenuContainer"]
 layout_mode = 2
 
-[node name="Title Spawns Section" type="Label" parent="VBoxContainer"]
+[node name="Title Spawns Section" type="Label" parent="VBoxContainer/GeneralMenuContainer/LobbyMenuContainer"]
 layout_mode = 2
 text = "Spawn Point"
 
-[node name="PlayersSpawnsContainer" type="VBoxContainer" parent="VBoxContainer"]
+[node name="PlayersSpawnsContainer" type="VBoxContainer" parent="VBoxContainer/GeneralMenuContainer/LobbyMenuContainer"]
 layout_mode = 2
 
-[node name="AddPlayerSpawnButton" type="Button" parent="VBoxContainer"]
+[node name="AddPlayerSpawnButton" type="Button" parent="VBoxContainer/GeneralMenuContainer/LobbyMenuContainer"]
 layout_mode = 2
 text = "+"
 
-[node name="HSeparator4" type="HSeparator" parent="VBoxContainer"]
+[node name="VSeparator" type="VSeparator" parent="VBoxContainer/GeneralMenuContainer"]
 layout_mode = 2
 
-[node name="QuizzGameInfoManager" type="Label" parent="VBoxContainer"]
+[node name="GameMenuContainer" type="VBoxContainer" parent="VBoxContainer/GeneralMenuContainer"]
+layout_mode = 2
+
+[node name="GameMenuTitleLabel" type="Label" parent="VBoxContainer/GeneralMenuContainer/GameMenuContainer"]
+layout_mode = 2
+text = "Game Quizz Info"
+horizontal_alignment = 1
+
+[node name="QuizzGameInfoManager" type="Label" parent="VBoxContainer/GeneralMenuContainer/GameMenuContainer"]
 layout_mode = 2
 text = "Quizz Game Info Manager"
 
-[node name="CameraPlacementContainerLobby" type="VBoxContainer" parent="VBoxContainer"]
+[node name="CameraPlacementContainerLobby" type="VBoxContainer" parent="VBoxContainer/GeneralMenuContainer/GameMenuContainer"]
 layout_mode = 2
 
-[node name="CameraPlacementContainerGame" type="VBoxContainer" parent="VBoxContainer"]
+[node name="CameraPlacementContainerGame" type="VBoxContainer" parent="VBoxContainer/GeneralMenuContainer/GameMenuContainer"]
 layout_mode = 2
 
-[node name="CameraPlacementContainer2" type="PanelContainer" parent="VBoxContainer/CameraPlacementContainerGame"]
+[node name="CameraPlacementContainer2" type="PanelContainer" parent="VBoxContainer/GeneralMenuContainer/GameMenuContainer/CameraPlacementContainerGame"]
 layout_mode = 2
 script = ExtResource("1_wl3aw")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/CameraPlacementContainerGame/CameraPlacementContainer2"]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/GeneralMenuContainer/GameMenuContainer/CameraPlacementContainerGame/CameraPlacementContainer2"]
 layout_mode = 2
 alignment = 1
 
-[node name="CoordBoxContainer" type="VBoxContainer" parent="VBoxContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer"]
+[node name="CoordBoxContainer" type="VBoxContainer" parent="VBoxContainer/GeneralMenuContainer/GameMenuContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer"]
 layout_mode = 2
 alignment = 1
 
-[node name="CameraPositionBoxContainer" type="HBoxContainer" parent="VBoxContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer"]
+[node name="CameraPositionBoxContainer" type="HBoxContainer" parent="VBoxContainer/GeneralMenuContainer/GameMenuContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer"]
 layout_mode = 2
 
-[node name="Container" type="MarginContainer" parent="VBoxContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
+[node name="Container" type="MarginContainer" parent="VBoxContainer/GeneralMenuContainer/GameMenuContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="VBoxContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer/Container"]
+[node name="Label" type="Label" parent="VBoxContainer/GeneralMenuContainer/GameMenuContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer/Container"]
 layout_mode = 2
 text = "Coord. Camera"
 
-[node name="CameraPositionX" type="LineEdit" parent="VBoxContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
+[node name="CameraPositionX" type="LineEdit" parent="VBoxContainer/GeneralMenuContainer/GameMenuContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
 layout_mode = 2
 text = "X"
 placeholder_text = "000"
 alignment = 1
 
-[node name="CameraPositionY" type="LineEdit" parent="VBoxContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
+[node name="CameraPositionY" type="LineEdit" parent="VBoxContainer/GeneralMenuContainer/GameMenuContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
 layout_mode = 2
 text = "Y"
 placeholder_text = "000"
 alignment = 1
 
-[node name="CameraPositionZ" type="LineEdit" parent="VBoxContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
+[node name="CameraPositionZ" type="LineEdit" parent="VBoxContainer/GeneralMenuContainer/GameMenuContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
 layout_mode = 2
 text = "Z"
 placeholder_text = "000"
 alignment = 1
 
-[node name="TargetCameraBoxContainer" type="HBoxContainer" parent="VBoxContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer"]
+[node name="TargetCameraBoxContainer" type="HBoxContainer" parent="VBoxContainer/GeneralMenuContainer/GameMenuContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer"]
 layout_mode = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/GeneralMenuContainer/GameMenuContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
 layout_mode = 2
 
-[node name="Label2" type="Label" parent="VBoxContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer/MarginContainer"]
+[node name="Label2" type="Label" parent="VBoxContainer/GeneralMenuContainer/GameMenuContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer/MarginContainer"]
 layout_mode = 2
 text = "Coord. Target"
 
-[node name="TargetCameraX" type="LineEdit" parent="VBoxContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
+[node name="TargetCameraX" type="LineEdit" parent="VBoxContainer/GeneralMenuContainer/GameMenuContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
 layout_mode = 2
 text = "X"
 placeholder_text = "000"
 alignment = 1
 
-[node name="TargetCameraY" type="LineEdit" parent="VBoxContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
+[node name="TargetCameraY" type="LineEdit" parent="VBoxContainer/GeneralMenuContainer/GameMenuContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
 layout_mode = 2
 text = "Y"
 placeholder_text = "000"
 alignment = 1
 
-[node name="TargetCameraZ" type="LineEdit" parent="VBoxContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
+[node name="TargetCameraZ" type="LineEdit" parent="VBoxContainer/GeneralMenuContainer/GameMenuContainer/CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
 layout_mode = 2
 text = "Z"
 placeholder_text = "000"
 alignment = 1
 
-[connection signal="pressed" from="VBoxContainer/AddPlayerSpawnButton" to="VBoxContainer/CameraPlacementContainer" method="OnSpawnPointButtonPressed"]
+[connection signal="pressed" from="VBoxContainer/GeneralMenuContainer/LobbyMenuContainer/AddPlayerSpawnButton" to="VBoxContainer/GeneralMenuContainer/LobbyMenuContainer/CameraPlacementContainer" method="OnSpawnPointButtonPressed"]
