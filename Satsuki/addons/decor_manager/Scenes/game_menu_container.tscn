@@ -1,0 +1,88 @@
+[gd_scene load_steps=2 format=3 uid="uid://cwhptm70bahx7"]
+
+[ext_resource type="Script" uid="uid://egot5kly21n7" path="res://addons/decor_manager/Templates/CameraPlacementTemplate.cs" id="1_bfc0n"]
+
+[node name="GameMenuContainer" type="VBoxContainer"]
+
+[node name="GameMenuTitleLabel" type="Label" parent="."]
+layout_mode = 2
+text = "Game Quizz Info"
+horizontal_alignment = 1
+
+[node name="QuizzGameInfoManager" type="Label" parent="."]
+layout_mode = 2
+text = "Quizz Game Info Manager"
+
+[node name="CameraPlacementContainerLobby" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="CameraPlacementContainerGame" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="CameraPlacementContainer2" type="PanelContainer" parent="CameraPlacementContainerGame"]
+layout_mode = 2
+script = ExtResource("1_bfc0n")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CameraPlacementContainerGame/CameraPlacementContainer2"]
+layout_mode = 2
+alignment = 1
+
+[node name="CoordBoxContainer" type="VBoxContainer" parent="CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="CameraPositionBoxContainer" type="HBoxContainer" parent="CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer"]
+layout_mode = 2
+
+[node name="Container" type="MarginContainer" parent="CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer/Container"]
+layout_mode = 2
+text = "Coord. Camera"
+
+[node name="CameraPositionX" type="LineEdit" parent="CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
+layout_mode = 2
+text = "X"
+placeholder_text = "000"
+alignment = 1
+
+[node name="CameraPositionY" type="LineEdit" parent="CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
+layout_mode = 2
+text = "Y"
+placeholder_text = "000"
+alignment = 1
+
+[node name="CameraPositionZ" type="LineEdit" parent="CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
+layout_mode = 2
+text = "Z"
+placeholder_text = "000"
+alignment = 1
+
+[node name="TargetCameraBoxContainer" type="HBoxContainer" parent="CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer/MarginContainer"]
+layout_mode = 2
+text = "Coord. Target"
+
+[node name="TargetCameraX" type="LineEdit" parent="CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
+layout_mode = 2
+text = "X"
+placeholder_text = "000"
+alignment = 1
+
+[node name="TargetCameraY" type="LineEdit" parent="CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
+layout_mode = 2
+text = "Y"
+placeholder_text = "000"
+alignment = 1
+
+[node name="TargetCameraZ" type="LineEdit" parent="CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
+layout_mode = 2
+text = "Z"
+placeholder_text = "000"
+alignment = 1

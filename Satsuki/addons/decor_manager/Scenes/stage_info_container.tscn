@@ -26,7 +26,7 @@ layout_mode = 2
 text = "Scene Name"
 vertical_alignment = 1
 
-[node name="LineEdit" type="LineEdit" parent="HBoxContainer2"]
+[node name="StageNameLineEdit" type="LineEdit" parent="HBoxContainer2"]
 custom_minimum_size = Vector2(400, 0)
 layout_mode = 2
 alignment = 3
@@ -42,7 +42,7 @@ layout_mode = 2
 text = "Path Scene"
 vertical_alignment = 1
 
-[node name="LineEdit" type="LineEdit" parent="HBoxContainer3"]
+[node name="PathStageAssetLineEdit" type="LineEdit" parent="HBoxContainer3"]
 custom_minimum_size = Vector2(400, 0)
 layout_mode = 2
 alignment = 3

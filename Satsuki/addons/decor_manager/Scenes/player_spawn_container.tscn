@@ -24,38 +24,56 @@ layout_mode = 2
 
 [node name="positionX" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/PositionBoxContainer"]
 layout_mode = 2
+theme_override_colors/font_placeholder_color = Color(1, 0, 0, 1)
+theme_override_colors/font_color = Color(1, 0, 0, 1)
 text = "X"
 placeholder_text = "000"
+editable = false
 
 [node name="positionY" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/PositionBoxContainer"]
 layout_mode = 2
+theme_override_colors/font_placeholder_color = Color(0, 1, 0, 1)
+theme_override_colors/font_color = Color(0, 1, 0, 1)
 text = "Y"
 placeholder_text = "000"
+editable = false
 
 [node name="positionZ" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/PositionBoxContainer"]
 layout_mode = 2
+theme_override_colors/font_placeholder_color = Color(0, 0, 1, 1)
+theme_override_colors/font_color = Color(0, 0, 1, 1)
 text = "Z"
 placeholder_text = "000"
+editable = false
 
 [node name="RotationBoxContainer" type="HBoxContainer" parent="HBoxContainer/CoordBoxContainer"]
 layout_mode = 2
 
 [node name="rotationX" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/RotationBoxContainer"]
 layout_mode = 2
+theme_override_colors/font_placeholder_color = Color(1, 0, 0, 1)
+theme_override_colors/font_color = Color(1, 0, 0, 1)
 text = "X"
 placeholder_text = "000"
+editable = false
 
 [node name="rotationY" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/RotationBoxContainer"]
 layout_mode = 2
+theme_override_colors/font_placeholder_color = Color(0, 1, 0, 1)
+theme_override_colors/font_color = Color(0, 1, 0, 1)
 text = "Y"
 placeholder_text = "000"
+editable = false
 
 [node name="rotationZ" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/RotationBoxContainer"]
 layout_mode = 2
+theme_override_colors/font_placeholder_color = Color(0, 0, 1, 1)
+theme_override_colors/font_color = Color(0, 0, 1, 1)
 text = "Z"
 placeholder_text = "000"
+editable = false
 
-[node name="OptionButton" type="OptionButton" parent="HBoxContainer"]
+[node name="SpawnPointTypeOption" type="OptionButton" parent="HBoxContainer"]
 layout_mode = 2
 alignment = 1
 selected = 0
