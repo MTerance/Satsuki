@@ -183,9 +183,18 @@ public partial class DecorManagerTool : EditorPlugin
 
     private void OnNewStageResourceRequested()
     {
-        // Reinitialiser la scene courante
+        // Reinitialiser la effacer les spanw points et le decor charge si il y en a un
         _lobbyMenuContainer.ClearSpawnPoints();
         GD.Print("DecorManagerTool: New stage resource requested");
+    }
+
+    private void CleanUpScene()
+    {
+        if (_loadedScene != null)
+        {
+            _loadedScene.QueueFree();
+            _loadedScene = null;
+        }
     }
 
     private void OnLoadStageResourceRequested()

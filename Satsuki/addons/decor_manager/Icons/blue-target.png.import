@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bwt11lujqo2tb"
-path="res://.godot/imported/blue-cible.png-ca15f8119c9848f642c6f6f1848136c8.ctex"
+path="res://.godot/imported/blue-target.png-c010efbce04c43e8eef6ab0be98d5b63.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/decor_manager/Icons/blue-cible.png"
-dest_files=["res://.godot/imported/blue-cible.png-ca15f8119c9848f642c6f6f1848136c8.ctex"]
+source_file="res://addons/decor_manager/Icons/blue-target.png"
+dest_files=["res://.godot/imported/blue-target.png-c010efbce04c43e8eef6ab0be98d5b63.ctex"]
 
 [params]
 

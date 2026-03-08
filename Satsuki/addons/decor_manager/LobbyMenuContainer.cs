@@ -148,7 +148,7 @@ public partial class LobbyMenuContainer : Control
 		if (node != null &&
 			_nodeToSpawnPoint.TryGetValue(node, out var spawnPoint))
 		{
-		    UpdateLabelForPointMarker(node);
+			UpdateLabelForPointMarker(node);
 			GD.Print($"OnSpawnPointPositionChanged: Position changee pour {nodeName}\n Old Pos : {node.Position} - Old Rot : {node.RotationDegrees}\n New Pos: {newPosition}, New Rot: {newRotation}");
 		}
 	}
