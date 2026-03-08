@@ -1,5 +1,6 @@
 ﻿using Godot;
 using Godot.Collections;
+using Satsuki.addons.decor_manager;
 using Satsuki.addons.decor_manager.Tools;
 using Satsuki.Models;
 using System;
@@ -41,6 +42,9 @@ public partial class DecorManagerTool : EditorPlugin
 
     private bool _isSpawnPointMode = false;
     private string _currentScenePath = "";
+
+    private SceneManager _sceneManager= SceneManager.Instance;
+
 
     public override void _EnterTree()
     {
@@ -187,16 +191,7 @@ public partial class DecorManagerTool : EditorPlugin
         _lobbyMenuContainer.ClearSpawnPoints();
         GD.Print("DecorManagerTool: New stage resource requested");
     }
-
-    private void CleanUpScene()
-    {
-        if (_loadedScene != null)
-        {
-            _loadedScene.QueueFree();
-            _loadedScene = null;
-        }
-    }
-
+     
     private void OnLoadStageResourceRequested()
     {
         _lobbyMenuContainer.ClearSpawnPoints();
@@ -210,6 +205,7 @@ public partial class DecorManagerTool : EditorPlugin
 
     private void SetupRootSceneNode()
     {
+        /*
         var editedSceneRoot = EditorInterface.Singleton.GetEditedSceneRoot() as Node3D;
 
         if (editedSceneRoot != null)
@@ -233,6 +229,8 @@ public partial class DecorManagerTool : EditorPlugin
         // Récupérer la référence après ouverture
         _currentSceneRoot = EditorInterface.Singleton.GetEditedSceneRoot() as Node3D;
         GD.Print("DecorManagerTool: Noeud racine pour le decor manager cree");
+        */
+        _sceneManager.SetupRootSceneNode();
     }
 
     private void ResetRootSceneNode()
@@ -242,20 +240,6 @@ public partial class DecorManagerTool : EditorPlugin
             _currentSceneRoot.QueueFree();
         }
         SetupRootSceneNode();
-    }
-
-    private T FindNodeByName<T>(Control parent, string nodeName) where T : Node
-    {
-        var node = parent.GetNodeOrNull<T>(nodeName);
-        if (node == null)
-        {
-            GD.PrintErr($"DecorManagerTool: Noeud '{nodeName}' de type {typeof(T).Name} non trouve dans le control.");
-        }
-        else
-        {
-            GD.Print($"DecorManagerTool: Noeud '{nodeName}' de type {typeof(T).Name} trouve.");
-        }
-        return node;
     }
 
     private void SaveStageResource()
@@ -294,51 +278,5 @@ public partial class DecorManagerTool : EditorPlugin
         base._Process(delta);
 
     }
-
-    private void OpenFileLoadStageScene()
-    {
-        var fileDialog = new EditorFileDialog();
-        fileDialog.FileMode = EditorFileDialog.FileModeEnum.OpenFile;
-        fileDialog.Filters = new string[] { "*.tscn" };
-        fileDialog.Access = EditorFileDialog.AccessEnum.Resources;
-        fileDialog.CurrentDir = "res://Resources/Stages/";
-        fileDialog.Title = "Charger une scene";
-
-        fileDialog.FileSelected += OnStageFileSelected;
-        fileDialog.Canceled += () => fileDialog.QueueFree();
-        EditorInterface.Singleton.GetBaseControl().AddChild(fileDialog);
-        fileDialog.PopupCentered(new Vector2I(800, 600));
-
-        GD.Print("DecorManagerTool: Chargement de la scene...");
-    }
-
-    private void OnStageFileSelected(string path)
-    {
-        _currentScenePath = path;
-        LoadStageScene(path);
-    }
-
-    private void LoadStageScene(string path)
-    {
-        if (!ResourceLoader.Exists(path))
-        {
-            GD.PrintErr($"DecorManagerTool: Scene introuvable - {path}");
-            return;
-        }
-        var scene = GD.Load<PackedScene>(path);
-        if ((scene != null))
-        {
-            _loadedScene = scene.Instantiate<Node3D>();
-            _currentSceneRoot.AddChild(_loadedScene);
-            GD.Print($"DecorManagerTool: Scene chargee - {path}");
-        }
-    }
-
-    private void OnLoadStageAssetButtonPressed()
-    {
-        GD.Print("DecorManagerTool: UploadStageButton pousse");
-        OpenFileLoadStageScene();
-    }
-
 }
 #endif

@@ -20,7 +20,7 @@ namespace Satsuki.addons.decor_manager.Tools
             return sprite;
         }
 
-        public static Label3D CreateLabel(string text, string nodeName, Vector3? position = null, Vector3? rotation = null,int fontSize = 24, bool noDepthTest = true)
+        public static Label3D CreateLabel(string text, string nodeName, Vector3? position = null, Vector3? rotation = null, int fontSize = 24, bool noDepthTest = true)
         {
             Label3D label = new Label3D();
             label.Name = nodeName;
@@ -31,4 +31,5 @@ namespace Satsuki.addons.decor_manager.Tools
             label.NoDepthTest = noDepthTest;
             return label;
         }
+    }
 }
