@@ -194,6 +194,22 @@ public partial class DecorManagerTool : EditorPlugin
     private void OnSaveStageResourceRequested()
     {
         GD.Print("DecorManagerTool: Save stage resource requested");
+        var fileDialog = new EditorFileDialog();
+        fileDialog.FileMode = EditorFileDialog.FileModeEnum.SaveFile;
+        fileDialog.Filters = new string[] { "*.tres" };
+        fileDialog.Access = EditorFileDialog.AccessEnum.Resources;
+        fileDialog.CurrentDir = "res://Resources/Locations/";
+        fileDialog.Title = "Sauvegarder la configuration de la scene";
+
+        fileDialog.FileSelected += OnSaveFileSelected;
+        fileDialog.Canceled += () => fileDialog.QueueFree();
+        EditorInterface.Singleton.GetBaseControl().AddChild(fileDialog);
+        fileDialog.PopupCentered(new Vector2I(800, 600));
+    }
+
+    private void OnSaveFileSelected(string path)
+    {
+        throw new NotImplementedException();
     }
 
     private void SetupRootSceneNode()
