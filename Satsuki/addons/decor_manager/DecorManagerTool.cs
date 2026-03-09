@@ -69,8 +69,6 @@ public partial class DecorManagerTool : EditorPlugin
 
         if (_dockPanel != null)
         {
-
-
             if (_generalInfoContainer != null)
             {
                 _generalInfoContainer.NewStageResourceRequested -= OnNewStageResourceRequested;
@@ -132,14 +130,7 @@ public partial class DecorManagerTool : EditorPlugin
     {
         try
         {
-            var editedSceneRoot = EditorInterface.Singleton.GetEditedSceneRoot();
-            if (editedSceneRoot != null)
-            {
-                editedSceneRoot.AddChild(node);
-                node.Owner = editedSceneRoot;
-            }
-            else
-                _currentSceneRoot.AddChild(node);
+            SceneManager.Instance.AddNodeToScene(node);
         }
         catch (Exception ex)
         {
@@ -152,7 +143,7 @@ public partial class DecorManagerTool : EditorPlugin
         _stageInfoContainer = control.FindChild("StageInfoContainer", true, false) as StageInfoContainer;
         if (_stageInfoContainer != null)
         {
-            _stageInfoContainer.LoadStageAssetRequested += OnLoadStageAssetRequested;
+           // _stageInfoContainer.LoadStageAssetRequested += OnLoadStageAssetRequested;
             GD.Print("DecorManagerTool: StageInfoContainer trouve et evenement connecte");
         }
         else
@@ -189,6 +180,8 @@ public partial class DecorManagerTool : EditorPlugin
     {
         // Reinitialiser la effacer les spanw points et le decor charge si il y en a un
         _lobbyMenuContainer.ClearSpawnPoints();
+        _stageInfoContainer.ClearStageInfo();
+        _generalInfoContainer.ClearGeneralInfo();
         GD.Print("DecorManagerTool: New stage resource requested");
     }
      
@@ -205,31 +198,6 @@ public partial class DecorManagerTool : EditorPlugin
 
     private void SetupRootSceneNode()
     {
-        /*
-        var editedSceneRoot = EditorInterface.Singleton.GetEditedSceneRoot() as Node3D;
-
-        if (editedSceneRoot != null)
-        {
-            _currentSceneRoot = editedSceneRoot;
-            GD.Print("DecorManagerTool: Noeud racine deja existant, suppression du noeud existant");
-            editedSceneRoot = null;
-        }
-        var currentSceneRoot = new Node3D();
-        currentSceneRoot.Name = "DecorManagerSetup";
-        currentSceneRoot.Position = Vector3.Zero;
-
-        // Sauvegarder et ouvrir la scène dans l'éditeur
-        var packedScene = new PackedScene();
-        packedScene.Pack(currentSceneRoot);
-
-        var tempScenePath = "res://addons/decor_manager/DecorManager.tscn";
-        ResourceSaver.Save(packedScene, tempScenePath);
-        EditorInterface.Singleton.OpenSceneFromPath(tempScenePath);
-
-        // Récupérer la référence après ouverture
-        _currentSceneRoot = EditorInterface.Singleton.GetEditedSceneRoot() as Node3D;
-        GD.Print("DecorManagerTool: Noeud racine pour le decor manager cree");
-        */
         _sceneManager.SetupRootSceneNode();
     }
 

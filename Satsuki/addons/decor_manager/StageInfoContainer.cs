@@ -1,4 +1,5 @@
 using Godot;
+using Satsuki.addons.decor_manager;
 using System;
 
 #if TOOLS
@@ -10,9 +11,10 @@ public partial class StageInfoContainer : Control
 	private LineEdit _stageNameLineEdit;
 	private LineEdit _pathStageAssetLineEdit;
 
+	/*
 	[Signal]
 	public delegate void LoadStageAssetRequestedEventHandler(PackedScene scene);
-
+	*/
 	private string _stageAssetPath;
 	private string _stageName;
 
@@ -36,7 +38,20 @@ public partial class StageInfoContainer : Control
 	{
 	}
 	
-	private void OnLoadStageAssetButtonPressed()
+	public void ClearStageInfo()
+	{
+		_stageNameLineEdit.Text = string.Empty;
+		_pathStageAssetLineEdit.Text = string.Empty;
+		ClearLoadedStage();
+    }
+
+	private void ClearLoadedStage()
+	{
+		SceneManager.Instance.ClearLoadedScene();
+    }
+
+
+    private void OnLoadStageAssetButtonPressed()
 	{
 		OpenFileLoadStageScene();
 	}
@@ -86,7 +101,8 @@ public partial class StageInfoContainer : Control
 			var stageName = GetStageNameFromPath(path);
 			_stageNameLineEdit.Text = stageName;
 			_pathStageAssetLineEdit.Text = path;
-			EmitSignal(SignalName.LoadStageAssetRequested,scene);   // Do something with the loaded scene
+			SceneManager.Instance.LoadMainStage(scene);
+			// EmitSignal(SignalName.LoadStageAssetRequested,scene);   // Do something with the loaded scene
 		}
 	}
 

@@ -1,8 +1,10 @@
 using Godot;
+using Satsuki.addons.decor_manager;
 using Satsuki.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 
 #if TOOLS
 [Tool]
@@ -24,9 +26,8 @@ public partial class LobbyMenuContainer : Control
 	[Signal]
 	public delegate void SpawnPointCreatedEventHandler(Node3D node);
 
-
-	// Called when the node enters the scene tree for the first time.
-	public override void _Ready()
+    // Called when the node enters the scene tree for the first time.
+    public override void _Ready()
 	{
 		CreateSpawnPointPanel();
 
@@ -69,18 +70,25 @@ public partial class LobbyMenuContainer : Control
 	{
 		foreach (var kvp in _nodeToSpawnPoint)
 		{
-			kvp.Key.QueueFree();
-			GetTree().CurrentScene.RemoveChild(kvp.Key);
-			_nodeToSpawnPoint.Remove(kvp.Key);
-		}
-
-		foreach (var sp in _spawnPoints)
-		{
-			DeleteSpawnPoint(sp);
-		}
+			ClearSpawn(kvp);
+        }
 		_spawnPoints.Clear();
-	}
+		_nodeToSpawnPoint.Clear();
+		_spawnPointToUIControl.Clear();
+    }
 
+	private void ClearSpawn(KeyValuePair<Node3D, SpawnPointData> kvp)
+	{
+		var node = kvp.Key;
+		var spawnPoint = kvp.Value;
+		if (node != null)
+		{
+			node.QueueFree();
+			DeleteSpawnPoint(spawnPoint);
+            SceneManager.Instance.RemoveNodeFromScene(node);
+			_nodeToSpawnPoint.Remove(node);
+		}
+    }
 
 	private void DeleteSpawnPoint(SpawnPointData spawnPoint)
 	{
@@ -93,7 +101,19 @@ public partial class LobbyMenuContainer : Control
 		}
 	}
 
-	private void AddNewSpawnPoint()
+    private void OnSpawnPointDeleted(string nodename)
+    {
+        GD.Print($"OnSpawnPointDeleted: Suppression du spawn point {nodename}");
+
+        _nodeToSpawnPoint.TryGetValue(_nodeToSpawnPoint.Keys.FirstOrDefault(k => k.Name == nodename), out var spawnPoint);
+        if (spawnPoint != null)
+        {
+			var kvp = _nodeToSpawnPoint.FirstOrDefault(k => k.Value == spawnPoint);
+            ClearSpawn(kvp);
+        }
+    }
+
+    private void AddNewSpawnPoint()
 	{
 		GD.Print("AddNewSpawnPoint: Begin");
 		var spawnPoint = new SpawnPointData(Satsuki.addons.decor_manager.Tools.Tool.GenerateStageId(), Vector3.Zero, Vector3.Zero, SpawnPointType.Standard_Idle);
@@ -116,7 +136,8 @@ public partial class LobbyMenuContainer : Control
 			playerSpawnTemplate.InitPlayerSpawnTemplate(spawnPoint);
 			playerSpawnTemplate.OnSpawnPointTypeChanged += OnSpawnPointTypeChanged;
 			playerSpawnTemplate.onSpawnPointPositionChanged += OnSpawnPointPositionChanged;
-			_spawnPointToUIControl[spawnPoint] = control;
+			playerSpawnTemplate.OnDeleteSpawnPoint += OnSpawnPointDeleted;
+            _spawnPointToUIControl[spawnPoint] = control;
 			var node = new Node3D();
 			node.Name = $"gizmo_inter_SpawnPoint_{spawnPoint.Index}";
 			node.AddChild(CreateLabelForPointMarker(spawnPoint));
@@ -138,7 +159,7 @@ public partial class LobbyMenuContainer : Control
 			GD.PrintErr("AddNewSpawnPoint: Container pour les spawn points introuvable");
 	}
 
-	private void OnSpawnPointPositionChanged(string nodeName, Vector3 newPosition, Vector3 newRotation)
+    private void OnSpawnPointPositionChanged(string nodeName, Vector3 newPosition, Vector3 newRotation)
 	{
 		var tmpSbstrNameId = nodeName.Split('_'); 
 		var id = int.Parse(tmpSbstrNameId.Last());

@@ -37,8 +37,20 @@ public partial class GeneralInfoContainer : Control
 		GD.Print("General info container ready, buttons connected");
 	}
 
-	// Called every frame. 'delta' is the elapsed time since the previous frame.
-	public override void _Process(double delta)
+	public void UpdateGeneralInfo(string name, string path)
+	{
+		NameInfoLineEdit.Text = name;
+		PathResourceLineEdit.Text = path;
+    }
+
+	public void ClearGeneralInfo()
+	{
+		NameInfoLineEdit.Text = string.Empty;
+		PathResourceLineEdit.Text = string.Empty;
+    }
+
+    // Called every frame. 'delta' is the elapsed time since the previous frame.
+    public override void _Process(double delta)
 	{
 	}
 

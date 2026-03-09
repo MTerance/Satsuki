@@ -67,17 +67,28 @@ namespace Satsuki.addons.decor_manager
 
         public void AddNodeToScene(Node3D node)
         {
-            if (_currentSceneRoot == null 
-                || _loadedScene == null)
+            var editedSceneRoot = EditorInterface.Singleton.GetEditedSceneRoot();
+            if (editedSceneRoot != null)
             {
-                GD.PrintErr("Current scene root is not set. Call SetupRootSceneNode() first.");
-                return;
+                editedSceneRoot.AddChild(node);
+                node.Owner = editedSceneRoot;
             }
-            _loadedScene.AddChild(node);
+            else
+                _currentSceneRoot.AddChild(node);
         }
 
         public void RemoveNodeFromScene(Node3D node)
         {
+            var editedSceneRoot = EditorInterface.Singleton.GetEditedSceneRoot();
+            if (editedSceneRoot != null)
+            {
+                editedSceneRoot.RemoveChild(node);
+            }
+            else
+                _currentSceneRoot.RemoveChild(node);
+            node.QueueFree();
+            /*
+
             if (_currentSceneRoot == null 
                 || _loadedScene == null)
             {
@@ -93,6 +104,7 @@ namespace Satsuki.addons.decor_manager
             {
                 GD.PrintErr("Node is not a child of the loaded scene.");
             }
+            */
         }
 
         public void LoadMainStage(PackedScene scene)
@@ -106,6 +118,16 @@ namespace Satsuki.addons.decor_manager
             _loadedScene = scene.Instantiate<Node3D>();
             _currentSceneRoot.AddChild(_loadedScene);
 
+        }
+
+        public void ClearLoadedScene()
+        {
+            if (_loadedScene != null)
+            {
+                _currentSceneRoot.RemoveChild(_loadedScene);
+                _loadedScene.QueueFree();
+                _loadedScene = null;
+            }
         }
 
         private void CleanupScene()
