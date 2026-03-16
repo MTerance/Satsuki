@@ -41,19 +41,24 @@ public partial class GeneralInfoContainer : Control
 	{
 		NameInfoLineEdit.Text = name;
 		PathResourceLineEdit.Text = path;
-    }
+	}
 
 	public void ClearGeneralInfo()
 	{
 		NameInfoLineEdit.Text = string.Empty;
 		PathResourceLineEdit.Text = string.Empty;
-    }
+	}
 
-    // Called every frame. 'delta' is the elapsed time since the previous frame.
-    public override void _Process(double delta)
+	// Called every frame. 'delta' is the elapsed time since the previous frame.
+	public override void _Process(double delta)
 	{
 	}
 
+	// Retourne le nom et le chemin du resource actuel sous forme de Tuple
+	public Tuple<string, string> GetGeneralInfo()
+	{
+		return new Tuple<string,string>(NameInfoLineEdit.Text, PathResourceLineEdit.Text);
+	}
 
 	public void NewStageResource()
 	{

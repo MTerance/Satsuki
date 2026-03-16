@@ -1,5 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://bexsfa6gl75f4"]
 
+
 [ext_resource type="PackedScene" uid="uid://x8t1hfjknd8d" path="res://addons/decor_manager/Scenes/general_info_container.tscn" id="1_5uppg"]
 [ext_resource type="PackedScene" uid="uid://drt6bgtsk5o6g" path="res://addons/decor_manager/Scenes/stage_info_container.tscn" id="1_hhylf"]
 [ext_resource type="PackedScene" uid="uid://h70rp75h16wk" path="res://addons/decor_manager/Scenes/lobby_menu_container.tscn" id="3_hhylf"]

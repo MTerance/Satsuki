@@ -8,8 +8,10 @@ using System.Threading.Tasks;
 
 namespace Satsuki.Models
 {
+    [GlobalClass]
     public partial class StageResource : Resource
     {
+        [Export]
         public int Id { get; set; }
         [Export]
         public string Name { get; set; }
@@ -18,7 +20,7 @@ namespace Satsuki.Models
         [Export]
         public string ScenePath { get; set; }
         [Export]
-        public Godot.Collections.Array<SpawnPointData> SpawnPoints { get; set; }
+        public LobbyInfo LobbyInfo { get; set; } = new LobbyInfo();
         [Export]
         public string SavedAt { get; set; }
 
@@ -26,11 +28,19 @@ namespace Satsuki.Models
         {
             try
             {
-                var error = ResourceSaver.Save(this, path);
+                ResourcePath = path;
+                var error = ResourceSaver.Save(this, path, ResourceSaver.SaverFlags.ChangePath);
 
                 if (error == Error.Ok)
                 {
-                    GD.Print($"StageResource sauvegardée: {path}");
+                    GD.Print($"StageResource sauvegardee: {path}");
+                    var file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
+                    if (file != null)
+                    {
+                        var firstLine = file.GetLine();
+                        file.Close();
+                        GD.Print($"DEBUG: Premiere ligne du fichier sauvegarde: '{firstLine}'");
+                    }
                     return true;
                 }
                 else
@@ -56,9 +66,12 @@ namespace Satsuki.Models
                     return null;
                 }
 
-                var resource = GD.Load<StageResource>(path);
-                GD.Print($"StageResource chargée: {path}");
-                return resource;
+                var raw = ResourceLoader.Load(path, "", ResourceLoader.CacheMode.Ignore);
+                if (raw is StageResource resource)
+                {
+                    return resource;
+                }
+                return null;
             }
             catch (Exception ex)
             {

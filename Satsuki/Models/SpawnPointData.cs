@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace Satsuki.Models
 {
+    [GlobalClass]
     public partial class SpawnPointData : Resource
     {
         [Export]

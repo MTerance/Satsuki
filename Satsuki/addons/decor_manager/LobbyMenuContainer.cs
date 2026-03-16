@@ -1,4 +1,5 @@
 using Godot;
+using Godot.NativeInterop;
 using Satsuki.addons.decor_manager;
 using Satsuki.Models;
 using System;
@@ -8,9 +9,9 @@ using System.Security.Cryptography;
 
 #if TOOLS
 [Tool]
-#endif
 
-public partial class LobbyMenuContainer : Control
+
+public partial class LobbyMenuContainer : VBoxContainer
 {
 
 	private readonly List<SpawnPointData> _spawnPoints = new List<SpawnPointData>();
@@ -21,16 +22,19 @@ public partial class LobbyMenuContainer : Control
 
 	//
 
+	CameraPlacementTemplate _cameraPlacementPanel;
+
+	//
 	private Button _addSpawnPointButton;
 
 	[Signal]
 	public delegate void SpawnPointCreatedEventHandler(Node3D node);
 
-    // Called when the node enters the scene tree for the first time.
-    public override void _Ready()
+	// Called when the node enters the scene tree for the first time.
+	public override void _Ready()
 	{
 		CreateSpawnPointPanel();
-
+		CreateCameraPlacementPanel();
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -42,6 +46,56 @@ public partial class LobbyMenuContainer : Control
 	public override void _ExitTree()
 	{
 		Cleanup();
+	}
+
+	private void CreateCameraPlacementPanel()
+	{
+		_cameraPlacementPanel = FindChild("CameraPlacementContainer", true, false) as CameraPlacementTemplate;
+		if (_cameraPlacementPanel != null)
+			_cameraPlacementPanel.Init("lobby");
+	}
+
+
+	public LobbyInfo GetLobbyInfo()
+	{
+		Godot.Collections.Array<SpawnPointData> spawnPointsArray = new Godot.Collections.Array<SpawnPointData>();
+		foreach (var spawn in _spawnPoints)
+		{
+			spawnPointsArray.Add(spawn);
+		}
+
+		CameraPlacement cameraPlacement = null;
+
+        _cameraPlacementPanel.GetCameraPlacementInfo(out cameraPlacement);
+
+        return new LobbyInfo
+		{
+			SpawnPoints = spawnPointsArray,			
+			CameraPlacement = cameraPlacement,
+        };
+	}
+
+	private void LoadCameraPlacement(CameraPlacement camera)
+	{
+		if (camera.TypeTemplateCamera == string.Empty)
+			camera.TypeTemplateCamera = "Lobby";
+		_cameraPlacementPanel.Load(camera);
+	}
+
+
+	public void LoadLobbyInfo(LobbyInfo lobbyInfo)
+	{
+		ClearSpawnPoints();
+		foreach (var spawnPoint in lobbyInfo.SpawnPoints)
+		{
+			LoadSpawnPoint(spawnPoint);
+		}
+		LoadCameraPlacement(lobbyInfo.CameraPlacement);
+	}
+
+	public void SetLobbyInfo(LobbyInfo lobbyInfo)
+	{
+		LoadLobbyInfo(lobbyInfo);
 	}
 
 	private void Cleanup()
@@ -63,7 +117,6 @@ public partial class LobbyMenuContainer : Control
 		}
 		else
 			GD.PrintErr("LobbyMenuContainer: AddSpawnPointButton trouve");
-
 	}
 
 	public void ClearSpawnPoints()
@@ -71,11 +124,11 @@ public partial class LobbyMenuContainer : Control
 		foreach (var kvp in _nodeToSpawnPoint)
 		{
 			ClearSpawn(kvp);
-        }
+		}
 		_spawnPoints.Clear();
 		_nodeToSpawnPoint.Clear();
 		_spawnPointToUIControl.Clear();
-    }
+	}
 
 	private void ClearSpawn(KeyValuePair<Node3D, SpawnPointData> kvp)
 	{
@@ -85,10 +138,10 @@ public partial class LobbyMenuContainer : Control
 		{
 			node.QueueFree();
 			DeleteSpawnPoint(spawnPoint);
-            SceneManager.Instance.RemoveNodeFromScene(node);
+			SceneManager.Instance.RemoveNodeFromScene(node);
 			_nodeToSpawnPoint.Remove(node);
 		}
-    }
+	}
 
 	private void DeleteSpawnPoint(SpawnPointData spawnPoint)
 	{
@@ -101,43 +154,44 @@ public partial class LobbyMenuContainer : Control
 		}
 	}
 
-    private void OnSpawnPointDeleted(string nodename)
-    {
-        GD.Print($"OnSpawnPointDeleted: Suppression du spawn point {nodename}");
-
-        _nodeToSpawnPoint.TryGetValue(_nodeToSpawnPoint.Keys.FirstOrDefault(k => k.Name == nodename), out var spawnPoint);
-        if (spawnPoint != null)
-        {
-			var kvp = _nodeToSpawnPoint.FirstOrDefault(k => k.Value == spawnPoint);
-            ClearSpawn(kvp);
-        }
-    }
-
-    private void AddNewSpawnPoint()
+	private void OnSpawnPointDeleted(string nodename)
 	{
-		GD.Print("AddNewSpawnPoint: Begin");
-		var spawnPoint = new SpawnPointData(Satsuki.addons.decor_manager.Tools.Tool.GenerateStageId(), Vector3.Zero, Vector3.Zero, SpawnPointType.Standard_Idle);
+		GD.Print($"OnSpawnPointDeleted: Suppression du spawn point {nodename}");
+
+		_nodeToSpawnPoint.TryGetValue(_nodeToSpawnPoint.Keys.FirstOrDefault(k => k.Name == nodename), out var spawnPoint);
+		if (spawnPoint != null)
+		{
+			var kvp = _nodeToSpawnPoint.FirstOrDefault(k => k.Value == spawnPoint);
+			ClearSpawn(kvp);
+		}
+	}
+
+	private void BuildSpawnPointControl(SpawnPointData spawnPoint,Control control)
+	{
+		var playerSpawnTemplate = control as PlayerSpawnTemplate;
+		playerSpawnTemplate.InitPlayerSpawnTemplate(spawnPoint);
+		playerSpawnTemplate.OnSpawnPointTypeChanged += OnSpawnPointTypeChanged;
+		playerSpawnTemplate.onSpawnPointPositionChanged += OnSpawnPointPositionChanged;
+		playerSpawnTemplate.OnDeleteSpawnPoint += OnSpawnPointDeleted;
+	}
+
+	private void LoadSpawnPoint(SpawnPointData spawnPoint)
+	{
 		_spawnPoints.Add(spawnPoint);
 
 		var spawnPointControlPath = "res://addons/decor_manager/Scenes/player_spawn_container.tscn";
-		if (!ResourceLoader.Exists(spawnPointControlPath))
-		{
-			GD.PrintErr("ERROR");
-			return;
-		}
-		PackedScene controlScene = GD.Load<PackedScene>(spawnPointControlPath);
+		var controlScene = GetModel(spawnPointControlPath);
+
 		Control control = controlScene.Instantiate<Control>();
 		var container = FindChild("PlayersSpawnsContainer", true, false) as VBoxContainer;
 
 		if (container != null)
 		{
 			GD.Print("AddNewSpawnPoint: Ajout du spawn point dans la liste");
-			var playerSpawnTemplate = control as PlayerSpawnTemplate;
-			playerSpawnTemplate.InitPlayerSpawnTemplate(spawnPoint);
-			playerSpawnTemplate.OnSpawnPointTypeChanged += OnSpawnPointTypeChanged;
-			playerSpawnTemplate.onSpawnPointPositionChanged += OnSpawnPointPositionChanged;
-			playerSpawnTemplate.OnDeleteSpawnPoint += OnSpawnPointDeleted;
-            _spawnPointToUIControl[spawnPoint] = control;
+
+			BuildSpawnPointControl(spawnPoint, control);
+
+			_spawnPointToUIControl[spawnPoint] = control;
 			var node = new Node3D();
 			node.Name = $"gizmo_inter_SpawnPoint_{spawnPoint.Index}";
 			node.AddChild(CreateLabelForPointMarker(spawnPoint));
@@ -159,9 +213,28 @@ public partial class LobbyMenuContainer : Control
 			GD.PrintErr("AddNewSpawnPoint: Container pour les spawn points introuvable");
 	}
 
-    private void OnSpawnPointPositionChanged(string nodeName, Vector3 newPosition, Vector3 newRotation)
+	private PackedScene GetModel(string path)
 	{
-		var tmpSbstrNameId = nodeName.Split('_'); 
+		if (!ResourceLoader.Exists(path))
+		{
+			GD.PrintErr("GetModel: Resource introuvable a l'adresse " + path);
+			return null;
+		}
+
+		PackedScene controlScene = GD.Load<PackedScene>(path);
+		return controlScene;
+	}
+
+	private void AddNewSpawnPoint()
+	{
+		GD.Print("AddNewSpawnPoint: Begin");
+		var spawnPoint = new SpawnPointData(Satsuki.addons.decor_manager.Tools.Tool.GenerateStageId(), Vector3.Zero, Vector3.Zero, SpawnPointType.Standard_Idle);
+		LoadSpawnPoint(spawnPoint);
+	}
+
+	private void OnSpawnPointPositionChanged(string nodeName, Vector3 newPosition, Vector3 newRotation)
+	{
+		var tmpSbstrNameId = nodeName.Split('_');
 		var id = int.Parse(tmpSbstrNameId.Last());
 		GD.Print($"OnSpawnPointPositionChanged: Position a changer pour {id}\n New Pos: {newPosition}, New Rot: {newRotation}");
 
@@ -265,9 +338,10 @@ public partial class LobbyMenuContainer : Control
 		if (node != null &&
 			_nodeToSpawnPoint.TryGetValue(node, out var spawnPoint))
 		{
-			spawnPoint.Type =  (SpawnPointType)type;
+			spawnPoint.Type = (SpawnPointType)type;
 			UpdateLabelForPointMarker(node);
 			GD.Print($"Spawn point {spawnPoint.Index} type changed to {type}");
 		}
 	}
+#endif
 }
