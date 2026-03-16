@@ -87,7 +87,7 @@ const mapDifficultyFromXML = (xmlDifficulty) => {
 
 // Test avec notre fichier XML
 try {
-    const xmlContent = fs.readFileSync('src/assets/fule_quizz_exemple.xml', 'utf8');
+    const xmlContent = fs.readFileSync('src/assets/full_quizz_exemple.xml', 'utf8');
     console.log('🔍 Test de compatibilité XML...\n');
     
     const result = parseXMLQuiz(xmlContent);
