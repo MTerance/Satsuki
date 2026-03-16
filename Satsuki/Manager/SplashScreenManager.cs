@@ -14,6 +14,7 @@ namespace Satsuki.Manager
 		private List<SplashScreenData> _splashScreens = new List<SplashScreenData>();
 		private int _currentIndex = 0;
 		private ColorRect _fadeOverlay;
+		private ColorRect _backgroundRect;
 		private TextureRect _imageDisplay;
 		private Label _textDisplay;
 		private Timer _displayTimer;
@@ -47,14 +48,16 @@ namespace Satsuki.Manager
 			var canvasLayer = new CanvasLayer();
 			AddChild(canvasLayer);
 			
-			_fadeOverlay = new ColorRect
+			// Fond noir permanent pour les images
+			_backgroundRect = new ColorRect
 			{
 				Color = new Color(0, 0, 0, 1),
-				MouseFilter = Control.MouseFilterEnum.Ignore
+				MouseFilter = Control.MouseFilterEnum.Ignore,
+				Visible = false
 			};
-			canvasLayer.AddChild(_fadeOverlay);
-			_fadeOverlay.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
-			GD.Print("FadeOverlay cree");
+			canvasLayer.AddChild(_backgroundRect);
+			_backgroundRect.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+			GD.Print("BackgroundRect cree");
 			
 			_imageDisplay = new TextureRect
 			{
@@ -64,7 +67,6 @@ namespace Satsuki.Manager
 			};
 			canvasLayer.AddChild(_imageDisplay);
 			_imageDisplay.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
-			
 			GD.Print($"ImageDisplay cree");
 
 			_textDisplay = new Label
@@ -78,6 +80,16 @@ namespace Satsuki.Manager
 			canvasLayer.AddChild(_textDisplay);
 			_textDisplay.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
 			GD.Print("TextDisplay cree");
+			
+			// Overlay de fade AU-DESSUS de tout (ajoute en dernier)
+			_fadeOverlay = new ColorRect
+			{
+				Color = new Color(0, 0, 0, 1),
+				MouseFilter = Control.MouseFilterEnum.Ignore
+			};
+			canvasLayer.AddChild(_fadeOverlay);
+			_fadeOverlay.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+			GD.Print("FadeOverlay cree (au-dessus)");
 
 			_displayTimer = new Timer();
 			_displayTimer.OneShot = true;
@@ -330,6 +342,7 @@ namespace Satsuki.Manager
 		private async void FadeIn(SplashScreenData splash)
 		{
 			GD.Print($"FadeIn: Debut pour type={splash.Type}");
+			GD.Print($"  - FadeOverlay alpha initial: {_fadeOverlay.Color.A}");
 			
 			if (splash.Type == SplashScreenType.Text)
 			{
@@ -338,6 +351,7 @@ namespace Satsuki.Manager
 				_textDisplay.AddThemeFontSizeOverride("font_size", splash.FontSize);
 				_textDisplay.Visible = true;
 				_imageDisplay.Visible = false;
+				_backgroundRect.Visible = false;
 				GD.Print($"FadeIn: Texte affiche - '{splash.Text}'");
 			}
 			else if (splash.Type == SplashScreenType.Image)
@@ -351,25 +365,20 @@ namespace Satsuki.Manager
 				GD.Print($"FadeIn: Configuration de l'image");
 				GD.Print($"  - Chemin: {splash.ImagePath}");
 				GD.Print($"  - Taille texture: {splash.Texture.GetSize()}");
-				GD.Print($"  - ImageDisplay ExpandMode: {_imageDisplay.ExpandMode}");
-				GD.Print($"  - ImageDisplay StretchMode: {_imageDisplay.StretchMode}");
-				GD.Print($"  - ImageDisplay Size: {_imageDisplay.Size}");
-				GD.Print($"  - ImageDisplay Position: {_imageDisplay.Position}");
 				
 				_imageDisplay.Texture = splash.Texture;
 				_imageDisplay.Visible = true;
 				_textDisplay.Visible = false;
+				_backgroundRect.Visible = true;
 				
 				GD.Print($"FadeIn: Image configuree et visible=true");
-				GD.Print($"  - ImageDisplay.Texture: {_imageDisplay.Texture != null}");
-				GD.Print($"  - ImageDisplay.Visible: {_imageDisplay.Visible}");
 			}
 
-			GD.Print("FadeIn: Debut du tween fade");
+			GD.Print($"FadeIn: Debut du tween fade (1.0 -> 0.0 sur {1.0f / _fadeSpeed}s)");
 			var tween = CreateTween();
 			tween.TweenProperty(_fadeOverlay, "color:a", 0.0f, 1.0f / _fadeSpeed);
 			await ToSignal(tween, Tween.SignalName.Finished);
-			GD.Print("FadeIn: Tween fade termine");
+			GD.Print($"FadeIn: Tween fade termine - alpha final: {_fadeOverlay.Color.A}");
 
 			_isTransitioning = false;
 			_displayTimer.Start(splash.Duration);
@@ -379,13 +388,17 @@ namespace Satsuki.Manager
 		private async void FadeOut()
 		{
 			_isTransitioning = true;
+			GD.Print($"FadeOut: Debut - alpha initial: {_fadeOverlay.Color.A}");
 
 			var tween = CreateTween();
 			tween.TweenProperty(_fadeOverlay, "color:a", 1.0f, 1.0f / _fadeSpeed);
+			GD.Print($"FadeOut: Tween demarre (0.0 -> 1.0 sur {1.0f / _fadeSpeed}s)");
 			await ToSignal(tween, Tween.SignalName.Finished);
+			GD.Print($"FadeOut: Tween termine - alpha final: {_fadeOverlay.Color.A}");
 
 			_textDisplay.Visible = false;
 			_imageDisplay.Visible = false;
+			_backgroundRect.Visible = false;
 
 			EmitSignal(SignalName.SplashScreenCompleted);
 

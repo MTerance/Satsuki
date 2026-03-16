@@ -1,0 +1,52 @@
+[gd_scene load_steps=2 format=3 uid="uid://drt6bgtsk5o6g"]
+
+[ext_resource type="Script" uid="uid://dcp83ynqlqlge" path="res://addons/decor_manager/StageInfoContainer.cs" id="1_fmwap"]
+
+[node name="StageInfoContainer" type="VBoxContainer"]
+offset_right = 469.0
+offset_bottom = 101.0
+script = ExtResource("1_fmwap")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+alignment = 1
+
+[node name="LoadStageAssetButton" type="Button" parent="HBoxContainer"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+text = "Load Stage Asset"
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="."]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="HBoxContainer2"]
+layout_direction = 2
+layout_mode = 2
+text = "Scene Name"
+vertical_alignment = 1
+
+[node name="StageNameLineEdit" type="LineEdit" parent="HBoxContainer2"]
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 2
+alignment = 3
+max_length = 255
+editable = false
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="."]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="HBoxContainer3"]
+layout_mode = 2
+text = "Path Scene"
+vertical_alignment = 1
+
+[node name="PathStageAssetLineEdit" type="LineEdit" parent="HBoxContainer3"]
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 2
+alignment = 3
+max_length = 255
+editable = false
+
+[connection signal="mouse_entered" from="HBoxContainer2/Label" to="." method="_on_label_mouse_entered"]

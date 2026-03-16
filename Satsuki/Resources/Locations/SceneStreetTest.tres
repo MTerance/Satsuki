@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="StageResource" load_steps=7 format=3 uid="uid://bpplp8128w35t"]
+
+[ext_resource type="Script" uid="uid://csff8rerm4upk" path="res://Models/SpawnPointData.cs" id="1_rli4b"]
+[ext_resource type="Script" uid="uid://dqhfij0lmhius" path="res://Models/LobbyInfo.cs" id="2_ei2m2"]
+[ext_resource type="Script" uid="uid://bwlad18mbw1ic" path="res://Models/StageResource.cs" id="3_tq14f"]
+
+[sub_resource type="Resource" id="Resource_rli4b"]
+script = ExtResource("1_rli4b")
+Index = 1337108093
+Position = Vector3(0, 0, 0)
+Rotation = Vector3(0, 0, 0)
+Type = 0
+
+[sub_resource type="Resource" id="Resource_ei2m2"]
+script = ExtResource("1_rli4b")
+Index = 1360463546
+Position = Vector3(-3.55535, 0, 2.20572)
+Rotation = Vector3(0, 0, 0)
+Type = 1
+
+[sub_resource type="Resource" id="Resource_tq14f"]
+script = ExtResource("2_ei2m2")
+PositionCamera = Vector3(0, 0, 0)
+RotationCamera = Vector3(0, 0, 0)
+PositionTargetCamera = Vector3(0, 0, 0)
+SpawnPoints = Array[ExtResource("1_rli4b")]([SubResource("Resource_rli4b"), SubResource("Resource_ei2m2")])
+
+[resource]
+script = ExtResource("3_tq14f")
+Id = 1546869547
+Name = ""
+SceneName = "Street"
+ScenePath = "res://Scenes/Locations/Street.tscn"
+LobbyInfo = SubResource("Resource_tq14f")
+SavedAt = "11/03/2026 21:07:15"

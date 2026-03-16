@@ -12,26 +12,76 @@ namespace Satsuki.Scenes
 		private Label _titleLabel;
 		private bool _isAnimating = false;
 		private float _titleAnimationTime = 0.0f;
+		private readonly string[] _menuItems = { "Start Game", "Options", "Credits", "Quit" };
+
+		#region Signals
+		[Signal]
+		public delegate void StartGameRequestedEventHandler();
+		
+		[Signal]
+		public delegate void OptionsRequestedEventHandler();
+		
+		[Signal]
+		public delegate void CreditsRequestedEventHandler();
+		#endregion
 
 		public override void _Ready()
 		{
 			_sceneStartTime = DateTime.UtcNow;
 			GD.Print("Title: Initialisation de l'ecran titre...");
 
-			_titleLabel = GetNode<Label>("TitleLabel");
-			var menuContainer = GetNode<VBoxContainer>("MenuContainer");
-			_menuButtons = new Button[menuContainer.GetChildCount()];
+			CreateUI();
 			
-			for (int i = 0; i < menuContainer.GetChildCount(); i++)
-			{
-				_menuButtons[i] = menuContainer.GetChild<Button>(i);
-				int index = i;
-				_menuButtons[i].Pressed += () => OnMenuItemSelected(index);
-				_menuButtons[i].MouseEntered += () => OnMenuItemHover(index);
-			}
-			
-			UpdateMenuSelection();
 			GD.Print($"Menu initialise avec {_menuButtons.Length} options");
+		}
+
+		private void CreateUI()
+		{
+			var canvasLayer = new CanvasLayer();
+			AddChild(canvasLayer);
+
+			_titleLabel = new Label
+			{
+				Text = "SATSUKI",
+				HorizontalAlignment = HorizontalAlignment.Center,
+				VerticalAlignment = VerticalAlignment.Top
+			};
+			_titleLabel.AddThemeFontSizeOverride("font_size", 72);
+			_titleLabel.AddThemeColorOverride("font_color", new Color(1.0f, 0.5f, 0.0f));
+			canvasLayer.AddChild(_titleLabel);
+			_titleLabel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.TopWide);
+			_titleLabel.OffsetTop = 100;
+			_titleLabel.OffsetBottom = 200;
+
+			var menuContainer = new VBoxContainer
+			{
+				Alignment = BoxContainer.AlignmentMode.Center
+			};
+			canvasLayer.AddChild(menuContainer);
+			menuContainer.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.Center);
+			menuContainer.GrowHorizontal = Control.GrowDirection.Both;
+			menuContainer.GrowVertical = Control.GrowDirection.Both;
+
+			_menuButtons = new Button[_menuItems.Length];
+			for (int i = 0; i < _menuItems.Length; i++)
+			{
+				var button = new Button
+				{
+					Text = _menuItems[i],
+					CustomMinimumSize = new Vector2(300, 60)
+				};
+				button.AddThemeFontSizeOverride("font_size", 24);
+				
+				int index = i;
+				button.Pressed += () => OnMenuItemSelected(index);
+				button.MouseEntered += () => OnMenuItemHover(index);
+				
+				menuContainer.AddChild(button);
+				_menuButtons[i] = button;
+			}
+
+			UpdateMenuSelection();
+			GD.Print("UI creee avec succes");
 		}
 
 		private void UpdateMenuSelection()
@@ -82,29 +132,24 @@ namespace Satsuki.Scenes
 
 		private void StartGame()
 		{
-			GD.Print("Demarrage du jeu...");
+			GD.Print("Title: Demande de demarrage du jeu...");
 			var finalState = GetSceneState();
 			GD.Print($"Etat de la scene titre: {System.Text.Json.JsonSerializer.Serialize(finalState)}");
 			
-			if (ResourceLoader.Exists("res://Scenes/MainGameScene.tscn"))
-				GetTree().ChangeSceneToFile("res://Scenes/MainGameScene.tscn");
-			else
-				GD.PrintErr("Scene MainGameScene introuvable");
+			EmitSignal(SignalName.StartGameRequested);
+			GD.Print("Title: Signal StartGameRequested emis");
 		}
 
 		private void OpenOptions()
 		{
-			GD.Print("Ouverture des options...");
+			GD.Print("Title: Demande d'ouverture des options...");
+			EmitSignal(SignalName.OptionsRequested);
 		}
 
 		private void OpenCredits()
 		{
-			GD.Print("Ouverture des credits...");
-			
-			if (ResourceLoader.Exists("res://Scenes/Credits.tscn"))
-				GetTree().ChangeSceneToFile("res://Scenes/Credits.tscn");
-			else
-				GD.PrintErr("Scene Credits introuvable");
+			GD.Print("Title: Demande d'ouverture des credits...");
+			EmitSignal(SignalName.CreditsRequested);
 		}
 
 		private void QuitGame()

@@ -286,6 +286,10 @@ public partial class ServerManager : Node
 				GD.PrintErr($"Erreur lors de l'arret du serveur: {ex.Message}");
 			}
 		}
+		
+		// Quitter l'application apres l'arret du serveur
+		GD.Print("Fermeture de l'application...");
+		GetTree().Quit();
 	}
 
 	public bool IsServerRunning()

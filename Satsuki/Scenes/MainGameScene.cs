@@ -78,6 +78,15 @@ public partial class MainGameScene : Node, IScene
 		
 		GD.Print("MainGameScene: Nettoyage termine");
 	}
+	
+	public override void _Notification(int what)
+	{
+		if (what == NotificationWMCloseRequest)
+		{
+			GD.Print("MainGameScene: Demande de fermeture recue");
+			// Le ServerManager va gerer l'arret propre et quitter l'application
+		}
+	}
 	#endregion
 
 	#region Scene Management
@@ -119,17 +128,21 @@ public partial class MainGameScene : Node, IScene
 			AddChild(title);
 			_currentScene = title;
 			
+			title.StartGameRequested += OnStartGameRequested;
+			title.OptionsRequested += OnOptionsRequested;
+			title.CreditsRequested += OnCreditsRequestedFromTitle;
+			
 			GD.Print("Title charge");
 			
-			CallDeferred(nameof(LoadRestaurant));
+			CallDeferred(nameof(ActivateTitleCamera));
 		}
 		catch (Exception ex)
 		{
 			GD.PrintErr($"Erreur chargement Title: {ex.Message}");
 		}
 	}
-
-	private void LoadRestaurant()
+	
+	private void ActivateTitleCamera()
 	{
 		try
 		{
@@ -139,19 +152,82 @@ public partial class MainGameScene : Node, IScene
 			
 			if (success && _locationManager.CurrentLocation != null)
 			{
-				GD.Print("Restaurant charge");
+				GD.Print("Restaurant charge pour Title");
 				
-				_locationManager.CurrentLocation.SetActiveCamera(CameraType.Title);
-				GD.Print("Camera Title activee");
+				bool cameraSet = _locationManager.CurrentLocation.SetActiveCamera(CameraType.Title);
+				if (cameraSet)
+				{
+					GD.Print("Camera Title_Camera3D activee avec succes");
+				}
+				else
+				{
+					GD.PrintErr("Echec activation Camera Title_Camera3D");
+				}
 			}
 			else
 			{
-				GD.PrintErr("Echec chargement Restaurant");
+				GD.PrintErr("Echec chargement Restaurant pour Title");
 			}
 		}
 		catch (Exception ex)
 		{
-			GD.PrintErr($"Erreur chargement Restaurant: {ex.Message}");
+			GD.PrintErr($"Erreur activation camera Title: {ex.Message}");
+		}
+	}
+
+	public void LoadMainMenu()
+	{
+		try
+		{
+			GD.Print("MainGameScene: Chargement MainMenu...");
+			
+			UnloadCurrentScene();
+			
+			var mainMenu = new MainMenu();
+			AddChild(mainMenu);
+			_currentScene = mainMenu;
+			
+			mainMenu.SoloPlayRequested += OnSoloPlayRequested;
+			mainMenu.MultiplayerRequested += OnMultiplayerRequested;
+			mainMenu.MiniGamesRequested += OnMiniGamesRequested;
+			mainMenu.BackToTitleRequested += OnBackToTitleRequested;
+			
+			GD.Print("MainMenu charge");
+			
+			CallDeferred(nameof(ActivateLobbyCamera));
+		}
+		catch (Exception ex)
+		{
+			GD.PrintErr($"Erreur chargement MainMenu: {ex.Message}");
+		}
+	}
+	
+	private void ActivateLobbyCamera()
+	{
+		try
+		{
+			if (_locationManager?.CurrentLocation != null)
+			{
+				GD.Print("MainGameScene: Activation camera Lobby pour MainMenu...");
+				
+				bool cameraSet = _locationManager.CurrentLocation.SetActiveCamera(CameraType.Lobby);
+				if (cameraSet)
+				{
+					GD.Print("Camera Lobby_Camera3D activee avec succes");
+				}
+				else
+				{
+					GD.PrintErr("Echec activation Camera Lobby_Camera3D");
+				}
+			}
+			else
+			{
+				GD.PrintErr("Location non chargee, impossible d'activer la camera Lobby");
+			}
+		}
+		catch (Exception ex)
+		{
+			GD.PrintErr($"Erreur activation camera Lobby: {ex.Message}");
 		}
 	}
 
@@ -165,6 +241,21 @@ public partial class MainGameScene : Node, IScene
 		{
 			credits.CreditsCompleted -= OnCreditsCompleted;
 			credits.LoadTitleSceneRequested -= OnLoadTitleRequested;
+		}
+		
+		if (_currentScene is Title title)
+		{
+			title.StartGameRequested -= OnStartGameRequested;
+			title.OptionsRequested -= OnOptionsRequested;
+			title.CreditsRequested -= OnCreditsRequestedFromTitle;
+		}
+		
+		if (_currentScene is MainMenu mainMenu)
+		{
+			mainMenu.SoloPlayRequested -= OnSoloPlayRequested;
+			mainMenu.MultiplayerRequested -= OnMultiplayerRequested;
+			mainMenu.MiniGamesRequested -= OnMiniGamesRequested;
+			mainMenu.BackToTitleRequested -= OnBackToTitleRequested;
 		}
 
 		RemoveChild(_currentScene);
@@ -181,6 +272,50 @@ public partial class MainGameScene : Node, IScene
 
 	private void OnLoadTitleRequested()
 	{
+		LoadTitle();
+	}
+	
+	private void OnStartGameRequested()
+	{
+		GD.Print("MainGameScene: Reception du signal StartGameRequested");
+		LoadMainMenu();
+	}
+	
+	private void OnOptionsRequested()
+	{
+		GD.Print("MainGameScene: Reception du signal OptionsRequested");
+	}
+	
+	private void OnCreditsRequestedFromTitle()
+	{
+		GD.Print("MainGameScene: Reception du signal CreditsRequested");
+		LoadCredits();
+	}
+	
+	private void OnSoloPlayRequested()
+	{
+		GD.Print("MainGameScene: Reception du signal SoloPlayRequested");
+		// TODO: Charger la scene de jeu solo
+		GD.Print("MainGameScene: Demarrage du mode Solo Play...");
+	}
+	
+	private void OnMultiplayerRequested()
+	{
+		GD.Print("MainGameScene: Reception du signal MultiplayerRequested");
+		// TODO: Charger la scene multijoueur
+		GD.Print("MainGameScene: Demarrage du mode Multiplayer...");
+	}
+	
+	private void OnMiniGamesRequested()
+	{
+		GD.Print("MainGameScene: Reception du signal MiniGamesRequested");
+		// TODO: Charger la scene des mini-jeux
+		GD.Print("MainGameScene: Ouverture des Mini-Games...");
+	}
+	
+	private void OnBackToTitleRequested()
+	{
+		GD.Print("MainGameScene: Reception du signal BackToTitleRequested");
 		LoadTitle();
 	}
 	#endregion

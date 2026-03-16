@@ -1,0 +1,63 @@
+{
+  "ScenePath": "res://Scenes/Locations/Restaurant.tscn",
+  "SceneName": "Restaurant",
+  "SpawnPoints": [
+    {
+      "Position": {
+        "x": 1.5,
+        "y": 0.0,
+        "z": 3.2
+      },
+      "Type": 0,
+      "Index": 0
+    },
+    {
+      "Position": {
+        "x": 2.1,
+        "y": 0.0,
+        "z": 2.4
+      },
+      "Type": 1,
+      "Index": 1
+    }
+  ],
+  "MenuRenderSurfaces": [
+    {
+      "SurfaceName": "TV_Screen",
+      "TexturePath": "res://Assets/Textures/title_menu_screen.png",
+      "MenuType": "Title",
+      "EmissionColor": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "EmissionEnergy": 1.5
+    },
+    {
+      "SurfaceName": "Menu_Panel",
+      "TexturePath": "res://Assets/Textures/main_menu_screen.png",
+      "MenuType": "MainMenu",
+      "EmissionColor": {
+        "r": 0.8,
+        "g": 0.9,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "EmissionEnergy": 1.2
+    },
+    {
+      "SurfaceName": "Game_Display",
+      "TexturePath": "res://Assets/Textures/game_ui.png",
+      "MenuType": "Game",
+      "EmissionColor": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "EmissionEnergy": 1.0
+    }
+  ],
+  "SavedAt": "2025-11-22T16:00:00Z"
+}

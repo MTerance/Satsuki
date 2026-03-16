@@ -1,0 +1,60 @@
+[gd_scene load_steps=5 format=3 uid="uid://bexsfa6gl75f4"]
+
+
+[ext_resource type="PackedScene" uid="uid://x8t1hfjknd8d" path="res://addons/decor_manager/Scenes/general_info_container.tscn" id="1_5uppg"]
+[ext_resource type="PackedScene" uid="uid://drt6bgtsk5o6g" path="res://addons/decor_manager/Scenes/stage_info_container.tscn" id="1_hhylf"]
+[ext_resource type="PackedScene" uid="uid://h70rp75h16wk" path="res://addons/decor_manager/Scenes/lobby_menu_container.tscn" id="3_hhylf"]
+[ext_resource type="PackedScene" uid="uid://cwhptm70bahx7" path="res://addons/decor_manager/Scenes/game_menu_container.tscn" id="4_5uppg"]
+
+[node name="Control" type="Control"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -149.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+offset_right = 386.0
+offset_bottom = 719.0
+
+[node name="MainTitleLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Lobby Info Manager"
+horizontal_alignment = 1
+
+[node name="MainCommandsLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Main Commands"
+
+[node name="GeneralInfoContainer" parent="VBoxContainer" instance=ExtResource("1_5uppg")]
+layout_mode = 2
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="StageInfoAssetLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Stage Info Assets"
+
+[node name="StageInfoContainer" parent="VBoxContainer" instance=ExtResource("1_hhylf")]
+layout_mode = 2
+
+[node name="HSeparator2" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="GeneralMenuContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="LobbyMenuContainer" parent="VBoxContainer/GeneralMenuContainer" instance=ExtResource("3_hhylf")]
+layout_mode = 2
+
+[node name="VSeparator" type="VSeparator" parent="VBoxContainer/GeneralMenuContainer"]
+layout_mode = 2
+
+[node name="GameMenuContainer" parent="VBoxContainer/GeneralMenuContainer" instance=ExtResource("4_5uppg")]
+layout_mode = 2

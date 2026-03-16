@@ -34,3 +34,20 @@ contextBridge.exposeInMainWorld('websocket', {
         ipcRenderer.removeAllListeners('websocket-error');
     }
 });
+
+// Expose Process Checker API to renderer process
+contextBridge.exposeInMainWorld('processChecker', {
+    checkSatsuki: () => ipcRenderer.invoke('process-check-satsuki'),
+    getDetailedInfo: () => ipcRenderer.invoke('process-get-detailed-info'),
+    getAllSatsukiProcesses: () => ipcRenderer.invoke('process-get-all-satsuki'),
+});
+
+// Expose Screen Manager API to renderer process
+contextBridge.exposeInMainWorld('screenManager', {
+    getAllDisplays: () => ipcRenderer.invoke('screen-get-all-displays'),
+    getPrimaryDisplay: () => ipcRenderer.invoke('screen-get-primary-display'),
+    launchSatsukiOnDisplay: (displayId, satsukiPath) => ipcRenderer.invoke('screen-launch-satsuki-on-display', displayId, satsukiPath),
+    launchSatsuki: (satsukiPath) => ipcRenderer.invoke('screen-launch-satsuki', satsukiPath),
+    getCapabilities: () => ipcRenderer.invoke('screen-get-capabilities'),
+    getBestDisplay: (preferences) => ipcRenderer.invoke('screen-get-best-display', preferences),
+});

@@ -1,0 +1,33 @@
+[gd_scene load_steps=3 format=3 uid="uid://h70rp75h16wk"]
+
+[ext_resource type="Script" uid="uid://da3h7qo4dd3xt" path="res://addons/decor_manager/LobbyMenuContainer.cs" id="1_8luf1"]
+[ext_resource type="PackedScene" uid="uid://cprrdorcpeg5p" path="res://addons/decor_manager/Scenes/camera_placement_container.tscn" id="2_8luf1"]
+
+[node name="LobbyMenuContainer" type="VBoxContainer"]
+script = ExtResource("1_8luf1")
+
+[node name="LobbyMenuTitleLabel" type="Label" parent="."]
+layout_mode = 2
+text = "Lobby Info"
+horizontal_alignment = 1
+
+[node name="Title CameraPlacement Section" type="Label" parent="."]
+layout_mode = 2
+text = "Camera Placement"
+
+[node name="CameraPlacementContainer" parent="." instance=ExtResource("2_8luf1")]
+layout_mode = 2
+
+[node name="HSeparator3" type="HSeparator" parent="."]
+layout_mode = 2
+
+[node name="Title Spawns Section" type="Label" parent="."]
+layout_mode = 2
+text = "Spawn Point"
+
+[node name="PlayersSpawnsContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="AddPlayerSpawnButton" type="Button" parent="."]
+layout_mode = 2
+text = "+"

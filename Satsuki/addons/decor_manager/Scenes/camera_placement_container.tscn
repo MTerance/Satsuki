@@ -1,0 +1,71 @@
+[gd_scene load_steps=2 format=3 uid="uid://cprrdorcpeg5p"]
+
+[ext_resource type="Script" uid="uid://egot5kly21n7" path="res://addons/decor_manager/Templates/CameraPlacementTemplate.cs" id="1_gja0h"]
+
+[node name="CameraPlacementContainer" type="PanelContainer"]
+script = ExtResource("1_gja0h")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+alignment = 1
+
+[node name="CoordBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="PositionBoxContainer" type="HBoxContainer" parent="HBoxContainer/CoordBoxContainer"]
+layout_mode = 2
+
+[node name="LabelPositionCamera" type="Label" parent="HBoxContainer/CoordBoxContainer/PositionBoxContainer"]
+layout_mode = 2
+text = "Position. Camera"
+
+[node name="PositionCameraXSpinBox" type="SpinBox" parent="HBoxContainer/CoordBoxContainer/PositionBoxContainer"]
+layout_mode = 2
+editable = false
+
+[node name="PositionCameraYSpinBox" type="SpinBox" parent="HBoxContainer/CoordBoxContainer/PositionBoxContainer"]
+layout_mode = 2
+editable = false
+
+[node name="PositionCameraZSpinBox" type="SpinBox" parent="HBoxContainer/CoordBoxContainer/PositionBoxContainer"]
+layout_mode = 2
+editable = false
+
+[node name="RotationBoxContainer" type="HBoxContainer" parent="HBoxContainer/CoordBoxContainer"]
+layout_mode = 2
+
+[node name="LabelRotationCamera" type="Label" parent="HBoxContainer/CoordBoxContainer/RotationBoxContainer"]
+layout_mode = 2
+text = "Rotation. Camera"
+
+[node name="RotationCameraXSpinBox" type="SpinBox" parent="HBoxContainer/CoordBoxContainer/RotationBoxContainer"]
+layout_mode = 2
+editable = false
+
+[node name="RotationCameraYSpinBox" type="SpinBox" parent="HBoxContainer/CoordBoxContainer/RotationBoxContainer"]
+layout_mode = 2
+editable = false
+
+[node name="RotationCameraZSpinBox" type="SpinBox" parent="HBoxContainer/CoordBoxContainer/RotationBoxContainer"]
+layout_mode = 2
+editable = false
+
+[node name="TargetPositionBoxContainer" type="HBoxContainer" parent="HBoxContainer/CoordBoxContainer"]
+layout_mode = 2
+
+[node name="LabelPositionTarget" type="Label" parent="HBoxContainer/CoordBoxContainer/TargetPositionBoxContainer"]
+layout_mode = 2
+text = "Coord. Target"
+
+[node name="PositionCameraTargetXSpinBox" type="SpinBox" parent="HBoxContainer/CoordBoxContainer/TargetPositionBoxContainer"]
+layout_mode = 2
+editable = false
+
+[node name="PositionCameraTargetYSpinBox" type="SpinBox" parent="HBoxContainer/CoordBoxContainer/TargetPositionBoxContainer"]
+layout_mode = 2
+editable = false
+
+[node name="PositionCameraTargetZSpinBox" type="SpinBox" parent="HBoxContainer/CoordBoxContainer/TargetPositionBoxContainer"]
+layout_mode = 2
+editable = false

@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://vyb5rm4ejxo8"]
 
-[ext_resource type="PackedScene" uid="uid://ckyacvxcpe7ao" path="res://Assets/Restaurant/scene.gltf" id="1_wrjgv"]
+[ext_resource type="PackedScene" uid="uid://cr8n1g3hmj56d" path="res://Assets/Restaurant/scene.gltf" id="1_wrjgv"]
 [ext_resource type="Script" uid="uid://bbjmvqtfq1d2j" path="res://Scenes/Locations/LocationModel.cs" id="2_qrf5t"]
 
 [node name="Restaurant" type="Node3D"]
@@ -17,4 +17,4 @@ script = ExtResource("2_qrf5t")
 transform = Transform3D(1, 0, 0, 0, 0.929776, 0.368125, 0, -0.368125, 0.929776, -24.9722, 9.54031, 27.7257)
 
 [node name="Title_Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.61098, 6.13089, 7.58148)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.61098, 6.13089, 58.7656)
