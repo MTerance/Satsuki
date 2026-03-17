@@ -14,8 +14,8 @@ public partial class CameraPlacementTemplate : PanelContainer
 	private string _idTemplateCamera;
 	private string _typeTemplateCamera = "default";
 
-    #region Labels definition
-    private Label _labelPositionCamera;
+	#region Labels definition
+	private Label _labelPositionCamera;
 	private Label _labelRotationCamera;
 	private Label _labelPositionTargetCamera;
 	#endregion
@@ -59,9 +59,9 @@ public partial class CameraPlacementTemplate : PanelContainer
 
 	private void UpdateCameraPositionUI()
 	{
-        if (_nodeCamera != null && _positionCameraX != null)
+		if (_nodeCamera != null && _positionCameraX != null)
 		{
-            _positionCameraX.Value = _nodeCamera.Position.X;
+			_positionCameraX.Value = _nodeCamera.Position.X;
 			_positionCameraY.Value = _nodeCamera.Position.Y;
 			_positionCameraZ.Value = _nodeCamera.Position.Z;
 			_rotationCameraX.Value = _nodeCamera.RotationDegrees.X;
@@ -74,7 +74,7 @@ public partial class CameraPlacementTemplate : PanelContainer
 	{
 		if (_nodeTargetCamera != null && _positionTargetCameraX != null)
 		{
-            _positionTargetCameraX.Value = _nodeTargetCamera.Position.X;
+			_positionTargetCameraX.Value = _nodeTargetCamera.Position.X;
 			_positionTargetCameraY.Value = _nodeTargetCamera.Position.Y;
 			_positionTargetCameraZ.Value = _nodeTargetCamera.Position.Z;
 		}
@@ -84,7 +84,7 @@ public partial class CameraPlacementTemplate : PanelContainer
 	{
 		_typeTemplateCamera = typeTemplateCamera;
 		_idTemplateCamera = Satsuki.addons.decor_manager.Tools.Tool.GenerateStageId().ToString();
-        InitCameraPlacementTemplate();
+		InitCameraPlacementTemplate();
 		InitLabels();
 		CreateCameraNode();
 		CreateCameraTargetNode();
@@ -106,21 +106,21 @@ public partial class CameraPlacementTemplate : PanelContainer
 		cameraPlacement.Target = _nodeTargetCamera != null ? _nodeTargetCamera.Position : Vector3.Zero;
 		cameraPlacement.TypeTemplateCamera = _typeTemplateCamera;
 		cameraPlacement.Index = int.TryParse(_idTemplateCamera, out int index) ? index : 0;
-    }
+	}
 
-    public void GetPositionAndRotation(out Vector3 position, out Vector3 rotation)
+	public void GetPositionAndRotation(out Vector3 position, out Vector3 rotation)
 	{
 		position = _nodeCamera != null ? _nodeCamera.Position : Vector3.Zero;
 		rotation = _nodeCamera != null ? _nodeCamera.RotationDegrees : Vector3.Zero;
-    }
+	}
 
 
 	public void GetPositionTarget(out Vector3 positionTarget)
 	{
 		positionTarget = _nodeTargetCamera != null ? _nodeTargetCamera.Position : Vector3.Zero;
-    }
+	}
 
-    public void Load(CameraPlacement camera)
+	public void Load(CameraPlacement camera)
 	{
 		if (camera.Index == 0)
 			camera.Index = Satsuki.addons.decor_manager.Tools.Tool.GenerateStageId();
@@ -164,7 +164,7 @@ public partial class CameraPlacementTemplate : PanelContainer
 		_nodeTargetCamera.Name = $"CameraTarget_{_typeTemplateCamera}_{_idTemplateCamera}";
 		_nodeTargetCamera.Position = Vector3.Zero;
 		_nodeTargetCamera.RotationDegrees = new Vector3(-90, 0, 90);
-        SceneManager.Instance.AddNodeToScene(_nodeTargetCamera);
+		SceneManager.Instance.AddNodeToScene(_nodeTargetCamera);
 	}
 
 	private void SetNodeTargetCameraPosition(Vector3 nodeTargetCameraPosition)
@@ -176,28 +176,28 @@ public partial class CameraPlacementTemplate : PanelContainer
 	private void SetNodeCameraPosition(Vector3 nodeCameraPosition)
 	{
 		if (_nodeCamera != null)
-            _nodeCamera.Position = nodeCameraPosition;
+			_nodeCamera.Position = nodeCameraPosition;
 	}
 
 	private void InitLabels()
 	{
-        var posBox = FindChild("PositionBoxContainer", true, false);
-        var rotBox = FindChild("RotationBoxContainer2", true, false);
-        var targetBox = FindChild("TargetPositionBoxContainer", true, false);
+		var posBox = FindChild("PositionBoxContainer", true, false);
+		var rotBox = FindChild("RotationBoxContainer2", true, false);
+		var targetBox = FindChild("TargetPositionBoxContainer", true, false);
 
-        _labelPositionCamera = posBox?.FindChild("LabelPositionCamera", false, false) as Label;
-        _labelRotationCamera = rotBox?.FindChild("LabelRotationCamera", false, false) as Label;
-        _labelPositionTargetCamera = targetBox?.FindChild("LabelPositionTarget", false, false) as Label;
+		_labelPositionCamera = posBox?.FindChild("LabelPositionCamera", false, false) as Label;
+		_labelRotationCamera = rotBox?.FindChild("LabelRotationCamera", false, false) as Label;
+		_labelPositionTargetCamera = targetBox?.FindChild("LabelPositionTarget", false, false) as Label;
 
-        if (_labelPositionCamera != null)
-            _labelPositionCamera.MouseEntered += HandlePositionCameraLabelMouseEntered;
-        if (_labelRotationCamera != null)
-            _labelRotationCamera.MouseEntered += HandleRotationCameraLabelMouseEntered;
-        if (_labelPositionTargetCamera != null)
-            _labelPositionTargetCamera.MouseEntered += HandlePositionTargetCameraLabelMouseEntered;
-    }
+		if (_labelPositionCamera != null)
+			_labelPositionCamera.MouseEntered += HandlePositionCameraLabelMouseEntered;
+		if (_labelRotationCamera != null)
+			_labelRotationCamera.MouseEntered += HandleRotationCameraLabelMouseEntered;
+		if (_labelPositionTargetCamera != null)
+			_labelPositionTargetCamera.MouseEntered += HandlePositionTargetCameraLabelMouseEntered;
+	}
 
-    private void HandlePositionTargetCameraLabelMouseEntered()
+	private void HandlePositionTargetCameraLabelMouseEntered()
 	{
 
 	}
@@ -214,28 +214,28 @@ public partial class CameraPlacementTemplate : PanelContainer
 
 	private void InitCameraPlacementTemplate()
 	{
-        _positionCameraX = FindChild("PositionCameraXSpinBox", true, false) as SpinBox;
-        _positionCameraY = FindChild("PositionCameraYSpinBox", true, false) as SpinBox;
-        _positionCameraZ = FindChild("PositionCameraZSpinBox", true, false) as SpinBox;
-        _rotationCameraX = FindChild("RotationCameraXSpinBox", true, false) as SpinBox;
-        _rotationCameraY = FindChild("RotationCameraYSpinBox", true, false) as SpinBox;
-        _rotationCameraZ = FindChild("RotationCameraZSpinBox", true, false) as SpinBox;
-        _positionTargetCameraX = FindChild("PositionCameraTargetXSpinBoxSpinBox", true, false) as SpinBox;
-        _positionTargetCameraY = FindChild("PositionCameraTargetYSpinBoxSpinBox", true, false) as SpinBox;
-        _positionTargetCameraZ = FindChild("PositionCameraTargetZSpinBoxSpinBox", true, false) as SpinBox;
+		_positionCameraX = FindChild("PositionCameraXSpinBox", true, false) as SpinBox;
+		_positionCameraY = FindChild("PositionCameraYSpinBox", true, false) as SpinBox;
+		_positionCameraZ = FindChild("PositionCameraZSpinBox", true, false) as SpinBox;
+		_rotationCameraX = FindChild("RotationCameraXSpinBox", true, false) as SpinBox;
+		_rotationCameraY = FindChild("RotationCameraYSpinBox", true, false) as SpinBox;
+		_rotationCameraZ = FindChild("RotationCameraZSpinBox", true, false) as SpinBox;
+		_positionTargetCameraX = FindChild("PositionCameraTargetXSpinBoxSpinBox", true, false) as SpinBox;
+		_positionTargetCameraY = FindChild("PositionCameraTargetYSpinBoxSpinBox", true, false) as SpinBox;
+		_positionTargetCameraZ = FindChild("PositionCameraTargetZSpinBoxSpinBox", true, false) as SpinBox;
 
-        if (_positionCameraX != null) _positionCameraX.ValueChanged += OnSpinBoxUpdated;
-        if (_positionCameraY != null) _positionCameraY.ValueChanged += OnSpinBoxUpdated;
-        if (_positionCameraZ != null) _positionCameraZ.ValueChanged += OnSpinBoxUpdated;
-        if (_rotationCameraX != null) _rotationCameraX.ValueChanged += OnSpinBoxUpdated;
-        if (_rotationCameraY != null) _rotationCameraY.ValueChanged += OnSpinBoxUpdated;
-        if (_rotationCameraZ != null) _rotationCameraZ.ValueChanged += OnSpinBoxUpdated;
-        if (_positionTargetCameraX != null) _positionTargetCameraX.ValueChanged += OnSpinBoxUpdated;
-        if (_positionTargetCameraY != null) _positionTargetCameraY.ValueChanged += OnSpinBoxUpdated;
-        if (_positionTargetCameraZ != null) _positionTargetCameraZ.ValueChanged += OnSpinBoxUpdated;
-    }
+		if (_positionCameraX != null) _positionCameraX.ValueChanged += OnSpinBoxUpdated;
+		if (_positionCameraY != null) _positionCameraY.ValueChanged += OnSpinBoxUpdated;
+		if (_positionCameraZ != null) _positionCameraZ.ValueChanged += OnSpinBoxUpdated;
+		if (_rotationCameraX != null) _rotationCameraX.ValueChanged += OnSpinBoxUpdated;
+		if (_rotationCameraY != null) _rotationCameraY.ValueChanged += OnSpinBoxUpdated;
+		if (_rotationCameraZ != null) _rotationCameraZ.ValueChanged += OnSpinBoxUpdated;
+		if (_positionTargetCameraX != null) _positionTargetCameraX.ValueChanged += OnSpinBoxUpdated;
+		if (_positionTargetCameraY != null) _positionTargetCameraY.ValueChanged += OnSpinBoxUpdated;
+		if (_positionTargetCameraZ != null) _positionTargetCameraZ.ValueChanged += OnSpinBoxUpdated;
+	}
 
-    private void OnSpinBoxUpdated(double value)
+	private void OnSpinBoxUpdated(double value)
 	{
 		Vector3 newCameraPosition = new Vector3((float)_positionCameraX.Value, (float)_positionCameraY.Value, (float)_positionCameraZ.Value);
 		Vector3 newTargetCameraPosition = new Vector3((float)_positionTargetCameraX.Value, (float)_positionTargetCameraY.Value, (float)_positionTargetCameraZ.Value);

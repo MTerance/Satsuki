@@ -8,17 +8,9 @@
     <Content Include="Configs\Restaurant_menu_config_example.json" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="ACTION-REQUISE-REDEMARRAGE.md" />
-    <None Include="add-menu-classes.ps1" />
-    <None Include="add-menu-surfaces.ps1" />
     <None Include="addons\decor_manager\INTEGRATION_INSTRUCTIONS.md" />
     <None Include="addons\decor_manager\plugin.cfg" />
     <None Include="addons\decor_manager\README.md" />
-    <None Include="APRES-REDEMARRAGE-CHECKLIST.md" />
-    <None Include="cleanup-obsolete-docs.ps1" />
-    <None Include="CLEANUP_SUCCESS.md" />
-    <None Include="DECORMANAGER-MAINTENANT.md" />
-    <None Include="DECORMANAGER-RESOLU.md" />
     <None Include="Documentation\Application_Close_Fix.md" />
     <None Include="Documentation\Camera_Context_System.md" />
     <None Include="Documentation\Camera_System_Improvement.md" />
@@ -67,20 +59,10 @@
     <None Include="Documentation\Title_LobbyEx_Integration.md" />
     <None Include="Documentation\Title_Menu_Display_Fix.md" />
     <None Include="Documentation\Unicode_Fix_Complete_Report.md" />
-    <None Include="fix-decormanager-cache.ps1" />
-    <None Include="fix-decormanager-ultimate.ps1" />
-    <None Include="fix-unicode.ps1" />
-    <None Include="GIT_COMMIT_MESSAGE.md" />
-    <None Include="integrate-movie-rendering.ps1" />
     <None Include="Interfaces\README.md" />
     <None Include="Interfaces\SUMMARY.md" />
     <None Include="Networks\README_Encryption.md" />
     <None Include="Networks\README_MessageSystem.md" />
-    <None Include="PLUGIN_LOADING_FIX_SUCCESS.md" />
-    <None Include="QUICK_REORGANIZATION_GUIDE.md" />
-    <None Include="REORGANIZATION_READY.md" />
-    <None Include="reorganize-documentation.ps1" />
-    <None Include="reset-decormanager.ps1" />
     <None Include="Scenes\Locations\LobbyEx.tscn" />
     <None Include="Scenes\Locations\StageEx.tscn" />
     <None Include="Scenes\Title.tscn" />
@@ -90,7 +72,6 @@
     <None Include="Tools\MenuRendering_QuickStart.md" />
     <None Include="Tools\MovieRendering_QuickStart.md" />
     <None Include="Tools\SpawnPoints_QuickStart.md" />
-    <None Include="update-menu-rendering.ps1" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="9.0.7" />

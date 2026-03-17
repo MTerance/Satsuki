@@ -66,13 +66,13 @@ public partial class LobbyMenuContainer : VBoxContainer
 
 		CameraPlacement cameraPlacement = null;
 
-        _cameraPlacementPanel.GetCameraPlacementInfo(out cameraPlacement);
+		_cameraPlacementPanel.GetCameraPlacementInfo(out cameraPlacement);
 
-        return new LobbyInfo
+		return new LobbyInfo
 		{
 			SpawnPoints = spawnPointsArray,			
 			CameraPlacement = cameraPlacement,
-        };
+		};
 	}
 
 	private void LoadCameraPlacement(CameraPlacement camera)
