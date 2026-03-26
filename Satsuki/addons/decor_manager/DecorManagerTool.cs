@@ -208,6 +208,7 @@ public partial class DecorManagerTool : EditorPlugin
 			_lobbyMenuContainer.SetLobbyInfo(resource.LobbyInfo);
 			OnLoadStageAssetRequested(GD.Load<PackedScene>(resource.ScenePath));
 			// Charger les spawn points dans le lobby menu container
+
 		}
 		else
 		{
