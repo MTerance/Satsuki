@@ -187,8 +187,7 @@ public partial class MainGameScene : Node, IScene
 			AddChild(mainMenu);
 			_currentScene = mainMenu;
 			
-			mainMenu.SoloPlayRequested += OnSoloPlayRequested;
-			mainMenu.MultiplayerRequested += OnMultiplayerRequested;
+			mainMenu.GoToLobbyRequested += OnGoToLobbyRequested;
 			mainMenu.MiniGamesRequested += OnMiniGamesRequested;
 			mainMenu.BackToTitleRequested += OnBackToTitleRequested;
 			
@@ -252,8 +251,7 @@ public partial class MainGameScene : Node, IScene
 		
 		if (_currentScene is MainMenu mainMenu)
 		{
-			mainMenu.SoloPlayRequested -= OnSoloPlayRequested;
-			mainMenu.MultiplayerRequested -= OnMultiplayerRequested;
+			mainMenu.GoToLobbyRequested -= OnGoToLobbyRequested;
 			mainMenu.MiniGamesRequested -= OnMiniGamesRequested;
 			mainMenu.BackToTitleRequested -= OnBackToTitleRequested;
 		}
@@ -292,18 +290,10 @@ public partial class MainGameScene : Node, IScene
 		LoadCredits();
 	}
 	
-	private void OnSoloPlayRequested()
+	private void OnGoToLobbyRequested()
 	{
-		GD.Print("MainGameScene: Reception du signal SoloPlayRequested");
-		// TODO: Charger la scene de jeu solo
-		GD.Print("MainGameScene: Demarrage du mode Solo Play...");
-	}
-	
-	private void OnMultiplayerRequested()
-	{
-		GD.Print("MainGameScene: Reception du signal MultiplayerRequested");
-		// TODO: Charger la scene multijoueur
-		GD.Print("MainGameScene: Demarrage du mode Multiplayer...");
+		GD.Print("MainGameScene: Reception du signal GoToLobbyRequested");
+		// TODO: Ajouter la logique pour aller au Lobby
 	}
 	
 	private void OnMiniGamesRequested()

@@ -45,6 +45,7 @@
     <None Include="Documentation\LocationManager_Resume.md" />
     <None Include="Documentation\MainGameScene_Complete_Architecture.md" />
     <None Include="Documentation\MainMenu_Complete_Implementation.md" />
+    <None Include="Documentation\MAINMENU_REORGANIZATION.md" />
     <None Include="Documentation\README.md" />
     <None Include="Documentation\README_NEW.md" />
     <None Include="Documentation\REORGANIZATION_REPORT.md" />
