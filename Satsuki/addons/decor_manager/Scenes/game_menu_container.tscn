@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://cwhptm70bahx7"]
+[gd_scene load_steps=3 format=3 uid="uid://cwhptm70bahx7"]
 
 [ext_resource type="Script" uid="uid://egot5kly21n7" path="res://addons/decor_manager/Templates/CameraPlacementTemplate.cs" id="1_bfc0n"]
+[ext_resource type="Script" uid="uid://da7pqsi2cldef" path="res://addons/decor_manager/Templates/PlayerZonePlacementContainer.cs" id="2_f2bu0"]
 
 [node name="GameMenuContainer" type="VBoxContainer"]
 
@@ -12,9 +13,6 @@ horizontal_alignment = 1
 [node name="QuizzGameInfoManager" type="Label" parent="."]
 layout_mode = 2
 text = "Quizz Game Info Manager"
-
-[node name="CameraPlacementContainerLobby" type="VBoxContainer" parent="."]
-layout_mode = 2
 
 [node name="CameraPlacementContainerGame" type="VBoxContainer" parent="."]
 layout_mode = 2
@@ -82,6 +80,81 @@ placeholder_text = "000"
 alignment = 1
 
 [node name="TargetCameraZ" type="LineEdit" parent="CameraPlacementContainerGame/CameraPlacementContainer2/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
+layout_mode = 2
+text = "Z"
+placeholder_text = "000"
+alignment = 1
+
+[node name="CameraPlacementContainerLobby" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="ZoneGameInfoManager" type="Label" parent="."]
+layout_mode = 2
+text = "Zone Game Info Manager"
+
+[node name="PlayerZonePlacementContainer" type="PanelContainer" parent="."]
+layout_mode = 2
+script = ExtResource("2_f2bu0")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PlayerZonePlacementContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="CoordBoxContainer" type="VBoxContainer" parent="PlayerZonePlacementContainer/HBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="CameraPositionBoxContainer" type="HBoxContainer" parent="PlayerZonePlacementContainer/HBoxContainer/CoordBoxContainer"]
+layout_mode = 2
+
+[node name="Container" type="MarginContainer" parent="PlayerZonePlacementContainer/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PlayerZonePlacementContainer/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer/Container"]
+layout_mode = 2
+text = "Zone Pos."
+
+[node name="ZonePositionX" type="LineEdit" parent="PlayerZonePlacementContainer/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
+layout_mode = 2
+text = "X"
+placeholder_text = "000"
+alignment = 1
+
+[node name="ZonePositionY" type="LineEdit" parent="PlayerZonePlacementContainer/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
+layout_mode = 2
+text = "Y"
+placeholder_text = "000"
+alignment = 1
+
+[node name="ZonePositionZ" type="LineEdit" parent="PlayerZonePlacementContainer/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
+layout_mode = 2
+text = "Z"
+placeholder_text = "000"
+alignment = 1
+
+[node name="TargetCameraBoxContainer" type="HBoxContainer" parent="PlayerZonePlacementContainer/HBoxContainer/CoordBoxContainer"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="PlayerZonePlacementContainer/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="PlayerZonePlacementContainer/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer/MarginContainer"]
+layout_mode = 2
+text = "Zone Rot."
+
+[node name="ZoneRotationX" type="LineEdit" parent="PlayerZonePlacementContainer/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
+layout_mode = 2
+text = "X"
+placeholder_text = "000"
+alignment = 1
+
+[node name="ZoneRotationY" type="LineEdit" parent="PlayerZonePlacementContainer/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
+layout_mode = 2
+text = "Y"
+placeholder_text = "000"
+alignment = 1
+
+[node name="ZoneRotationZ" type="LineEdit" parent="PlayerZonePlacementContainer/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
 layout_mode = 2
 text = "Z"
 placeholder_text = "000"
