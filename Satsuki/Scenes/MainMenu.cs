@@ -6,7 +6,7 @@ namespace Satsuki.Scenes
 {
 	/// <summary>
 	/// Menu principal du jeu apres selection "Start Game" depuis Title
-	/// Permet de choisir entre differents modes de jeu
+	/// Permet d'acceder au lobby ou autres options
 	/// </summary>
 	public partial class MainMenu : Node, IScene
 	{
@@ -16,14 +16,11 @@ namespace Satsuki.Scenes
 		private Label _titleLabel;
 		private bool _isAnimating = false;
 		private float _titleAnimationTime = 0.0f;
-		private readonly string[] _menuItems = { "Solo Play", "Multiplayer", "Mini-Games", "Back to Title" };
+		private readonly string[] _menuItems = { "Go to Lobby", "Mini-Games", "Back to Title" };
 
 		#region Signals
 		[Signal]
-		public delegate void SoloPlayRequestedEventHandler();
-		
-		[Signal]
-		public delegate void MultiplayerRequestedEventHandler();
+		public delegate void GoToLobbyRequestedEventHandler();
 		
 		[Signal]
 		public delegate void MiniGamesRequestedEventHandler();
@@ -125,11 +122,8 @@ namespace Satsuki.Scenes
 			
 			switch (_menuButtons[index].Text)
 			{
-				case "Solo Play":
-					StartSoloPlay();
-					break;
-				case "Multiplayer":
-					StartMultiplayer();
+				case "Go to Lobby":
+					GoToLobby();
 					break;
 				case "Mini-Games":
 					OpenMiniGames();
@@ -140,21 +134,14 @@ namespace Satsuki.Scenes
 			}
 		}
 
-		private void StartSoloPlay()
+		private void GoToLobby()
 		{
-			GD.Print("MainMenu: Demande de demarrage Solo Play...");
+			GD.Print("MainMenu: Demande d'acces au Lobby...");
 			var finalState = GetSceneState();
 			GD.Print($"MainMenu: Etat de la scene: {System.Text.Json.JsonSerializer.Serialize(finalState)}");
 			
-			EmitSignal(SignalName.SoloPlayRequested);
-			GD.Print("MainMenu: Signal SoloPlayRequested emis");
-		}
-
-		private void StartMultiplayer()
-		{
-			GD.Print("MainMenu: Demande de demarrage Multiplayer...");
-			EmitSignal(SignalName.MultiplayerRequested);
-			GD.Print("MainMenu: Signal MultiplayerRequested emis");
+			EmitSignal(SignalName.GoToLobbyRequested);
+			GD.Print("MainMenu: Signal GoToLobbyRequested emis");
 		}
 
 		private void OpenMiniGames()
@@ -248,7 +235,7 @@ namespace Satsuki.Scenes
 				SceneInfo = new
 				{
 					SceneName = "MainMenu",
-					SceneType = "GameModeSelection",
+					SceneType = "MenuSelection",
 					StartTime = _sceneStartTime,
 					ElapsedTime = Math.Round(elapsedTime, 2),
 					ElapsedTimeFormatted = FormatElapsedTime(elapsedTime)
