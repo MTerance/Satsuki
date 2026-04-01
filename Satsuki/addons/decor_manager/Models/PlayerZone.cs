@@ -59,13 +59,23 @@ namespace Satsuki.addons.decor_manager.Models
             var material = new StandardMaterial3D
             {
                 AlbedoColor = new Color(1, 0, 0, 0.5f),
+                Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+                ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+                CullMode = BaseMaterial3D.CullModeEnum.Disabled
             };
-            material.Set("flags_transparent", true);
-            material.Set("flags_unshaded", true);
             meshInstance.MaterialOverride = material;
             meshInstance.Visible = true;
             _zone = meshInstance;
             AddChild(_zone);
+        }
+
+        public override void _ExitTree()
+        {
+            if (_zone != null && IsInstanceValid(_zone))
+            {
+                _zone.QueueFree();
+                _zone = null;
+            }
         }
     }
 }
