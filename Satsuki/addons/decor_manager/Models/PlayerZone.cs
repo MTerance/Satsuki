@@ -5,8 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+#if TOOLS
 namespace Satsuki.addons.decor_manager.Models
 {
+    [Tool]
     public partial class PlayerZone : Node3D
     {
         MeshInstance3D _zone;
@@ -17,14 +19,37 @@ namespace Satsuki.addons.decor_manager.Models
             CreateZone();
         }
 
+        public void SetupPlayerZone(Vector3 center, float size)
+        {
+            GD.Print("PlayerZone: SetupPlayerZone called with center=" + center + " size=" + size);
+
+            if (_zone == null || !IsInstanceValid(_zone))
+            {
+                CreateZone();
+            }
+            // Met à jour la position et la taille de la zone
+            this.Position = center;
+            _zone.Position = new Vector3(0, 0.01f, 0);
+            if (_zone.Mesh is QuadMesh quadMesh)
+            {
+                quadMesh.Size = new Vector2(size, size);
+            }
+        }
 
         private void CreateZone()
         {
-            var meshInstance = new MeshInstance3D();
+            GD.Print("PlayerZone: CreateZone called");
+            var existing = GetNodeOrNull<MeshInstance3D>("PlayerZone_Mesh");
+            if (existing != null && IsInstanceValid(existing))
+            {
+                existing.QueueFree();
+            }
 
+            var meshInstance = new MeshInstance3D();
+            meshInstance.Name = "PlayerZone_Mesh";
             var quad = new QuadMesh
             {
-                Size = new Vector2(6, 2)
+                Size = new Vector2(6f, 2f)
             };
 
             meshInstance.Mesh = quad;
@@ -35,9 +60,13 @@ namespace Satsuki.addons.decor_manager.Models
             {
                 AlbedoColor = new Color(1, 0, 0, 0.5f),
             };
+            material.Set("flags_transparent", true);
+            material.Set("flags_unshaded", true);
             meshInstance.MaterialOverride = material;
+            meshInstance.Visible = true;
             _zone = meshInstance;
             AddChild(_zone);
         }
     }
 }
+#endif

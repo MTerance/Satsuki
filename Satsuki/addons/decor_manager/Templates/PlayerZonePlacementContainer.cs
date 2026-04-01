@@ -1,4 +1,5 @@
 using Godot;
+using Satsuki.addons.decor_manager.Models;
 using System;
 
 #if TOOLS
@@ -6,7 +7,7 @@ using System;
 public partial class PlayerZonePlacementContainer : PanelContainer
 {
 	#region nodes definition
-	private PlayerZoneNode3d PlayerZone { get; set; }
+	private PlayerZone PlayerZone { get; set; }
 	#endregion
 
 	#region textbox definition
@@ -25,7 +26,7 @@ public partial class PlayerZonePlacementContainer : PanelContainer
 		// Create and add PlayerZone node (its own _Ready will run after AddChild)
 		if (PlayerZone == null)
 		{
-			PlayerZone = new PlayerZoneNode3d();
+			PlayerZone = new PlayerZone();
 			AddChild(PlayerZone);
 			GD.Print("PlayerZonePlacementContainer: PlayerZone creee");
 		}
@@ -44,15 +45,12 @@ public partial class PlayerZonePlacementContainer : PanelContainer
 	{
 		if (PlayerZone == null)
 		{
-			PlayerZone = new PlayerZoneNode3d();
+			PlayerZone = new PlayerZone();
 			AddChild(PlayerZone);
 		}
 
 		// Configure la zone (implémentation coté PlayerZoneNode3d)
 		PlayerZone.SetupPlayerZone(center, size);
-
-		// Assure la présence du visuel (SetupBoxMesh peut créer le mesh)
-		PlayerZone.SetupBoxMesh();
 
 		// Positionne le node et remet la rotation à zéro si besoin
 		PlayerZone.Position = center;
@@ -131,7 +129,7 @@ public partial class PlayerZonePlacementContainer : PanelContainer
 			PlayerZone.RotationDegrees = new Vector3(rx, ry, rz);
 
 			// Si PlayerZone expose un update visuel, lancez-le
-			PlayerZone.UpdatePlayerZone();
+			//PlayerZone.UpdatePlayerZone();
 
 			GD.Print($"PlayerZonePlacementContainer: PlayerZone mise a jour depuis UI - Pos({px},{py},{pz}) Rot({rx},{ry},{rz})");
 		}
