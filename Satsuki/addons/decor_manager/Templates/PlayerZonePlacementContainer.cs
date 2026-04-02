@@ -1,4 +1,5 @@
 using Godot;
+using Satsuki.addons.decor_manager;
 using Satsuki.addons.decor_manager.Models;
 using System;
 
@@ -27,7 +28,7 @@ public partial class PlayerZonePlacementContainer : PanelContainer
 		if (PlayerZone == null)
 		{
 			PlayerZone = new PlayerZone();
-			AddChild(PlayerZone);
+            SceneManager.Instance.AddNodeToScene(PlayerZone);
 			GD.Print("PlayerZonePlacementContainer: PlayerZone creee");
 		}
 
@@ -46,24 +47,24 @@ public partial class PlayerZonePlacementContainer : PanelContainer
 		if (PlayerZone == null)
 		{
 			PlayerZone = new PlayerZone();
-			AddChild(PlayerZone);
+			SceneManager.Instance.AddNodeToScene(PlayerZone);
 		}
 
-		// Configure la zone (implémentation coté PlayerZoneNode3d)
+		// Configure la zone (implÃ©mentation cotÃ© PlayerZoneNode3d)
 		PlayerZone.SetupPlayerZone(center, size);
 
-		// Positionne le node et remet la rotation à zéro si besoin
+		// Positionne le node et remet la rotation Ã  zÃ©ro si besoin
 		PlayerZone.Position = center;
 		PlayerZone.RotationDegrees = Vector3.Zero;
 
-		// Met à jour l'UI avec les valeurs actuelles
+		// Met Ã  jour l'UI avec les valeurs actuelles
 		UpdateLineEditsFromPlayerZone();
 
 		GD.Print($"PlayerZonePlacementContainer: PlayerZone initialisee (center: {center}, size: {size})");
 	}
 
 	/// <summary>
-	/// Récupère les LineEdit depuis le .tscn (nom des nodes doit correspondre).
+	/// RÃ©cupÃ¨re les LineEdit depuis le .tscn (nom des nodes doit correspondre).
 	/// </summary>
 	private void InitializeLineEdits()
 	{
@@ -77,7 +78,7 @@ public partial class PlayerZonePlacementContainer : PanelContainer
 	}
 
 	/// <summary>
-	/// Connecte les signaux TextChanged des LineEdit à l'update.
+	/// Connecte les signaux TextChanged des LineEdit Ã  l'update.
 	/// </summary>
 	private void ConnectLineEditSignals()
 	{
@@ -90,7 +91,7 @@ public partial class PlayerZonePlacementContainer : PanelContainer
 	}
 
 	/// <summary>
-	/// Déconnecte les signaux (appelé depuis _ExitTree si nécessaire).
+	/// DÃ©connecte les signaux (appelÃ© depuis _ExitTree si nÃ©cessaire).
 	/// </summary>
 	private void DisconnectLineEditSignals()
 	{
@@ -108,8 +109,8 @@ public partial class PlayerZonePlacementContainer : PanelContainer
 	}
 
 	/// <summary>
-	/// Lit les LineEdits et applique la position/rotation à PlayerZone.
-	/// Les valeurs invalides sont ignorées et loggées.
+	/// Lit les LineEdits et applique la position/rotation Ã  PlayerZone.
+	/// Les valeurs invalides sont ignorÃ©es et loggÃ©es.
 	/// </summary>
 	private void UpdatePlayerZoneFromInputs()
 	{
@@ -160,7 +161,7 @@ public partial class PlayerZonePlacementContainer : PanelContainer
 		DisconnectLineEditSignals();
 		if (PlayerZone != null)
 		{
-			RemoveChild(PlayerZone);
+            SceneManager.Instance.RemoveNodeFromScene(PlayerZone);
 			PlayerZone.QueueFree();
 			PlayerZone = null;
 		}
