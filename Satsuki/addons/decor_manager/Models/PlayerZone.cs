@@ -32,7 +32,7 @@ namespace Satsuki.addons.decor_manager.Models
             _zone.Position = new Vector3(0, 0.01f, 0);
             if (_zone.Mesh is QuadMesh quadMesh)
             {
-                quadMesh.Size = new Vector2(size, size);
+                quadMesh.Size = new Vector2(size, size/2);
             }
         }
 
@@ -58,7 +58,7 @@ namespace Satsuki.addons.decor_manager.Models
 
             var material = new StandardMaterial3D
             {
-                AlbedoColor = new Color(1, 0, 0, 0.5f),
+                AlbedoColor = new Color(0.5f, 0.5f, 1, 0.7f),
                 Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
                 ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
                 CullMode = BaseMaterial3D.CullModeEnum.Disabled

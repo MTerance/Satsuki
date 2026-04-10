@@ -28,6 +28,10 @@ project/assembly_name="Satsuki"
 
 version_control/autoload_on_startup=true
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/decor_manager/plugin.cfg")
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"
