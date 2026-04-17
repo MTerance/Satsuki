@@ -7,12 +7,9 @@ namespace Satsuki.Scenes
 	public partial class Title : Node, IScene
 	{
 		private DateTime _sceneStartTime;
-		private int _menuItemIndex = 0;
-		private Button[] _menuButtons;
 		private Label _titleLabel;
 		private bool _isAnimating = false;
 		private float _titleAnimationTime = 0.0f;
-		private readonly string[] _menuItems = { "Start Game", "Options", "Credits", "Quit" };
 
 		#region Signals
 		[Signal]
@@ -32,7 +29,7 @@ namespace Satsuki.Scenes
 
 			CreateUI();
 			
-			GD.Print($"Menu initialise avec {_menuButtons.Length} options");
+			GD.Print("Title: Ecran titre initialise");
 		}
 
 		private void CreateUI()
@@ -40,124 +37,19 @@ namespace Satsuki.Scenes
 			var canvasLayer = new CanvasLayer();
 			AddChild(canvasLayer);
 
+			// Titre uniquement
 			_titleLabel = new Label
 			{
 				Text = "SATSUKI",
 				HorizontalAlignment = HorizontalAlignment.Center,
-				VerticalAlignment = VerticalAlignment.Top
+				VerticalAlignment = VerticalAlignment.Center
 			};
-			_titleLabel.AddThemeFontSizeOverride("font_size", 72);
+			_titleLabel.AddThemeFontSizeOverride("font_size", 96);
 			_titleLabel.AddThemeColorOverride("font_color", new Color(1.0f, 0.5f, 0.0f));
 			canvasLayer.AddChild(_titleLabel);
-			_titleLabel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.TopWide);
-			_titleLabel.OffsetTop = 100;
-			_titleLabel.OffsetBottom = 200;
+			_titleLabel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.Center);
 
-			var menuContainer = new VBoxContainer
-			{
-				Alignment = BoxContainer.AlignmentMode.Center
-			};
-			canvasLayer.AddChild(menuContainer);
-			menuContainer.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.Center);
-			menuContainer.GrowHorizontal = Control.GrowDirection.Both;
-			menuContainer.GrowVertical = Control.GrowDirection.Both;
-
-			_menuButtons = new Button[_menuItems.Length];
-			for (int i = 0; i < _menuItems.Length; i++)
-			{
-				var button = new Button
-				{
-					Text = _menuItems[i],
-					CustomMinimumSize = new Vector2(300, 60)
-				};
-				button.AddThemeFontSizeOverride("font_size", 24);
-				
-				int index = i;
-				button.Pressed += () => OnMenuItemSelected(index);
-				button.MouseEntered += () => OnMenuItemHover(index);
-				
-				menuContainer.AddChild(button);
-				_menuButtons[i] = button;
-			}
-
-			UpdateMenuSelection();
-			GD.Print("UI creee avec succes");
-		}
-
-		private void UpdateMenuSelection()
-		{
-			for (int i = 0; i < _menuButtons.Length; i++)
-			{
-				if (i == _menuItemIndex)
-				{
-					_menuButtons[i].GrabFocus();
-					_menuButtons[i].AddThemeColorOverride("font_color", Colors.Orange);
-				}
-				else
-				{
-					_menuButtons[i].AddThemeColorOverride("font_color", Colors.White);
-				}
-			}
-		}
-
-		private void OnMenuItemHover(int index)
-		{
-			_menuItemIndex = index;
-			UpdateMenuSelection();
-			GD.Print($"Menu hover: {_menuButtons[index].Text}");
-		}
-
-		private void OnMenuItemSelected(int index)
-		{
-			_menuItemIndex = index;
-			UpdateMenuSelection();
-			GD.Print($"Menu selectionne: {_menuButtons[index].Text}");
-			
-			switch (_menuButtons[index].Text)
-			{
-				case "Start Game":
-					StartGame();
-					break;
-				case "Options":
-					OpenOptions();
-					break;
-				case "Credits":
-					OpenCredits();
-					break;
-				case "Quit":
-					QuitGame();
-					break;
-			}
-		}
-
-		private void StartGame()
-		{
-			GD.Print("Title: Demande de demarrage du jeu...");
-			var finalState = GetSceneState();
-			GD.Print($"Etat de la scene titre: {System.Text.Json.JsonSerializer.Serialize(finalState)}");
-			
-			EmitSignal(SignalName.StartGameRequested);
-			GD.Print("Title: Signal StartGameRequested emis");
-		}
-
-		private void OpenOptions()
-		{
-			GD.Print("Title: Demande d'ouverture des options...");
-			EmitSignal(SignalName.OptionsRequested);
-		}
-
-		private void OpenCredits()
-		{
-			GD.Print("Title: Demande d'ouverture des credits...");
-			EmitSignal(SignalName.CreditsRequested);
-		}
-
-		private void QuitGame()
-		{
-			GD.Print("Fermeture du jeu...");
-			var finalState = GetSceneState();
-			GD.Print($"Etat final de la scene titre: {System.Text.Json.JsonSerializer.Serialize(finalState)}");
-			GetTree().Quit();
+			GD.Print("Title: UI creee avec succes");
 		}
 
 		private string FormatElapsedTime(double seconds)
@@ -169,27 +61,35 @@ namespace Satsuki.Scenes
 
 		public override void _Input(InputEvent @event)
 		{
+			// Appuyer sur n'importe quelle touche ou clic pour demarrer
 			if (@event is InputEventKey keyEvent && keyEvent.Pressed)
 			{
-				switch (keyEvent.Keycode)
+				if (keyEvent.Keycode == Key.Escape)
 				{
-					case Key.Up:
-						_menuItemIndex = (_menuItemIndex - 1 + _menuButtons.Length) % _menuButtons.Length;
-						UpdateMenuSelection();
-						break;
-					case Key.Down:
-						_menuItemIndex = (_menuItemIndex + 1) % _menuButtons.Length;
-						UpdateMenuSelection();
-						break;
-					case Key.Enter:
-					case Key.Space:
-						OnMenuItemSelected(_menuItemIndex);
-						break;
-					case Key.Escape:
-						QuitGame();
-						break;
+					QuitGame();
+				}
+				else
+				{
+					StartGame();
 				}
 			}
+			else if (@event is InputEventMouseButton mouseEvent && mouseEvent.Pressed)
+			{
+				StartGame();
+			}
+		}
+
+		private void StartGame()
+		{
+			GD.Print("Title: Demande de demarrage du jeu...");
+			EmitSignal(SignalName.StartGameRequested);
+			GD.Print("Title: Signal StartGameRequested emis");
+		}
+
+		private void QuitGame()
+		{
+			GD.Print("Title: Fermeture du jeu...");
+			GetTree().Quit();
 		}
 
 		public override void _Process(double delta)
@@ -234,14 +134,10 @@ namespace Satsuki.Scenes
 				SceneInfo = new
 				{
 					SceneName = "Title",
-					SceneType = "MainMenu",
+					SceneType = "TitleScreen",
 					StartTime = _sceneStartTime,
 					ElapsedTime = Math.Round(elapsedTime, 2),
 					ElapsedTimeFormatted = FormatElapsedTime(elapsedTime)
-				},
-				Menu = new
-				{
-					SelectedIndex = _menuItemIndex
 				},
 				Animation = new
 				{
