@@ -21,7 +21,7 @@ namespace Satsuki.Models
 
 		public SpawnPointData SpawnPoint { get; set; }
 
-        public Spot(Vector3 position, PlayerTypeSpot playerSpot, SpawnPointData spawnPoint)
+		public Spot(Vector3 position, PlayerTypeSpot playerSpot, SpawnPointData spawnPoint)
 		{
 			this.Position = position;
 			this.PlayerSpot = playerSpot;
@@ -33,6 +33,6 @@ namespace Satsuki.Models
 			this.Position = Vector3.Zero;
 			this.PlayerSpot = PlayerTypeSpot.Vacant;
 			this.SpawnPoint = null;
-        }
-    }
+		}
+	}
 }

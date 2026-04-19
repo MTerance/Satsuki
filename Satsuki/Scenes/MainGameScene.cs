@@ -129,8 +129,6 @@ public partial class MainGameScene : Node, IScene
 			_currentScene = title;
 			
 			title.StartGameRequested += OnStartGameRequested;
-			title.OptionsRequested += OnOptionsRequested;
-			title.CreditsRequested += OnCreditsRequestedFromTitle;
 			
 			GD.Print("Title charge");
 			
@@ -230,6 +228,28 @@ public partial class MainGameScene : Node, IScene
 		}
 	}
 
+	public void LoadLobby()
+	{
+		try
+		{
+			GD.Print("MainGameScene: Chargement Lobby...");
+
+			UnloadCurrentScene();
+
+			var lobby = new Lobby();
+			AddChild(lobby);
+			_currentScene = lobby;
+
+			GD.Print("Lobby charge");
+
+			CallDeferred(nameof(ActivateLobbyCamera));
+		}
+		catch (Exception ex)
+		{
+			GD.PrintErr($"Erreur chargement Lobby: {ex.Message}");
+		}
+	}
+
 	private void UnloadCurrentScene()
 	{
 		if (_currentScene == null) return;
@@ -245,8 +265,6 @@ public partial class MainGameScene : Node, IScene
 		if (_currentScene is Title title)
 		{
 			title.StartGameRequested -= OnStartGameRequested;
-			title.OptionsRequested -= OnOptionsRequested;
-			title.CreditsRequested -= OnCreditsRequestedFromTitle;
 		}
 		
 		if (_currentScene is MainMenu mainMenu)
@@ -276,18 +294,7 @@ public partial class MainGameScene : Node, IScene
 	private void OnStartGameRequested()
 	{
 		GD.Print("MainGameScene: Reception du signal StartGameRequested");
-		LoadMainMenu();
-	}
-	
-	private void OnOptionsRequested()
-	{
-		GD.Print("MainGameScene: Reception du signal OptionsRequested");
-	}
-	
-	private void OnCreditsRequestedFromTitle()
-	{
-		GD.Print("MainGameScene: Reception du signal CreditsRequested");
-		LoadCredits();
+		LoadLobby();
 	}
 	
 	private void OnGoToLobbyRequested()
