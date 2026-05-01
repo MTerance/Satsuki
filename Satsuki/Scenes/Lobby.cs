@@ -20,13 +20,13 @@ public partial class Lobby : Node3D
 				Position = spawn.Position,
 				PlayerSpot = PlayerTypeSpot.Vacant,
 				SpawnPoint = spawn
-            };
+			};
 			Spots.Add(spot);
-        }
-    }
+		}
+	}
 
-    // Called when the node enters the scene tree for the first time.
-    public override void _Ready()
+	// Called when the node enters the scene tree for the first time.
+	public override void _Ready()
 	{
 	}
 

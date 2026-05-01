@@ -1,3 +1,11 @@
 [gd_scene format=3 uid="uid://ce5j26w5521c"]
 
 [node name="DecorManagerSetup" type="Node3D"]
+
+[node name="Camera_lobby_868125592" type="Node3D" parent="."]
+
+[node name="CameraTarget_lobby_868125592" type="Node3D" parent="."]
+transform = Transform3D(-4.37114e-08, -1, 0, -4.37114e-08, 1.91069e-15, 1, -1, 4.37114e-08, -4.37114e-08, 0, 0, 0)
+
+[node name="@Node3D@21999" type="Node3D" parent="."]
+script = ExtResource("1_kqtep")

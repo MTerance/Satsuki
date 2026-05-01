@@ -7,28 +7,18 @@ namespace Satsuki.Scenes
 	public partial class Title : Node, IScene
 	{
 		private DateTime _sceneStartTime;
-		private Label _titleLabel;
-		private bool _isAnimating = false;
-		private float _titleAnimationTime = 0.0f;
+		private TextureRect _logoRect;
 
 		#region Signals
 		[Signal]
 		public delegate void StartGameRequestedEventHandler();
-		
-		[Signal]
-		public delegate void OptionsRequestedEventHandler();
-		
-		[Signal]
-		public delegate void CreditsRequestedEventHandler();
 		#endregion
 
 		public override void _Ready()
 		{
 			_sceneStartTime = DateTime.UtcNow;
 			GD.Print("Title: Initialisation de l'ecran titre...");
-
 			CreateUI();
-			
 			GD.Print("Title: Ecran titre initialise");
 		}
 
@@ -37,17 +27,22 @@ namespace Satsuki.Scenes
 			var canvasLayer = new CanvasLayer();
 			AddChild(canvasLayer);
 
-			// Titre uniquement
-			_titleLabel = new Label
+			var logoTexture = GD.Load<Texture2D>("res://Assets/Img/overlay_logo_small_placeholder.png");
+			if (logoTexture != null)
 			{
-				Text = "SATSUKI",
-				HorizontalAlignment = HorizontalAlignment.Center,
-				VerticalAlignment = VerticalAlignment.Center
-			};
-			_titleLabel.AddThemeFontSizeOverride("font_size", 96);
-			_titleLabel.AddThemeColorOverride("font_color", new Color(1.0f, 0.5f, 0.0f));
-			canvasLayer.AddChild(_titleLabel);
-			_titleLabel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.Center);
+				_logoRect = new TextureRect
+				{
+					Texture = logoTexture,
+					ExpandMode = TextureRect.ExpandModeEnum.KeepSize,
+					StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered
+				};
+				canvasLayer.AddChild(_logoRect);
+				_logoRect.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.Center);
+			}
+			else
+			{
+				GD.PrintErr("Title: Logo introuvable a res://Assets/Img/overlay_logo_small_placeholder.png");
+			}
 
 			GD.Print("Title: UI creee avec succes");
 		}
@@ -61,17 +56,12 @@ namespace Satsuki.Scenes
 
 		public override void _Input(InputEvent @event)
 		{
-			// Appuyer sur n'importe quelle touche ou clic pour demarrer
 			if (@event is InputEventKey keyEvent && keyEvent.Pressed)
 			{
 				if (keyEvent.Keycode == Key.Escape)
-				{
 					QuitGame();
-				}
 				else
-				{
 					StartGame();
-				}
 			}
 			else if (@event is InputEventMouseButton mouseEvent && mouseEvent.Pressed)
 			{
@@ -94,30 +84,6 @@ namespace Satsuki.Scenes
 
 		public override void _Process(double delta)
 		{
-			_titleAnimationTime += (float)delta;
-			
-			if (!_isAnimating && _titleAnimationTime >= 2.0f)
-			{
-				_isAnimating = true;
-				AnimateTitle();
-			}
-		}
-
-		private async void AnimateTitle()
-		{
-			if (_titleLabel == null || !IsInstanceValid(_titleLabel))
-				return;
-
-			_titleLabel.AddThemeColorOverride("font_color", Colors.Yellow);
-			await ToSignal(GetTree().CreateTimer(0.5), SceneTreeTimer.SignalName.Timeout);
-			
-			if (_titleLabel != null && IsInstanceValid(_titleLabel))
-			{
-				_titleLabel.AddThemeColorOverride("font_color", new Color(1.0f, 0.5f, 0.0f));
-			}
-			
-			_isAnimating = false;
-			_titleAnimationTime = 0.0f;
 		}
 
 		public override void _ExitTree()
@@ -128,7 +94,7 @@ namespace Satsuki.Scenes
 		public object GetSceneState()
 		{
 			var elapsedTime = (DateTime.UtcNow - _sceneStartTime).TotalSeconds;
-			
+
 			return new
 			{
 				SceneInfo = new
@@ -138,11 +104,6 @@ namespace Satsuki.Scenes
 					StartTime = _sceneStartTime,
 					ElapsedTime = Math.Round(elapsedTime, 2),
 					ElapsedTimeFormatted = FormatElapsedTime(elapsedTime)
-				},
-				Animation = new
-				{
-					IsAnimating = _isAnimating,
-					AnimationTime = Math.Round(_titleAnimationTime, 2)
 				},
 				Status = new
 				{
