@@ -18,10 +18,12 @@ public class SqliteDbManager : IDbManager
 
 	public SqliteDbManager()
 	{
+        // C:\Users\sshom\sources\repositories\Satsuki\Satsuki\Assets
+        var tempDbDirectory = "res://Databases"
 		var dbDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "database");
-		if (!Directory.Exists(dbDirectory))
-			Directory.CreateDirectory(dbDirectory);
-		_dbPath = Path.Combine(dbDirectory, "SatsukiDB.sqlite");
+		if (!Directory.Exists(tempDbDirectory))
+			Directory.CreateDirectory(tempDbDirectory);
+		_dbPath = Path.Combine(tempDbDirectory, "SatsukiDB.sqlite");
 		_connection = new SqliteConnection($"Data Source={_dbPath}");
 	}
 
