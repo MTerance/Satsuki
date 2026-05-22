@@ -18,8 +18,8 @@ public class SqliteDbManager : IDbManager
 
 	public SqliteDbManager()
 	{
-        // C:\Users\sshom\sources\repositories\Satsuki\Satsuki\Assets
-        var tempDbDirectory = "res://Databases"
+		// C:\Users\sshom\sources\repositories\Satsuki\Satsuki\Assets
+		var tempDbDirectory = "res://Databases";
 		var dbDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "database");
 		if (!Directory.Exists(tempDbDirectory))
 			Directory.CreateDirectory(tempDbDirectory);
