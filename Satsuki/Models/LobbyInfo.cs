@@ -20,6 +20,7 @@ namespace Satsuki.Models
         public CameraPlacement CameraPlacement { get; set; } = new CameraPlacement();
         [Export]
         public Godot.Collections.Array<SpawnPointData> SpawnPoints { get; set; }
+        
         public LobbyInfo()
         {
             SpawnPoints = new Godot.Collections.Array<SpawnPointData>();

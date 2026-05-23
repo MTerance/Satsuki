@@ -24,6 +24,30 @@ namespace Satsuki.Models
         [Export]
         public string SavedAt { get; set; }
 
+
+        private void SaveInDb()
+        {
+            using (var dbManager = new SqliteDbManager())
+            {
+                dbManager.OpenConnection();
+                using (var connection = dbManager.GetConnection())
+                {
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText =
+                       $@"REPLACE INTO Stages (ID,NAME,SCENE_NAME,SCENE_PATH,LOBBY_RSC,STAGE_RSC)
+                        VALUES ({this.Id},{this.Name},{this.SceneName},{this.ScenePath},{},{})";
+                        command.ExecuteNonQuery();
+                    }
+                }
+
+                    dbManager.CloseConnection();
+            }
+        }
+
+
+
+
         public bool Save(string path)
         {
             try
