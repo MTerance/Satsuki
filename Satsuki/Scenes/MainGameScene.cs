@@ -129,8 +129,6 @@ public partial class MainGameScene : Node, IScene
 			_currentScene = title;
 			
 			title.StartGameRequested += OnStartGameRequested;
-			title.OptionsRequested += OnOptionsRequested;
-			title.CreditsRequested += OnCreditsRequestedFromTitle;
 			
 			GD.Print("Title charge");
 			
@@ -187,8 +185,7 @@ public partial class MainGameScene : Node, IScene
 			AddChild(mainMenu);
 			_currentScene = mainMenu;
 			
-			mainMenu.SoloPlayRequested += OnSoloPlayRequested;
-			mainMenu.MultiplayerRequested += OnMultiplayerRequested;
+			mainMenu.GoToLobbyRequested += OnGoToLobbyRequested;
 			mainMenu.MiniGamesRequested += OnMiniGamesRequested;
 			mainMenu.BackToTitleRequested += OnBackToTitleRequested;
 			
@@ -231,6 +228,28 @@ public partial class MainGameScene : Node, IScene
 		}
 	}
 
+	public void LoadLobby()
+	{
+		try
+		{
+			GD.Print("MainGameScene: Chargement Lobby...");
+
+			UnloadCurrentScene();
+
+			var lobby = new Lobby();
+			AddChild(lobby);
+			_currentScene = lobby;
+
+			GD.Print("Lobby charge");
+
+			CallDeferred(nameof(ActivateLobbyCamera));
+		}
+		catch (Exception ex)
+		{
+			GD.PrintErr($"Erreur chargement Lobby: {ex.Message}");
+		}
+	}
+
 	private void UnloadCurrentScene()
 	{
 		if (_currentScene == null) return;
@@ -246,14 +265,11 @@ public partial class MainGameScene : Node, IScene
 		if (_currentScene is Title title)
 		{
 			title.StartGameRequested -= OnStartGameRequested;
-			title.OptionsRequested -= OnOptionsRequested;
-			title.CreditsRequested -= OnCreditsRequestedFromTitle;
 		}
 		
 		if (_currentScene is MainMenu mainMenu)
 		{
-			mainMenu.SoloPlayRequested -= OnSoloPlayRequested;
-			mainMenu.MultiplayerRequested -= OnMultiplayerRequested;
+			mainMenu.GoToLobbyRequested -= OnGoToLobbyRequested;
 			mainMenu.MiniGamesRequested -= OnMiniGamesRequested;
 			mainMenu.BackToTitleRequested -= OnBackToTitleRequested;
 		}
@@ -278,32 +294,13 @@ public partial class MainGameScene : Node, IScene
 	private void OnStartGameRequested()
 	{
 		GD.Print("MainGameScene: Reception du signal StartGameRequested");
-		LoadMainMenu();
+		LoadLobby();
 	}
 	
-	private void OnOptionsRequested()
+	private void OnGoToLobbyRequested()
 	{
-		GD.Print("MainGameScene: Reception du signal OptionsRequested");
-	}
-	
-	private void OnCreditsRequestedFromTitle()
-	{
-		GD.Print("MainGameScene: Reception du signal CreditsRequested");
-		LoadCredits();
-	}
-	
-	private void OnSoloPlayRequested()
-	{
-		GD.Print("MainGameScene: Reception du signal SoloPlayRequested");
-		// TODO: Charger la scene de jeu solo
-		GD.Print("MainGameScene: Demarrage du mode Solo Play...");
-	}
-	
-	private void OnMultiplayerRequested()
-	{
-		GD.Print("MainGameScene: Reception du signal MultiplayerRequested");
-		// TODO: Charger la scene multijoueur
-		GD.Print("MainGameScene: Demarrage du mode Multiplayer...");
+		GD.Print("MainGameScene: Reception du signal GoToLobbyRequested");
+		// TODO: Ajouter la logique pour aller au Lobby
 	}
 	
 	private void OnMiniGamesRequested()

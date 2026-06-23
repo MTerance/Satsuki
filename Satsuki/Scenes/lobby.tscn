@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bnxh1mjky342c"]
+
+[ext_resource type="Script" uid="uid://djcs6ybn2cygg" path="res://Scenes/Lobby.cs" id="1_nvaej"]
+
+[node name="Lobby" type="Node3D"]
+script = ExtResource("1_nvaej")

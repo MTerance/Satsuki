@@ -1,0 +1,45 @@
+[gd_resource type="Resource" script_class="StageResource" load_steps=9 format=3 uid="uid://b8fg8w4mthmpc"]
+
+[ext_resource type="Script" uid="uid://c8sesj6q00xs5" path="res://Models/CameraPlacement.cs" id="1_ot7le"]
+[ext_resource type="Script" uid="uid://csff8rerm4upk" path="res://Models/SpawnPointData.cs" id="2_dfd4j"]
+[ext_resource type="Script" uid="uid://dqhfij0lmhius" path="res://Models/LobbyInfo.cs" id="3_n7te2"]
+[ext_resource type="Script" uid="uid://bwlad18mbw1ic" path="res://Models/StageResource.cs" id="4_avipw"]
+
+[sub_resource type="Resource" id="Resource_rp56l"]
+script = ExtResource("1_ot7le")
+Index = 1030458110
+TypeTemplateCamera = "lobby"
+Position = Vector3(0, 7.65851, 6.98507)
+Rotation = Vector3(0, 0, 0)
+Target = Vector3(0, 0, 0)
+
+[sub_resource type="Resource" id="Resource_44ape"]
+script = ExtResource("2_dfd4j")
+Index = 2082334037
+Position = Vector3(2.88807, 0, 0)
+Rotation = Vector3(0, 0, 0)
+Type = 0
+
+[sub_resource type="Resource" id="Resource_r5v8h"]
+script = ExtResource("2_dfd4j")
+Index = 85045920
+Position = Vector3(-2.95277, 0, 0)
+Rotation = Vector3(0, 0, 0)
+Type = 0
+
+[sub_resource type="Resource" id="Resource_qa7q3"]
+script = ExtResource("3_n7te2")
+PositionCamera = Vector3(0, 0, 0)
+RotationCamera = Vector3(0, 0, 0)
+PositionTargetCamera = Vector3(0, 0, 0)
+CameraPlacement = SubResource("Resource_rp56l")
+SpawnPoints = Array[ExtResource("2_dfd4j")]([SubResource("Resource_44ape"), SubResource("Resource_r5v8h")])
+
+[resource]
+script = ExtResource("4_avipw")
+Id = 487044273
+Name = "exemple"
+SceneName = "Street"
+ScenePath = "res://Scenes/Locations/Street.tscn"
+LobbyInfo = SubResource("Resource_qa7q3")
+SavedAt = "30/03/2026 00:10:53"

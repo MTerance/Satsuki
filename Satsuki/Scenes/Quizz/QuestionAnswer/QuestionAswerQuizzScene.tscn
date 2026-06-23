@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://br7jfj63p0fjp"]
 
 [ext_resource type="Script" uid="uid://7eq8rcr3li6j" path="res://Scenes/Quizz/QuestionAnswer/QuestionAswerQuizzScene.cs" id="1_8fesu"]
-[ext_resource type="Texture2D" uid="uid://ci6xj2la2cv1t" path="res://Assets/Img/coffee shop.png" id="2_0qeg4"]
+[ext_resource type="Texture2D" uid="uid://bv2m7dvr67olb" path="res://Assets/Img/coffee shop.png" id="2_0qeg4"]
 
 [node name="QuestionAswerQuizzScene" type="Control"]
 layout_mode = 3
