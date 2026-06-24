@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Satsuki.Models
@@ -22,6 +23,9 @@ namespace Satsuki.Models
         [Export]
         public LobbyInfo LobbyInfo { get; set; } = new LobbyInfo();
         [Export]
+        public StageInfo StageInfo { get; set; } = new StageInfo();
+
+        [Export]
         public string SavedAt { get; set; }
 
 
@@ -34,9 +38,13 @@ namespace Satsuki.Models
                 {
                     using (var command = connection.CreateCommand())
                     {
+                        var LobbyRsc = JsonSerializer.Serialize(this.LobbyInfo);
+                        var StageRsc = JsonSerializer.Serialize(this.StageInfo);
+
+
                         command.CommandText =
                        $@"REPLACE INTO Stages (ID,NAME,SCENE_NAME,SCENE_PATH,LOBBY_RSC,STAGE_RSC)
-                        VALUES ({this.Id},{this.Name},{this.SceneName},{this.ScenePath},{},{})";
+                        VALUES ({this.Id},{this.Name},{this.SceneName},{this.ScenePath},{LobbyRsc},{StageRsc})";
                         command.ExecuteNonQuery();
                     }
                 }
