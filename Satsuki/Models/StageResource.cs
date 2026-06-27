@@ -1,6 +1,7 @@
 ﻿using Godot;
 using Godot.Collections;
 using System;
+using System.Text.Json;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,7 +25,6 @@ namespace Satsuki.Models
         [Export]
         public string SavedAt { get; set; }
 
-
         private void SaveInDb()
         {
             using (var dbManager = new SqliteDbManager())
@@ -36,12 +36,11 @@ namespace Satsuki.Models
                     {
                         command.CommandText =
                        $@"REPLACE INTO Stages (ID,NAME,SCENE_NAME,SCENE_PATH,LOBBY_RSC,STAGE_RSC)
-                        VALUES ({this.Id},{this.Name},{this.SceneName},{this.ScenePath},{},{})";
+                        VALUES ({this.Id},{this.Name},{this.SceneName},{this.ScenePath},{JsonSerializer.Serialize(this.LobbyInfo)})";
                         command.ExecuteNonQuery();
                     }
                 }
-
-                    dbManager.CloseConnection();
+                dbManager.CloseConnection();
             }
         }
 

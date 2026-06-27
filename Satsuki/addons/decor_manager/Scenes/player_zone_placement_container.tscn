@@ -1,0 +1,70 @@
+[gd_scene load_steps=2 format=3 uid="uid://2ki3rsj2sxy7"]
+
+[ext_resource type="Script" uid="uid://da7pqsi2cldef" path="res://addons/decor_manager/Templates/PlayerZonePlacementContainer.cs" id="1_u4run"]
+
+[node name="PlayerZonePlacementContainer" type="PanelContainer"]
+script = ExtResource("1_u4run")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+alignment = 1
+
+[node name="CoordBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="CameraPositionBoxContainer" type="HBoxContainer" parent="HBoxContainer/CoordBoxContainer"]
+layout_mode = 2
+
+[node name="Container" type="MarginContainer" parent="HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer/Container"]
+layout_mode = 2
+text = "Zone Pos."
+
+[node name="ZonePositionX" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
+layout_mode = 2
+text = "X"
+placeholder_text = "000"
+alignment = 1
+
+[node name="ZonePositionY" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
+layout_mode = 2
+text = "Y"
+placeholder_text = "000"
+alignment = 1
+
+[node name="ZonePositionZ" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
+layout_mode = 2
+text = "Z"
+placeholder_text = "000"
+alignment = 1
+
+[node name="TargetCameraBoxContainer" type="HBoxContainer" parent="HBoxContainer/CoordBoxContainer"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer/MarginContainer"]
+layout_mode = 2
+text = "Zone Rot."
+
+[node name="ZoneRotationX" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
+layout_mode = 2
+text = "X"
+placeholder_text = "000"
+alignment = 1
+
+[node name="ZoneRotationY" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
+layout_mode = 2
+text = "Y"
+placeholder_text = "000"
+alignment = 1
+
+[node name="ZoneRotationZ" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
+layout_mode = 2
+text = "Z"
+placeholder_text = "000"
+alignment = 1
