@@ -23,6 +23,8 @@ public partial class DecorManagerTool : EditorPlugin
 	private StageInfoContainer _stageInfoContainer;
 	private GeneralInfoContainer _generalInfoContainer;
 	private LobbyMenuContainer _lobbyMenuContainer;
+	private GameMenuContainer _gameMenuContainer;
+
 
 	//
 	private SpawnPointGizmoPlugin _spawnPointGizmoPlugin;
@@ -109,9 +111,22 @@ public partial class DecorManagerTool : EditorPlugin
 		_dockPanel.AddChild(control);
 
 		SetupLobbyMenuContainer(control);
+		SetupGameMenuContainer(control);
 		SetupGeneralInfoContainer(control);
 		SetupStageInfoContainer(control);
 		GD.Print("DecorManagerTool: VBoxContainer ajoute");
+	}
+
+	private void SetupGameMenuContainer(Control control)
+	{
+		_gameMenuContainer = control.FindChild("GameMenuContainer", true, false) as GameMenuContainer;
+		if (_gameMenuContainer != null)
+		{
+			// Connecter les signaux du GameInfoContainer si nécessaire
+			GD.Print("DecorManagerTool: GameMenuContainer trouve");
+		}
+		else
+			GD.PrintErr("DecorManagerTool: GameMenuContainer introuvable");
 	}
 
 	private void SetupLobbyMenuContainer(Control control)
