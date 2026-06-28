@@ -30,6 +30,11 @@ public partial class DecorManagerTool : EditorPlugin
 	private SpawnPointGizmoPlugin _spawnPointGizmoPlugin;
 
 
+	//
+
+	private Window _windowEditor;
+
+	//
 
 	private Node3D _currentSceneRoot;
 
@@ -237,9 +242,29 @@ public partial class DecorManagerTool : EditorPlugin
 		fileDialog.QueueFree();
 	}
 
-	private void OnLoadStageResourceRequested()
+	private void OpenLoadStageResourceDialog()
+    {
+		GD.Print("DecorManagerTool: Open load stage resource dialog");
+        _windowEditor = new Godot.Window();
+
+		_windowEditor.Title = "Charger une configuration de scene";
+
+		_windowEditor.CloseRequested += () => _windowEditor.QueueFree();
+		_windowEditor.Size = new Vector2I(800, 600);
+
+
+
+
+		AddChild(_windowEditor);
+		_windowEditor.PopupCentered();
+
+    }
+
+
+    private void OnLoadStageResourceRequested()
 	{
 		GD.Print("DecorManagerTool: Load stage resource requested");
+		/*
 		var fileDialog = new EditorFileDialog();
 		fileDialog.FileMode = EditorFileDialog.FileModeEnum.OpenFile;
 		fileDialog.Filters = new string[] { "*.tres" };
@@ -253,7 +278,9 @@ public partial class DecorManagerTool : EditorPlugin
 		fileDialog.Canceled += () => fileDialog.QueueFree();
 		EditorInterface.Singleton.GetBaseControl().AddChild(fileDialog);
 		fileDialog.PopupCentered(new Vector2I(800, 600));
-	}
+		*/
+		OpenLoadStageResourceDialog();
+    }
 
 	private void OnSaveStageResourceRequested()
 	{

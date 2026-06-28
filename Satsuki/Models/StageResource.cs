@@ -31,7 +31,7 @@ namespace Satsuki.Models
         [Export]
         public string SavedAt { get; set; }
 
-        private void SaveInDb()
+        public StageResource()
         {
             Id = 0;
             Name = "";
