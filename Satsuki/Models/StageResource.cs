@@ -24,13 +24,45 @@ namespace Satsuki.Models
         public LobbyInfo LobbyInfo { get; set; } = new LobbyInfo();
         [Export]
         public StageInfo StageInfo { get; set; } = new StageInfo();
+        [Export]
+        public string CreatedAt { get; set; }
 
         [Export]
         public string SavedAt { get; set; }
 
 
-        private void SaveInDb()
+
+        public StageResource()
         {
+            Id = 0;
+            Name = "";
+            SceneName = "";
+            ScenePath = "";
+            LobbyInfo = new LobbyInfo();
+            StageInfo = new StageInfo();
+            CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            SavedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        }
+
+        public void Load(int id)
+        {
+            var stageResource = GetStageById(id);
+            if (stageResource != null)
+            {
+                this.Id = stageResource.Id;
+                this.Name = stageResource.Name;
+                this.SceneName = stageResource.SceneName;
+                this.ScenePath = stageResource.ScenePath;
+                this.LobbyInfo = stageResource.LobbyInfo;
+                this.StageInfo = stageResource.StageInfo;
+                this.CreatedAt = stageResource.CreatedAt;
+                this.SavedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            }
+        }
+
+        private bool SaveInDb()
+        {
+            int result = -1;
             using (var dbManager = new SqliteDbManager())
             {
                 dbManager.OpenConnection();
@@ -54,16 +86,17 @@ namespace Satsuki.Models
                             SCENE_PATH = excluded.SCENE_PATH,
                             LOBBY_RSC = excluded.LOBBY_RSC,
                             STAGE_RSC = excluded.STAGE_RSC;";
-                        command.ExecuteNonQuery();
+                        result = command.ExecuteNonQuery();
                     }
                 }
-
-                    dbManager.CloseConnection();
+                dbManager.CloseConnection();
+                if (result == 1)
+                    return true;
+                return false;
             }
         }
 
-
-        public StageResource GetStageById(int id)
+        private StageResource GetStageById(int id)
         {
             using (var dbManager = new SqliteDbManager())
             {
@@ -94,6 +127,13 @@ namespace Satsuki.Models
                 dbManager.CloseConnection();
             }
             return null;
+        }
+
+
+        public bool Save()
+        {
+
+            return SaveInDb();
         }
 
         public bool Save(string path)
