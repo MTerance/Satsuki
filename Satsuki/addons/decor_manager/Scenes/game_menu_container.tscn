@@ -1,9 +1,12 @@
-[gd_scene load_steps=3 format=3 uid="uid://cwhptm70bahx7"]
+[gd_scene load_steps=5 format=3 uid="uid://cwhptm70bahx7"]
 
+[ext_resource type="Script" uid="uid://doe7w2uql05yr" path="res://addons/decor_manager/GameMenuContainer.cs" id="1_8pjnx"]
 [ext_resource type="Script" uid="uid://egot5kly21n7" path="res://addons/decor_manager/Templates/CameraPlacementTemplate.cs" id="1_bfc0n"]
-[ext_resource type="Script" uid="uid://da7pqsi2cldef" path="res://addons/decor_manager/Templates/PlayerZonePlacementContainer.cs" id="2_f2bu0"]
+[ext_resource type="PackedScene" uid="uid://2ki3rsj2sxy7" path="res://addons/decor_manager/Scenes/player_zone_placement_container.tscn" id="3_mfhe8"]
+[ext_resource type="Script" uid="uid://dd6ndvhrr2tbp" path="res://addons/decor_manager/Models/PlayerZone.cs" id="4_yyjo6"]
 
 [node name="GameMenuContainer" type="VBoxContainer"]
+script = ExtResource("1_8pjnx")
 
 [node name="GameMenuTitleLabel" type="Label" parent="."]
 layout_mode = 2
@@ -92,70 +95,8 @@ layout_mode = 2
 layout_mode = 2
 text = "Zone Game Info Manager"
 
-[node name="PlayerZonePlacementContainer" type="PanelContainer" parent="."]
-layout_mode = 2
-script = ExtResource("2_f2bu0")
-
-[node name="HBoxContainer" type="HBoxContainer" parent="PlayerZonePlacementContainer"]
-layout_mode = 2
-alignment = 1
-
-[node name="CoordBoxContainer" type="VBoxContainer" parent="PlayerZonePlacementContainer/HBoxContainer"]
-layout_mode = 2
-alignment = 1
-
-[node name="CameraPositionBoxContainer" type="HBoxContainer" parent="PlayerZonePlacementContainer/HBoxContainer/CoordBoxContainer"]
+[node name="PlayerZonePlacementContainer" parent="." instance=ExtResource("3_mfhe8")]
 layout_mode = 2
 
-[node name="Container" type="MarginContainer" parent="PlayerZonePlacementContainer/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="PlayerZonePlacementContainer/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer/Container"]
-layout_mode = 2
-text = "Zone Pos."
-
-[node name="ZonePositionX" type="LineEdit" parent="PlayerZonePlacementContainer/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
-layout_mode = 2
-text = "X"
-placeholder_text = "000"
-alignment = 1
-
-[node name="ZonePositionY" type="LineEdit" parent="PlayerZonePlacementContainer/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
-layout_mode = 2
-text = "Y"
-placeholder_text = "000"
-alignment = 1
-
-[node name="ZonePositionZ" type="LineEdit" parent="PlayerZonePlacementContainer/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
-layout_mode = 2
-text = "Z"
-placeholder_text = "000"
-alignment = 1
-
-[node name="TargetCameraBoxContainer" type="HBoxContainer" parent="PlayerZonePlacementContainer/HBoxContainer/CoordBoxContainer"]
-layout_mode = 2
-
-[node name="MarginContainer" type="MarginContainer" parent="PlayerZonePlacementContainer/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
-layout_mode = 2
-
-[node name="Label2" type="Label" parent="PlayerZonePlacementContainer/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer/MarginContainer"]
-layout_mode = 2
-text = "Zone Rot."
-
-[node name="ZoneRotationX" type="LineEdit" parent="PlayerZonePlacementContainer/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
-layout_mode = 2
-text = "X"
-placeholder_text = "000"
-alignment = 1
-
-[node name="ZoneRotationY" type="LineEdit" parent="PlayerZonePlacementContainer/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
-layout_mode = 2
-text = "Y"
-placeholder_text = "000"
-alignment = 1
-
-[node name="ZoneRotationZ" type="LineEdit" parent="PlayerZonePlacementContainer/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
-layout_mode = 2
-text = "Z"
-placeholder_text = "000"
-alignment = 1
+[node name="@Node3D@26417" type="Node3D" parent="."]
+script = ExtResource("4_yyjo6")
