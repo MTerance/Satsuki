@@ -1,0 +1,46 @@
+[gd_scene format=3 uid="uid://bj5wyug16chp7"]
+
+[ext_resource type="Script" uid="uid://bovj4tifuy1hx" path="res://addons/decor_manager/Templates/StageListContainer.cs" id="1_vi3ol"]
+
+[node name="StageListContainer" type="Control" unique_id=190328426]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -634.0
+offset_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_vi3ol")
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=1261610502]
+layout_mode = 0
+offset_right = 515.0
+offset_bottom = 647.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer" unique_id=458239146]
+layout_mode = 2
+
+[node name="VBoxContainer" type="PanelContainer" parent="PanelContainer/VBoxContainer" unique_id=2125651984]
+custom_minimum_size = Vector2(0, 600)
+layout_mode = 2
+
+[node name="StageInfoList" type="ItemList" parent="PanelContainer/VBoxContainer/VBoxContainer" unique_id=372752301]
+layout_mode = 2
+allow_reselect = true
+auto_width = true
+auto_height = true
+scroll_hint_mode = 1
+tile_scroll_hint = true
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/VBoxContainer" unique_id=945539946]
+layout_mode = 2
+alignment = 1
+
+[node name="LoadButton" type="Button" parent="PanelContainer/VBoxContainer/HBoxContainer" unique_id=188615080]
+layout_mode = 2
+text = "LOAD"
+
+[node name="CancelButton" type="Button" parent="PanelContainer/VBoxContainer/HBoxContainer" unique_id=2020183060]
+layout_mode = 2
+text = "CANCEL"
