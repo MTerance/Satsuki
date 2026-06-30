@@ -24,8 +24,8 @@ public partial class DecorManagerTool : EditorPlugin
     private GeneralInfoContainer _generalInfoContainer;
     private LobbyMenuContainer _lobbyMenuContainer;
     private GameMenuContainer _gameMenuContainer;
-
-
+    //
+    private StageListContainer _stageListContainer;
     //
     private SpawnPointGizmoPlugin _spawnPointGizmoPlugin;
 
@@ -261,30 +261,35 @@ public partial class DecorManagerTool : EditorPlugin
         PackedScene controlScene = GD.Load<PackedScene>(controlPath);
         Control control = controlScene.Instantiate<Control>();
 
+        _stageListContainer = control.FindChild("StageListContainer", true, false) as StageListContainer;
+
         _windowEditor.AddChild(control);
-        _windowEditor.CloseStageSelectorWindow += OnClosedStageSelectorWindows();
-        _windowEditor.StageResourceSelected += OnStageResourceSelected();
+        _stageListContainer.CloseStageSelectorWindow += OnClosedStageSelectorWindows;
+        _stageListContainer.StageResourceSelected += OnStageResourceSelected;
         AddChild(_windowEditor);
         _windowEditor.PopupCentered();
     }
 
-    private int OnStageResourceSelected()
+    private void  OnStageResourceSelected(int id)
     {
+        CloseWindows();
         throw new NotImplementedException();
     }
 
-    private int OnClosedStageSelectorWindows()
+    private void OnClosedStageSelectorWindows()
     {
         throw new NotImplementedException();
     }
 
     private void CloseWindows()
     {
-        if (_windowEditor != null)
+        if (_stageListContainer != null)
         {
-            _windowEditor.CloseStageSelectorWindow -= OnClosedStageSelectorWindows();
-            _windowEditor.StageResourceSelected -= OnStageResourceSelected();
+            _stageListContainer.CloseStageSelectorWindow -= OnClosedStageSelectorWindows;
+            _stageListContainer.StageResourceSelected -= OnStageResourceSelected;
         }
+        _stageListContainer?.QueueFree();
+        _windowEditor?.QueueFree();
     }
 
     private void OnLoadStageResourceRequested()
