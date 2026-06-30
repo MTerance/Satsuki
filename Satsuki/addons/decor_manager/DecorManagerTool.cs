@@ -262,11 +262,30 @@ public partial class DecorManagerTool : EditorPlugin
         Control control = controlScene.Instantiate<Control>();
 
         _windowEditor.AddChild(control);
-
+        _windowEditor.CloseStageSelectorWindow += OnClosedStageSelectorWindows();
+        _windowEditor.StageResourceSelected += OnStageResourceSelected();
         AddChild(_windowEditor);
         _windowEditor.PopupCentered();
     }
 
+    private int OnStageResourceSelected()
+    {
+        throw new NotImplementedException();
+    }
+
+    private int OnClosedStageSelectorWindows()
+    {
+        throw new NotImplementedException();
+    }
+
+    private void CloseWindows()
+    {
+        if (_windowEditor != null)
+        {
+            _windowEditor.CloseStageSelectorWindow -= OnClosedStageSelectorWindows();
+            _windowEditor.StageResourceSelected -= OnStageResourceSelected();
+        }
+    }
 
     private void OnLoadStageResourceRequested()
     {
