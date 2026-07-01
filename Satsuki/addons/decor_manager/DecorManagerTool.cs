@@ -270,15 +270,26 @@ public partial class DecorManagerTool : EditorPlugin
         _windowEditor.PopupCentered();
     }
 
+    private void LoadStageResource(StageResource resource)
+    {
+        ClearCurrentWorkspace();
+        _generalInfoContainer.UpdateGeneralInfo(resource.Name, resource.ResourcePath);
+        _stageInfoContainer.SetStageInfo(resource.ScenePath);
+        _lobbyMenuContainer.SetLobbyInfo(resource.LobbyInfo);
+        OnLoadStageAssetRequested(GD.Load<PackedScene>(resource.ScenePath));
+    }
+
     private void  OnStageResourceSelected(int id)
     {
+        StageResource resource = new StageResource();
+        resource.Load(id);
+        LoadStageResource(resource);
         CloseWindows();
-        throw new NotImplementedException();
     }
 
     private void OnClosedStageSelectorWindows()
     {
-        throw new NotImplementedException();
+        CloseWindows();
     }
 
     private void CloseWindows()
@@ -420,7 +431,6 @@ public partial class DecorManagerTool : EditorPlugin
     public override void _Process(double delta)
     {
         base._Process(delta);
-
     }
 }
 #endif
