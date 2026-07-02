@@ -27,7 +27,6 @@ namespace Satsuki.Models
         public StageInfo StageInfo { get; set; } = new StageInfo();
         [Export]
         public string CreatedAt { get; set; }
-
         [Export]
         public string SavedAt { get; set; }
 

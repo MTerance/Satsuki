@@ -4,6 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+#if TOOLS
+[Tool]
+#endif
+
 public partial class StageListContainer : Control
 {
 	private StageResourceBuilder StageResourceBuilder { get; set; }

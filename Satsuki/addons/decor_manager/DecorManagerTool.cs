@@ -18,7 +18,7 @@ using System.Text.Json.Serialization;
 [Tool]
 public partial class DecorManagerTool : EditorPlugin
 {
-    private Control _dockPanel;
+    private EditorDock _dockPanel;
     private VBoxContainer _mainContainer;
     private StageInfoContainer _stageInfoContainer;
     private GeneralInfoContainer _generalInfoContainer;
@@ -58,8 +58,9 @@ public partial class DecorManagerTool : EditorPlugin
         GD.Print("DecorManagerTool: Initialisation...");
         SetupRootSceneNode();
         CreateDockPanel();
-        AddControlToDock(DockSlot.RightUl, _dockPanel);
-
+        //        AddControlToDock(DockSlot.RightUl, _dockPanel);
+        _dockPanel.DefaultSlot = (EditorDock.DockSlot)DockSlot.RightUl;
+        AddDock(_dockPanel);
         _spawnPointGizmoPlugin = new SpawnPointGizmoPlugin();
         AddNode3DGizmoPlugin(_spawnPointGizmoPlugin);
         GD.Print("DecorManagerTool: Dock ajoute");
@@ -102,7 +103,7 @@ public partial class DecorManagerTool : EditorPlugin
 
     private void CreateDockPanel()
     {
-        _dockPanel = new Control();
+        _dockPanel = new EditorDock();
         _dockPanel.Name = "Decor Manager";
         GD.Print("DecorManagerTool: Creation du panneau de dock...");
         string controlPath = "res://addons/decor_manager/Scenes/control.tscn";
@@ -261,11 +262,25 @@ public partial class DecorManagerTool : EditorPlugin
         PackedScene controlScene = GD.Load<PackedScene>(controlPath);
         Control control = controlScene.Instantiate<Control>();
 
-        _stageListContainer = control.FindChild("StageListContainer", true, false) as StageListContainer;
-
-        _windowEditor.AddChild(control);
-        _stageListContainer.CloseStageSelectorWindow += OnClosedStageSelectorWindows;
-        _stageListContainer.StageResourceSelected += OnStageResourceSelected;
+        if (control != null)
+        {
+            GD.Print($"name : { control.Name }");
+            _stageListContainer = control  as StageListContainer;
+            if (_stageListContainer != null)
+            {
+                _stageListContainer.CloseStageSelectorWindow += OnClosedStageSelectorWindows;
+                _stageListContainer.StageResourceSelected += OnStageResourceSelected;
+                _windowEditor.AddChild(control);
+            }
+            else
+            {
+                GD.PrintErr("DecorManagerTool: StageListContainer introuvable");
+            }
+        }
+        else
+        {
+            GD.PrintErr("DecorManagerTool: Impossible d'instancier le control pour le StageListContainer");
+        }
         AddChild(_windowEditor);
         _windowEditor.PopupCentered();
     }
@@ -279,7 +294,7 @@ public partial class DecorManagerTool : EditorPlugin
         OnLoadStageAssetRequested(GD.Load<PackedScene>(resource.ScenePath));
     }
 
-    private void  OnStageResourceSelected(int id)
+    private void OnStageResourceSelected(int id)
     {
         StageResource resource = new StageResource();
         resource.Load(id);
