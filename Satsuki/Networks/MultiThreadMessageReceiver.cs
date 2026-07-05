@@ -12,8 +12,8 @@ using Satsuki;
 namespace Satsuki.Networks
 {
     /// <summary>
-    /// Classe multithread qui gère la réception de messages de multiples clients
-    /// et les stocke dans une queue triée par timestamp
+    /// Classe multithread qui gÃ¨re la rÃ©ception de messages de multiples clients
+    /// et les stocke dans une queue triÃ©e par timestamp
     /// </summary>
     public class MultiThreadMessageReceiver : SingletonBase<MultiThreadMessageReceiver>, IDisposable
     {
@@ -38,7 +38,7 @@ namespace Satsuki.Networks
         }
 
         /// <summary>
-        /// Démarre le système de réception multithread
+        /// DÃ©marre le systÃ¨me de rÃ©ception multithread
         /// </summary>
         public void Start()
         {
@@ -48,12 +48,12 @@ namespace Satsuki.Networks
                     return;
 
                 _isRunning = true;
-                Console.WriteLine("MultiThreadMessageReceiver: Démarré");
+                Console.WriteLine("MultiThreadMessageReceiver: DÃ©marrÃ©");
             }
         }
 
         /// <summary>
-        /// Arrête le système de réception
+        /// ArrÃªte le systÃ¨me de rÃ©ception
         /// </summary>
         public async Task Stop()
         {
@@ -66,18 +66,18 @@ namespace Satsuki.Networks
                 _cancellationTokenSource.Cancel();
             }
 
-            // Arrête tous les clients
+            // ArrÃªte tous les clients
             var stopTasks = _clients.Values.Select(client => client.StopAsync()).ToArray();
             await Task.WhenAll(stopTasks);
 
             _clients.Clear();
-            Console.WriteLine("MultiThreadMessageReceiver: Arrêté");
+            Console.WriteLine("MultiThreadMessageReceiver: ArrÃªtÃ©");
         }
 
         /// <summary>
-        /// Ajoute un nouveau client à gérer
+        /// Ajoute un nouveau client Ã  gÃ©rer
         /// </summary>
-        /// <param name="tcpClient">Client TCP connecté</param>
+        /// <param name="tcpClient">Client TCP connectÃ©</param>
         /// <returns>ID unique du client</returns>
         public string AddClient(TcpClient tcpClient)
         {
@@ -90,7 +90,7 @@ namespace Satsuki.Networks
             if (_clients.TryAdd(clientId, clientHandler))
             {
                 clientHandler.StartListening(_cancellationTokenSource.Token);
-                Console.WriteLine($"MultiThreadMessageReceiver: Client {clientId} ajouté");
+                Console.WriteLine($"MultiThreadMessageReceiver: Client {clientId} ajoutÃ©");
                 return clientId;
             }
 
@@ -100,18 +100,18 @@ namespace Satsuki.Networks
         /// <summary>
         /// Supprime un client
         /// </summary>
-        /// <param name="clientId">ID du client à supprimer</param>
+        /// <param name="clientId">ID du client Ã  supprimer</param>
         public async Task RemoveClient(string clientId)
         {
             if (_clients.TryRemove(clientId, out ClientHandler clientHandler))
             {
                 await clientHandler.StopAsync();
-                Console.WriteLine($"MultiThreadMessageReceiver: Client {clientId} supprimé");
+                Console.WriteLine($"MultiThreadMessageReceiver: Client {clientId} supprimÃ©");
             }
         }
 
         /// <summary>
-        /// Obtient le nombre de clients connectés
+        /// Obtient le nombre de clients connectÃ©s
         /// </summary>
         public int GetConnectedClientCount()
         {
@@ -119,7 +119,7 @@ namespace Satsuki.Networks
         }
 
         /// <summary>
-        /// Obtient la liste des IDs des clients connectés
+        /// Obtient la liste des IDs des clients connectÃ©s
         /// </summary>
         public List<string> GetConnectedClientIds()
         {
@@ -127,9 +127,9 @@ namespace Satsuki.Networks
         }
 
         /// <summary>
-        /// Récupère tous les messages triés par timestamp
+        /// RÃ©cupÃ¨re tous les messages triÃ©s par timestamp
         /// </summary>
-        /// <returns>Liste des messages triés</returns>
+        /// <returns>Liste des messages triÃ©s</returns>
         public List<Message> GetMessagesByTimestamp()
         {
             var messages = new List<Message>();
@@ -143,10 +143,10 @@ namespace Satsuki.Networks
         }
 
         /// <summary>
-        /// Récupère un nombre limité de messages triés par timestamp
+        /// RÃ©cupÃ¨re un nombre limitÃ© de messages triÃ©s par timestamp
         /// </summary>
         /// <param name="maxCount">Nombre maximum de messages</param>
-        /// <returns>Liste des messages triés</returns>
+        /// <returns>Liste des messages triÃ©s</returns>
         public List<Message> GetMessagesByTimestamp(int maxCount)
         {
             var messages = new List<Message>();
@@ -162,7 +162,7 @@ namespace Satsuki.Networks
         }
 
         /// <summary>
-        /// Vérifie s'il y a des messages en attente
+        /// VÃ©rifie s'il y a des messages en attente
         /// </summary>
         public bool HasPendingMessages()
         {
@@ -178,10 +178,10 @@ namespace Satsuki.Networks
         }
 
         /// <summary>
-        /// Envoie un message à un client spécifique
+        /// Envoie un message Ã  un client spÃ©cifique
         /// </summary>
         /// <param name="clientId">ID du client</param>
-        /// <param name="message">Message à envoyer</param>
+        /// <param name="message">Message Ã  envoyer</param>
         public async Task<bool> SendMessageToClient(string clientId, string message)
         {
             if (_clients.TryGetValue(clientId, out ClientHandler clientHandler))
@@ -192,18 +192,18 @@ namespace Satsuki.Networks
         }
 
         /// <summary>
-        /// Envoie un message à tous les clients connectés
+        /// Envoie un message Ã  tous les clients connectÃ©s
         /// </summary>
-        /// <param name="message">Message à envoyer</param>
+        /// <param name="message">Message Ã  envoyer</param>
         public async Task BroadcastMessage(string message)
         {
             var sendTasks = _clients.Values.Select(client => client.SendMessageAsync(message)).ToArray();
             await Task.WhenAll(sendTasks);
-            Console.WriteLine($"Message diffusé à {sendTasks.Length} clients");
+            Console.WriteLine($"Message diffusÃ© Ã  {sendTasks.Length} clients");
         }
 
         /// <summary>
-        /// Callback appelé quand un message est reçu d'un client
+        /// Callback appelÃ© quand un message est reÃ§u d'un client
         /// </summary>
         private void OnMessageReceived(string clientId, string messageContent)
         {
@@ -211,11 +211,11 @@ namespace Satsuki.Networks
             _messageQueue.Enqueue(message);
             _messageAvailableSemaphore.Release();
             
-            Console.WriteLine($"Message reçu de {clientId}: {messageContent}");
+            Console.WriteLine($"Message reÃ§u de {clientId}: {messageContent}");
         }
 
         /// <summary>
-        /// Callback appelé quand un client se déconnecte
+        /// Callback appelÃ© quand un client se dÃ©connecte
         /// </summary>
         private async void OnClientDisconnected(string clientId)
         {
@@ -223,7 +223,7 @@ namespace Satsuki.Networks
         }
 
         /// <summary>
-        /// Obtient les statistiques du système
+        /// Obtient les statistiques du systÃ¨me
         /// </summary>
         public (int clients, int pendingMessages, bool running) GetStatistics()
         {
@@ -282,7 +282,7 @@ namespace Satsuki.Networks
         }
 
         /// <summary>
-        /// Démarre l'écoute des messages pour ce client
+        /// DÃ©marre l'Ã©coute des messages pour ce client
         /// </summary>
         public void StartListening(CancellationToken cancellationToken)
         {
@@ -294,7 +294,7 @@ namespace Satsuki.Networks
         }
 
         /// <summary>
-        /// Arrête l'écoute pour ce client
+        /// ArrÃªte l'Ã©coute pour ce client
         /// </summary>
         public async Task StopAsync()
         {
@@ -311,7 +311,7 @@ namespace Satsuki.Networks
         }
 
         /// <summary>
-        /// Envoie un message à ce client
+        /// Envoie un message Ã  ce client
         /// </summary>
         public async Task<bool> SendMessageAsync(string message)
         {
@@ -327,13 +327,13 @@ namespace Satsuki.Networks
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Erreur envoi message à {_clientId}: {ex.Message}");
+                Console.WriteLine($"Erreur envoi message Ã  {_clientId}: {ex.Message}");
                 return false;
             }
         }
 
         /// <summary>
-        /// Boucle d'écoute des messages
+        /// Boucle d'Ã©coute des messages
         /// </summary>
         private async Task ListenForMessages(CancellationToken cancellationToken)
         {
@@ -354,7 +354,7 @@ namespace Satsuki.Networks
                         }
                         else
                         {
-                            // Client déconnecté
+                            // Client dÃ©connectÃ©
                             break;
                         }
                     }
@@ -366,11 +366,11 @@ namespace Satsuki.Networks
             }
             catch (OperationCanceledException)
             {
-                // Arrêt normal
+                // ArrÃªt normal
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Erreur écoute {_clientId}: {ex.Message}");
+                Console.WriteLine($"Erreur Ã©coute {_clientId}: {ex.Message}");
             }
             finally
             {

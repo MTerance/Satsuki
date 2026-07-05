@@ -40,6 +40,7 @@ namespace Satsuki.Models
             StageInfo = new StageInfo();
             CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             SavedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            GD.Print(JsonSerializer.Serialize(this.LobbyInfo));
         }
 
         public void Load(int id)
@@ -130,7 +131,7 @@ namespace Satsuki.Models
 
         public bool Save()
         {
-
+            GD.Print(JsonSerializer.Serialize(this.LobbyInfo));
             return SaveInDb();
         }
 

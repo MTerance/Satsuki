@@ -14,9 +14,5 @@ public partial class GameMenuContainer : VBoxContainer
 	{
 		base._Ready();
 	}
-
-
 }
-
-
 #endif
