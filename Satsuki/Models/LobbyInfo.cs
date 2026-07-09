@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Satsuki.Models
@@ -24,6 +25,22 @@ namespace Satsuki.Models
         public LobbyInfo()
         {
             SpawnPoints = new Godot.Collections.Array<SpawnPointData>();
+            PositionCamera = Vector3.Zero;
+            RotationCamera = Vector3.Zero;
+            PositionTargetCamera = Vector3.Zero;
+        }
+    }
+
+    public class LobbyInfoResource
+    {
+        public Godot.Vector3 PositionCamera { get; set; }
+        public Godot.Vector3 RotationCamera { get; set; }
+        public Godot.Vector3 PositionTargetCamera { get; set; }
+        public CameraPlacementResource CameraPlacement { get; set; } = new CameraPlacementResource();
+        public List<SpawnPointData> SpawnPoints { get; set; }
+        public LobbyInfoResource()
+        {
+            SpawnPoints = new List<SpawnPointData>();
             PositionCamera = Vector3.Zero;
             RotationCamera = Vector3.Zero;
             PositionTargetCamera = Vector3.Zero;

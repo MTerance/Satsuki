@@ -40,4 +40,29 @@ namespace Satsuki.Models
             Target = target;
         }
     }
+
+    public class CameraPlacementResource
+    {
+        public int Index { get; set; }
+        public string TypeTemplateCamera { get; set; }
+        public Vector3 Position { get; set; }
+        public Vector3 Rotation { get; set; }
+        public Vector3 Target { get; set; }
+        public CameraPlacementResource()
+        {
+            Index = 0;
+            TypeTemplateCamera = string.Empty;
+            Position = Vector3.Zero;
+            Rotation = Vector3.Zero;
+            Target = Vector3.Zero;
+        }
+        public CameraPlacementResource(int index, string typeTemplateCamera, Vector3 position, Vector3 rotation, Vector3 target)
+        {
+            Index = index;
+            TypeTemplateCamera = typeTemplateCamera;
+            Position = position;
+            Rotation = rotation;
+            Target = target;
+        }
+    }
 }

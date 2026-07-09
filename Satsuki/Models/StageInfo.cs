@@ -28,4 +28,19 @@ namespace Satsuki.Models
             PositionMainCamera = Vector3.Zero;
         }
     }
+
+    public class StageInfoResource
+    {
+        public Godot.Vector3 rectA { get; set; }
+        public Godot.Vector3 rectB { get; set; }
+        public Godot.Vector3 PositionTargetMainCamera { get; set; }
+        public Godot.Vector3 PositionMainCamera { get; set; }
+        public StageInfoResource()
+        {
+            rectA = Vector3.Zero;
+            rectB = Vector3.Zero;
+            PositionTargetMainCamera = Vector3.Zero;
+            PositionMainCamera = Vector3.Zero;
+        }
+    }
 }
