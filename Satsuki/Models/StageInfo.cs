@@ -31,16 +31,16 @@ namespace Satsuki.Models
 
     public class StageInfoResource
     {
-        public Godot.Vector3 rectA { get; set; }
-        public Godot.Vector3 rectB { get; set; }
-        public Godot.Vector3 PositionTargetMainCamera { get; set; }
-        public Godot.Vector3 PositionMainCamera { get; set; }
+        public Tuple<float, float, float> rectA { get; set; }
+        public Tuple<float, float, float> rectB { get; set; }
+        public Tuple<float, float, float> PositionTargetMainCamera { get; set; }
+        public Tuple<float, float, float> PositionMainCamera { get; set; }
         public StageInfoResource()
         {
-            rectA = Vector3.Zero;
-            rectB = Vector3.Zero;
-            PositionTargetMainCamera = Vector3.Zero;
-            PositionMainCamera = Vector3.Zero;
+            rectA = Tuple.Create(0f, 0f, 0f);
+            rectB = Tuple.Create(0f, 0f, 0f);
+            PositionTargetMainCamera = Tuple.Create(0f, 0f, 0f);
+            PositionMainCamera = Tuple.Create(0f, 0f, 0f);
         }
     }
 }

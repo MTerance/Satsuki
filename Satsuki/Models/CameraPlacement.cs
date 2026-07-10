@@ -45,24 +45,24 @@ namespace Satsuki.Models
     {
         public int Index { get; set; }
         public string TypeTemplateCamera { get; set; }
-        public Vector3 Position { get; set; }
-        public Vector3 Rotation { get; set; }
-        public Vector3 Target { get; set; }
+        public Tuple<float,float,float> Position { get; set; }
+        public Tuple<float, float, float> Rotation { get; set; }
+        public Tuple<float, float, float> Target { get; set; }
         public CameraPlacementResource()
         {
             Index = 0;
             TypeTemplateCamera = string.Empty;
-            Position = Vector3.Zero;
-            Rotation = Vector3.Zero;
-            Target = Vector3.Zero;
+            Position = Tuple.Create(0f, 0f, 0f);
+            Rotation = Tuple.Create(0f, 0f, 0f);
+            Target = Tuple.Create(0f, 0f, 0f);
         }
         public CameraPlacementResource(int index, string typeTemplateCamera, Vector3 position, Vector3 rotation, Vector3 target)
         {
             Index = index;
             TypeTemplateCamera = typeTemplateCamera;
-            Position = position;
-            Rotation = rotation;
-            Target = target;
+            Position = Tuple.Create(position.X, position.Y, position.Z);
+            Rotation = Tuple.Create(rotation.X, rotation.Y, rotation.Z);
+            Target = Tuple.Create(target.X, target.Y, target.Z);
         }
     }
 }

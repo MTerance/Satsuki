@@ -13,9 +13,9 @@ namespace Satsuki.Tools.Converters
         {
             var lobbyInfo = new LobbyInfo
             {
-                PositionCamera = resource.PositionCamera,
-                RotationCamera = resource.RotationCamera,
-                PositionTargetCamera = resource.PositionTargetCamera,
+                PositionCamera = new Godot.Vector3(resource.PositionCamera.Item1, resource.PositionCamera.Item2, resource.PositionCamera.Item3),
+                RotationCamera = new Godot.Vector3(resource.RotationCamera.Item1, resource.RotationCamera.Item2, resource.RotationCamera.Item3),
+                PositionTargetCamera = new Godot.Vector3(resource.PositionTargetCamera.Item1, resource.PositionTargetCamera.Item2, resource.PositionTargetCamera.Item3),
                 CameraPlacement = CameraPlacementConverter.ConvertTo(resource.CameraPlacement),
                 SpawnPoints = new Godot.Collections.Array<SpawnPointData>(resource.SpawnPoints)
             };
@@ -26,9 +26,9 @@ namespace Satsuki.Tools.Converters
         {
             var resource = new LobbyInfoResource
             {
-                PositionCamera = lobbyInfo.PositionCamera,
-                RotationCamera = lobbyInfo.RotationCamera,
-                PositionTargetCamera = lobbyInfo.PositionTargetCamera,
+                PositionCamera = Tuple.Create(lobbyInfo.PositionCamera.X, lobbyInfo.PositionCamera.Y, lobbyInfo.PositionCamera.Z),
+                RotationCamera = Tuple.Create(lobbyInfo.RotationCamera.X, lobbyInfo.RotationCamera.Y, lobbyInfo.RotationCamera.Z),
+                PositionTargetCamera = Tuple.Create(lobbyInfo.PositionTargetCamera.X, lobbyInfo.PositionTargetCamera.Y, lobbyInfo.PositionTargetCamera.Z),
                 CameraPlacement = CameraPlacementConverter.ConvertFrom(lobbyInfo.CameraPlacement),
                 SpawnPoints = new List<SpawnPointData>(lobbyInfo.SpawnPoints)
             };

@@ -33,17 +33,17 @@ namespace Satsuki.Models
 
     public class LobbyInfoResource
     {
-        public Godot.Vector3 PositionCamera { get; set; }
-        public Godot.Vector3 RotationCamera { get; set; }
-        public Godot.Vector3 PositionTargetCamera { get; set; }
+        public Tuple<float, float, float> PositionCamera { get; set; }
+        public Tuple<float, float, float> RotationCamera { get; set; }
+        public Tuple<float, float, float> PositionTargetCamera { get; set; }
         public CameraPlacementResource CameraPlacement { get; set; } = new CameraPlacementResource();
         public List<SpawnPointData> SpawnPoints { get; set; }
         public LobbyInfoResource()
         {
             SpawnPoints = new List<SpawnPointData>();
-            PositionCamera = Vector3.Zero;
-            RotationCamera = Vector3.Zero;
-            PositionTargetCamera = Vector3.Zero;
+            PositionCamera = Tuple.Create(0f, 0f, 0f);
+            RotationCamera = Tuple.Create(0f, 0f, 0f);
+            PositionTargetCamera = Tuple.Create(0f, 0f, 0f);
         }
     }
 }

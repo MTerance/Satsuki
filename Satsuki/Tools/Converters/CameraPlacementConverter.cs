@@ -12,7 +12,21 @@ namespace Satsuki.Tools.Converters
 
         public static CameraPlacement ConvertTo(CameraPlacementResource resource)
         {
-            return new CameraPlacement(resource.Index, resource.TypeTemplateCamera, resource.Position, resource.Rotation, resource.Target);
+            return new CameraPlacement(
+                resource.Index,
+                resource.TypeTemplateCamera,
+                new Godot.Vector3(
+                    resource.Position.Item1,
+                    resource.Position.Item2,
+                    resource.Position.Item3),
+                new Godot.Vector3(
+                    resource.Rotation.Item1,
+                    resource.Rotation.Item2,
+                    resource.Rotation.Item3),
+                new Godot.Vector3(
+                    resource.Target.Item1,
+                    resource.Target.Item2,
+                    resource.Target.Item3));
         }
 
         public static CameraPlacementResource ConvertFrom(CameraPlacement placement)
