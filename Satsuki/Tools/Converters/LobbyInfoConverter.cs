@@ -17,8 +17,14 @@ namespace Satsuki.Tools.Converters
                 RotationCamera = new Godot.Vector3(resource.RotationCamera.Item1, resource.RotationCamera.Item2, resource.RotationCamera.Item3),
                 PositionTargetCamera = new Godot.Vector3(resource.PositionTargetCamera.Item1, resource.PositionTargetCamera.Item2, resource.PositionTargetCamera.Item3),
                 CameraPlacement = CameraPlacementConverter.ConvertTo(resource.CameraPlacement),
-                SpawnPoints = new Godot.Collections.Array<SpawnPointData>(resource.SpawnPoints)
+                SpawnPoints = new Godot.Collections.Array<SpawnPointData>()
             };
+
+            foreach (var spawnPointResource in resource.SpawnPoints)
+            {
+                lobbyInfo.SpawnPoints.Add(SpawnPointDataConverter.ConvertTo(spawnPointResource));
+            }
+
             return lobbyInfo;
         }
 
@@ -30,7 +36,7 @@ namespace Satsuki.Tools.Converters
                 RotationCamera = Tuple.Create(lobbyInfo.RotationCamera.X, lobbyInfo.RotationCamera.Y, lobbyInfo.RotationCamera.Z),
                 PositionTargetCamera = Tuple.Create(lobbyInfo.PositionTargetCamera.X, lobbyInfo.PositionTargetCamera.Y, lobbyInfo.PositionTargetCamera.Z),
                 CameraPlacement = CameraPlacementConverter.ConvertFrom(lobbyInfo.CameraPlacement),
-                SpawnPoints = new List<SpawnPointData>(lobbyInfo.SpawnPoints)
+                SpawnPoints = lobbyInfo.SpawnPoints.Select(SpawnPointDataConverter.ConvertFrom).ToList()
             };
             return resource;
         }

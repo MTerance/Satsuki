@@ -6,7 +6,7 @@
                         }                         else
                         {
                             command.CommandText =
-                                $@"UPDATE Stages SET                                      NAME = @name,                                     SCENE_NAME = @sceneName,                                     SCENE_PATH = @scenePath,                                     LOBBY_RSC = @lobbyRsc,                                     STAGE_RSC = @stageRsc                                 WHERE Stages.Id = @id";
+                                $@"UPDATE Stages SET NAME = @name,SCENE_NAME = @sceneName,SCENE_PATH = @scenePath,LOBBY_RSC = @lobbyRsc,STAGE_RSC = @stageRsc WHERE Stages.Id = @id";
                             command.Parameters.AddWithValue("@id", this.Id);
                         }                         command.Parameters.AddWithValue("@name", this.Name);
                         command.Parameters.AddWithValue("@sceneName", this.SceneName);

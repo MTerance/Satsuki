@@ -35,4 +35,26 @@ namespace Satsuki.Models
 			Type = type;
 		}
 	}
+
+    public class SpawnPointDataResource
+    {
+        public int Index { get; set; }
+        public Tuple<float, float, float> Position { get; set; }
+        public Tuple<float, float, float> Rotation { get; set; }
+        public SpawnPointType Type { get; set; }
+        public SpawnPointDataResource()
+        {
+            Index = 0;
+            Position = Tuple.Create(0f, 0f, 0f);
+            Rotation = Tuple.Create(0f, 0f, 0f);
+            Type = SpawnPointType.Standard_Idle;
+        }
+        public SpawnPointDataResource(int index, Vector3 position, Vector3 rotation, SpawnPointType type)
+        {
+            Index = index;
+            Position = Tuple.Create(position.X, position.Y, position.Z);
+            Rotation = Tuple.Create(rotation.X, rotation.Y, rotation.Z);
+            Type = type;
+        }
+    }
 }

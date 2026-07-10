@@ -37,10 +37,10 @@ namespace Satsuki.Models
         public Tuple<float, float, float> RotationCamera { get; set; }
         public Tuple<float, float, float> PositionTargetCamera { get; set; }
         public CameraPlacementResource CameraPlacement { get; set; } = new CameraPlacementResource();
-        public List<SpawnPointData> SpawnPoints { get; set; }
+        public List<SpawnPointDataResource> SpawnPoints { get; set; }
         public LobbyInfoResource()
         {
-            SpawnPoints = new List<SpawnPointData>();
+            SpawnPoints = new List<SpawnPointDataResource>();
             PositionCamera = Tuple.Create(0f, 0f, 0f);
             RotationCamera = Tuple.Create(0f, 0f, 0f);
             PositionTargetCamera = Tuple.Create(0f, 0f, 0f);

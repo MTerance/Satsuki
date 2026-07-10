@@ -31,7 +31,15 @@ namespace Satsuki.Tools.Converters
 
         public static CameraPlacementResource ConvertFrom(CameraPlacement placement)
         {
-            return new CameraPlacementResource(placement.Index, placement.TypeTemplateCamera, placement.Position, placement.Rotation, placement.Target);
+            var resource = new CameraPlacementResource
+            {
+                Index = placement.Index,
+                TypeTemplateCamera = placement.TypeTemplateCamera,
+                Position = Tuple.Create(placement.Position.X, placement.Position.Y, placement.Position.Z),
+                Rotation = Tuple.Create(placement.Rotation.X, placement.Rotation.Y, placement.Rotation.Z),
+                Target = Tuple.Create(placement.Target.X, placement.Target.Y, placement.Target.Z)
+            };
+            return resource;
         }
     }
 }
