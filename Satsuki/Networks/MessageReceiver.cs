@@ -12,8 +12,8 @@ using Satsuki;
 namespace Satsuki.Networks
 {
     /// <summary>
-    /// Classe multithread qui reçoit les messages des différents clients
-    /// et les stocke dans une queue par ordre d'arrivée avec support du cryptage
+    /// Classe multithread qui reÃ§oit les messages des diffÃ©rents clients
+    /// et les stocke dans une queue par ordre d'arrivÃ©e avec support du cryptage
     /// </summary>
     public class MessageReceiver : SingletonBase<MessageReceiver>, IDisposable
     {
@@ -41,18 +41,18 @@ namespace Satsuki.Networks
             _disposed = false;
             _clientIdCounter = 0;
 
-            // Configuration par défaut du cryptage
-            _encryptionEnabled = true; // Cryptage activé par défaut
-            _encryptionKey = null; // Utilise la clé par défaut
-            _encryptionIV = null;  // Utilise l'IV par défaut
+            // Configuration par dÃ©faut du cryptage
+            _encryptionEnabled = true; // Cryptage activÃ© par dÃ©faut
+            _encryptionKey = null; // Utilise la clÃ© par dÃ©faut
+            _encryptionIV = null;  // Utilise l'IV par dÃ©faut
         }
 
         /// <summary>
-        /// Configure le système de cryptage
+        /// Configure le systÃ¨me de cryptage
         /// </summary>
-        /// <param name="enabled">Active ou désactive le cryptage</param>
-        /// <param name="key">Clé de cryptage personnalisée (null pour utiliser la clé par défaut)</param>
-        /// <param name="iv">IV personnalisé (null pour utiliser l'IV par défaut)</param>
+        /// <param name="enabled">Active ou dÃ©sactive le cryptage</param>
+        /// <param name="key">ClÃ© de cryptage personnalisÃ©e (null pour utiliser la clÃ© par dÃ©faut)</param>
+        /// <param name="iv">IV personnalisÃ© (null pour utiliser l'IV par dÃ©faut)</param>
         public void ConfigureEncryption(bool enabled, byte[] key = null, byte[] iv = null)
         {
             lock (_lockObject)
@@ -61,16 +61,16 @@ namespace Satsuki.Networks
                 _encryptionKey = key;
                 _encryptionIV = iv;
                 
-                Console.WriteLine($"?? Cryptage des messages: {(enabled ? "ACTIVÉ" : "DÉSACTIVÉ")}");
+                Console.WriteLine($"?? Cryptage des messages: {(enabled ? "ACTIVÃ‰" : "DÃ‰SACTIVÃ‰")}");
                 if (enabled && key != null)
                 {
-                    Console.WriteLine("?? Clé de cryptage personnalisée configurée");
+                    Console.WriteLine("?? ClÃ© de cryptage personnalisÃ©e configurÃ©e");
                 }
             }
         }
 
         /// <summary>
-        /// Génère et configure une nouvelle clé de cryptage aléatoire
+        /// GÃ©nÃ¨re et configure une nouvelle clÃ© de cryptage alÃ©atoire
         /// </summary>
         public void GenerateNewEncryptionKey()
         {
@@ -79,8 +79,8 @@ namespace Satsuki.Networks
                 _encryptionKey = MessageCrypto.GenerateRandomKey();
                 _encryptionIV = MessageCrypto.GenerateRandomIV();
                 
-                Console.WriteLine("?? Nouvelle clé de cryptage générée");
-                Console.WriteLine($"?? Clé: {MessageCrypto.BytesToBase64(_encryptionKey)}");
+                Console.WriteLine("?? Nouvelle clÃ© de cryptage gÃ©nÃ©rÃ©e");
+                Console.WriteLine($"?? ClÃ©: {MessageCrypto.BytesToBase64(_encryptionKey)}");
                 Console.WriteLine($"?? IV: {MessageCrypto.BytesToBase64(_encryptionIV)}");
             }
         }
@@ -88,7 +88,7 @@ namespace Satsuki.Networks
         /// <summary>
         /// Obtient les informations de cryptage actuelles
         /// </summary>
-        /// <returns>Tuple contenant l'état, la clé et l'IV en Base64</returns>
+        /// <returns>Tuple contenant l'Ã©tat, la clÃ© et l'IV en Base64</returns>
         public (bool enabled, string keyBase64, string ivBase64) GetEncryptionInfo()
         {
             lock (_lockObject)
@@ -100,7 +100,7 @@ namespace Satsuki.Networks
         }
 
         /// <summary>
-        /// Démarre le système de réception des messages
+        /// DÃ©marre le systÃ¨me de rÃ©ception des messages
         /// </summary>
         public void Start()
         {
@@ -110,15 +110,15 @@ namespace Satsuki.Networks
                     return;
 
                 _isRunning = true;
-                Console.WriteLine("?? MessageReceiver: Démarré - Réception des messages par ordre d'arrivée");
+                Console.WriteLine("?? MessageReceiver: DÃ©marrÃ© - RÃ©ception des messages par ordre d'arrivÃ©e");
                 
                 var encInfo = GetEncryptionInfo();
-                Console.WriteLine($"?? Cryptage: {(encInfo.enabled ? "ACTIVÉ" : "DÉSACTIVÉ")}");
+                Console.WriteLine($"?? Cryptage: {(encInfo.enabled ? "ACTIVÃ‰" : "DÃ‰SACTIVÃ‰")}");
             }
         }
 
         /// <summary>
-        /// Arrête le système de réception
+        /// ArrÃªte le systÃ¨me de rÃ©ception
         /// </summary>
         public async Task Stop()
         {
@@ -131,19 +131,19 @@ namespace Satsuki.Networks
                 _cancellationTokenSource.Cancel();
             }
 
-            // Arrête tous les clients
+            // ArrÃªte tous les clients
             var stopTasks = _clients.Values.Select(client => client.StopAsync()).ToArray();
             await Task.WhenAll(stopTasks);
 
             _clients.Clear();
-            Console.WriteLine("?? MessageReceiver: Arrêté");
+            Console.WriteLine("?? MessageReceiver: ArrÃªtÃ©");
         }
 
         /// <summary>
-        /// Ajoute un nouveau client TCP à surveiller
+        /// Ajoute un nouveau client TCP Ã  surveiller
         /// </summary>
-        /// <param name="tcpClient">Client TCP connecté</param>
-        /// <returns>ID unique attribué au client</returns>
+        /// <param name="tcpClient">Client TCP connectÃ©</param>
+        /// <returns>ID unique attribuÃ© au client</returns>
         public string AddClient(TcpClient tcpClient)
         {
             if (!_isRunning || _disposed || tcpClient == null)
@@ -155,7 +155,7 @@ namespace Satsuki.Networks
             if (_clients.TryAdd(clientId, clientConnection))
             {
                 clientConnection.StartListening(_cancellationTokenSource.Token);
-                Console.WriteLine($"?? MessageReceiver: Client {clientId} ajouté ({tcpClient.Client.RemoteEndPoint})");
+                Console.WriteLine($"?? MessageReceiver: Client {clientId} ajoutÃ© ({tcpClient.Client.RemoteEndPoint})");
                 LogConnectionStats();
                 return clientId;
             }
@@ -166,30 +166,30 @@ namespace Satsuki.Networks
         /// <summary>
         /// Supprime un client de la surveillance
         /// </summary>
-        /// <param name="clientId">ID du client à supprimer</param>
+        /// <param name="clientId">ID du client Ã  supprimer</param>
         public async Task RemoveClient(string clientId)
         {
             if (_clients.TryRemove(clientId, out ClientConnection clientConnection))
             {
                 await clientConnection.StopAsync();
-                Console.WriteLine($"? MessageReceiver: Client {clientId} supprimé");
+                Console.WriteLine($"? MessageReceiver: Client {clientId} supprimÃ©");
                 LogConnectionStats();
             }
         }
 
         /// <summary>
-        /// Récupère tous les messages dans l'ordre d'arrivée avec décryptage automatique
+        /// RÃ©cupÃ¨re tous les messages dans l'ordre d'arrivÃ©e avec dÃ©cryptage automatique
         /// </summary>
-        /// <param name="decryptMessages">Si true, décrypte automatiquement les messages cryptés</param>
-        /// <returns>Liste des messages dans l'ordre d'arrivée</returns>
+        /// <param name="decryptMessages">Si true, dÃ©crypte automatiquement les messages cryptÃ©s</param>
+        /// <returns>Liste des messages dans l'ordre d'arrivÃ©e</returns>
         public List<Message> GetMessagesByArrivalOrder(bool decryptMessages = true)
         {
             var messages = new List<Message>();
             
-            // Récupère tous les messages de la queue dans l'ordre FIFO
+            // RÃ©cupÃ¨re tous les messages de la queue dans l'ordre FIFO
             while (_messageQueue.TryDequeue(out Message message))
             {
-                // Décrypte automatiquement si demandé et si le message est crypté
+                // DÃ©crypte automatiquement si demandÃ© et si le message est cryptÃ©
                 if (decryptMessages && message.IsEncrypted)
                 {
                     message.Decrypt(_encryptionKey, _encryptionIV);
@@ -198,24 +198,24 @@ namespace Satsuki.Networks
                 messages.Add(message);
             }
 
-            return messages; // Déjà dans l'ordre d'arrivée grâce à ConcurrentQueue
+            return messages; // DÃ©jÃ  dans l'ordre d'arrivÃ©e grÃ¢ce Ã  ConcurrentQueue
         }
 
         /// <summary>
-        /// Récupère un nombre limité de messages dans l'ordre d'arrivée avec décryptage automatique
+        /// RÃ©cupÃ¨re un nombre limitÃ© de messages dans l'ordre d'arrivÃ©e avec dÃ©cryptage automatique
         /// </summary>
-        /// <param name="maxCount">Nombre maximum de messages à récupérer</param>
-        /// <param name="decryptMessages">Si true, décrypte automatiquement les messages cryptés</param>
-        /// <returns>Liste des messages dans l'ordre d'arrivée</returns>
+        /// <param name="maxCount">Nombre maximum de messages Ã  rÃ©cupÃ©rer</param>
+        /// <param name="decryptMessages">Si true, dÃ©crypte automatiquement les messages cryptÃ©s</param>
+        /// <returns>Liste des messages dans l'ordre d'arrivÃ©e</returns>
         public List<Message> GetMessagesByArrivalOrder(int maxCount, bool decryptMessages = true)
         {
             var messages = new List<Message>();
             int count = 0;
             
-            // Récupère les messages jusqu'à la limite dans l'ordre FIFO
+            // RÃ©cupÃ¨re les messages jusqu'Ã  la limite dans l'ordre FIFO
             while (_messageQueue.TryDequeue(out Message message) && count < maxCount)
             {
-                // Décrypte automatiquement si demandé et si le message est crypté
+                // DÃ©crypte automatiquement si demandÃ© et si le message est cryptÃ©
                 if (decryptMessages && message.IsEncrypted)
                 {
                     message.Decrypt(_encryptionKey, _encryptionIV);
@@ -229,15 +229,15 @@ namespace Satsuki.Networks
         }
 
         /// <summary>
-        /// Récupère le prochain message disponible avec décryptage optionnel
+        /// RÃ©cupÃ¨re le prochain message disponible avec dÃ©cryptage optionnel
         /// </summary>
-        /// <param name="decryptMessage">Si true, décrypte automatiquement si le message est crypté</param>
+        /// <param name="decryptMessage">Si true, dÃ©crypte automatiquement si le message est cryptÃ©</param>
         /// <returns>Le prochain message ou null si aucun disponible</returns>
         public Message GetNextMessage(bool decryptMessage = true)
         {
             if (_messageQueue.TryDequeue(out Message message))
             {
-                // Décrypte automatiquement si demandé et si le message est crypté
+                // DÃ©crypte automatiquement si demandÃ© et si le message est cryptÃ©
                 if (decryptMessage && message.IsEncrypted)
                 {
                     message.Decrypt(_encryptionKey, _encryptionIV);
@@ -248,16 +248,16 @@ namespace Satsuki.Networks
         }
 
         /// <summary>
-        /// Récupère les messages sans les décrypter (utile pour debug ou transfert)
+        /// RÃ©cupÃ¨re les messages sans les dÃ©crypter (utile pour debug ou transfert)
         /// </summary>
-        /// <returns>Liste des messages dans l'ordre d'arrivée (possiblement cryptés)</returns>
+        /// <returns>Liste des messages dans l'ordre d'arrivÃ©e (possiblement cryptÃ©s)</returns>
         public List<Message> GetEncryptedMessagesByArrivalOrder()
         {
             return GetMessagesByArrivalOrder(decryptMessages: false);
         }
 
         /// <summary>
-        /// Vérifie s'il y a des messages en attente
+        /// VÃ©rifie s'il y a des messages en attente
         /// </summary>
         public bool HasPendingMessages()
         {
@@ -273,7 +273,7 @@ namespace Satsuki.Networks
         }
 
         /// <summary>
-        /// Obtient le nombre de clients connectés
+        /// Obtient le nombre de clients connectÃ©s
         /// </summary>
         public int GetConnectedClientCount()
         {
@@ -281,7 +281,7 @@ namespace Satsuki.Networks
         }
 
         /// <summary>
-        /// Obtient la liste des IDs des clients connectés
+        /// Obtient la liste des IDs des clients connectÃ©s
         /// </summary>
         public List<string> GetConnectedClientIds()
         {
@@ -289,10 +289,10 @@ namespace Satsuki.Networks
         }
 
         /// <summary>
-        /// Envoie un message à un client spécifique (avec cryptage optionnel)
+        /// Envoie un message Ã  un client spÃ©cifique (avec cryptage optionnel)
         /// </summary>
         /// <param name="clientId">ID du client</param>
-        /// <param name="message">Message à envoyer</param>
+        /// <param name="message">Message Ã  envoyer</param>
         /// <param name="encrypt">Si true, crypte le message avant envoi</param>
         public async Task<bool> SendMessageToClient(string clientId, string message, bool encrypt = true)
         {
@@ -300,11 +300,11 @@ namespace Satsuki.Networks
             {
                 string messageToSend = message;
                 
-                // Crypte le message si demandé et si le cryptage est activé
+                // Crypte le message si demandÃ© et si le cryptage est activÃ©
                 if (encrypt && _encryptionEnabled)
                 {
                     messageToSend = MessageCrypto.Encrypt(message, _encryptionKey, _encryptionIV);
-                    Console.WriteLine($"?? Message crypté envoyé à {clientId}");
+                    Console.WriteLine($"?? Message cryptÃ© envoyÃ© Ã  {clientId}");
                 }
                 
                 return await clientConnection.SendMessageAsync(messageToSend);
@@ -313,53 +313,53 @@ namespace Satsuki.Networks
         }
 
         /// <summary>
-        /// Diffuse un message à tous les clients connectés (avec cryptage optionnel)
+        /// Diffuse un message Ã  tous les clients connectÃ©s (avec cryptage optionnel)
         /// </summary>
-        /// <param name="message">Message à diffuser</param>
+        /// <param name="message">Message Ã  diffuser</param>
         /// <param name="encrypt">Si true, crypte le message avant envoi</param>
         public async Task BroadcastMessage(string message, bool encrypt = true)
         {
             string messageToSend = message;
             
-            // Crypte le message si demandé et si le cryptage est activé
+            // Crypte le message si demandÃ© et si le cryptage est activÃ©
             if (encrypt && _encryptionEnabled)
             {
                 messageToSend = MessageCrypto.Encrypt(message, _encryptionKey, _encryptionIV);
-                Console.WriteLine($"?? Message de broadcast crypté");
+                Console.WriteLine($"?? Message de broadcast cryptÃ©");
             }
             
             var sendTasks = _clients.Values.Select(client => client.SendMessageAsync(messageToSend)).ToArray();
             await Task.WhenAll(sendTasks);
-            Console.WriteLine($"?? Message diffusé à {sendTasks.Length} clients");
+            Console.WriteLine($"?? Message diffusÃ© Ã  {sendTasks.Length} clients");
         }
 
         /// <summary>
-        /// Callback appelé quand un message est reçu d'un client
+        /// Callback appelÃ© quand un message est reÃ§u d'un client
         /// </summary>
         private void OnMessageReceived(string clientId, string messageContent)
         {
-            // Crée le message avec préfixe client
+            // CrÃ©e le message avec prÃ©fixe client
             var message = new Message($"[{clientId}] {messageContent}");
             
-            // Détecte automatiquement si le message est crypté et le marque comme tel
+            // DÃ©tecte automatiquement si le message est cryptÃ© et le marque comme tel
             if (MessageCrypto.IsEncrypted(messageContent))
             {
-                // Remplace le contenu par le message crypté original (sans préfixe client)
+                // Remplace le contenu par le message cryptÃ© original (sans prÃ©fixe client)
                 message = new Message(messageContent, true);
-                // Puis ajoute le préfixe client après décryptage
+                // Puis ajoute le prÃ©fixe client aprÃ¨s dÃ©cryptage
                 string decryptedContent = MessageCrypto.Decrypt(messageContent, _encryptionKey, _encryptionIV);
                 message = new Message($"[{clientId}] {decryptedContent}");
-                Console.WriteLine($"?? Message crypté reçu de {clientId}");
+                Console.WriteLine($"?? Message cryptÃ© reÃ§u de {clientId}");
             }
             
             _messageQueue.Enqueue(message);
             _messageAvailableSemaphore.Release();
             
-            Console.WriteLine($"?? Message #{message.SequenceNumber} reçu de {clientId}");
+            Console.WriteLine($"?? Message #{message.SequenceNumber} reÃ§u de {clientId}");
         }
 
         /// <summary>
-        /// Callback appelé quand un client se déconnecte
+        /// Callback appelÃ© quand un client se dÃ©connecte
         /// </summary>
         private async void OnClientDisconnected(string clientId)
         {
@@ -373,12 +373,12 @@ namespace Satsuki.Networks
         {
             var clientCount = _clients.Count;
             var messageCount = _messageQueue.Count;
-            var encStatus = _encryptionEnabled ? "CRYPTÉ" : "CLAIR";
+            var encStatus = _encryptionEnabled ? "CRYPTÃ‰" : "CLAIR";
             Console.WriteLine($"?? Stats: {clientCount} clients, {messageCount} messages en attente [{encStatus}]");
         }
 
         /// <summary>
-        /// Obtient les statistiques complètes du système
+        /// Obtient les statistiques complÃ¨tes du systÃ¨me
         /// </summary>
         public (int connectedClients, int pendingMessages, bool isRunning, bool encryptionEnabled) GetStatistics()
         {
@@ -403,7 +403,7 @@ namespace Satsuki.Networks
                 // Vide la queue
                 while (_messageQueue.TryDequeue(out _)) { }
                 
-                // Efface les clés de mémoire pour sécurité
+                // Efface les clÃ©s de mÃ©moire pour sÃ©curitÃ©
                 if (_encryptionKey != null)
                 {
                     Array.Clear(_encryptionKey, 0, _encryptionKey.Length);
@@ -423,7 +423,7 @@ namespace Satsuki.Networks
         }
     }
 
-    // La classe ClientConnection reste inchangée
+    // La classe ClientConnection reste inchangÃ©e
     /// <summary>
     /// Gestionnaire pour une connexion client individuelle
     /// </summary>
@@ -448,7 +448,7 @@ namespace Satsuki.Networks
         }
 
         /// <summary>
-        /// Démarre l'écoute des messages pour ce client
+        /// DÃ©marre l'Ã©coute des messages pour ce client
         /// </summary>
         public void StartListening(CancellationToken cancellationToken)
         {
@@ -460,7 +460,7 @@ namespace Satsuki.Networks
         }
 
         /// <summary>
-        /// Arrête l'écoute pour ce client
+        /// ArrÃªte l'Ã©coute pour ce client
         /// </summary>
         public async Task StopAsync()
         {
@@ -477,7 +477,7 @@ namespace Satsuki.Networks
         }
 
         /// <summary>
-        /// Envoie un message à ce client
+        /// Envoie un message Ã  ce client
         /// </summary>
         public async Task<bool> SendMessageAsync(string message)
         {
@@ -493,13 +493,13 @@ namespace Satsuki.Networks
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"? Erreur envoi message à {_clientId}: {ex.Message}");
+                Console.WriteLine($"? Erreur envoi message Ã  {_clientId}: {ex.Message}");
                 return false;
             }
         }
 
         /// <summary>
-        /// Boucle d'écoute des messages pour ce client
+        /// Boucle d'Ã©coute des messages pour ce client
         /// </summary>
         private async Task ListenForMessages(CancellationToken cancellationToken)
         {
@@ -517,7 +517,7 @@ namespace Satsuki.Networks
                         {
                             string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
                             
-                            // Traite les messages multiples séparés par des retours à la ligne
+                            // Traite les messages multiples sÃ©parÃ©s par des retours Ã  la ligne
                             string[] messages = message.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
                             foreach (string msg in messages)
                             {
@@ -529,8 +529,8 @@ namespace Satsuki.Networks
                         }
                         else
                         {
-                            // Client déconnecté
-                            Console.WriteLine($"?? Client {_clientId} déconnecté (0 bytes)");
+                            // Client dÃ©connectÃ©
+                            Console.WriteLine($"?? Client {_clientId} dÃ©connectÃ© (0 bytes)");
                             break;
                         }
                     }
@@ -542,15 +542,15 @@ namespace Satsuki.Networks
             }
             catch (OperationCanceledException)
             {
-                Console.WriteLine($"?? Écoute {_clientId} annulée");
+                Console.WriteLine($"?? Ã‰coute {_clientId} annulÃ©e");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"? Erreur écoute {_clientId}: {ex.Message}");
+                Console.WriteLine($"? Erreur Ã©coute {_clientId}: {ex.Message}");
             }
             finally
             {
-                Console.WriteLine($"?? Fin écoute pour {_clientId}");
+                Console.WriteLine($"?? Fin Ã©coute pour {_clientId}");
                 _onDisconnected?.Invoke(_clientId);
             }
         }

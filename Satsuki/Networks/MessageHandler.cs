@@ -31,18 +31,18 @@ namespace Satsuki.Networks
             _isRunning = false;
             _disposed = false;
             
-            // Configuration par défaut du cryptage
-            _encryptionEnabled = true; // Cryptage activé par défaut
-            _encryptionKey = null; // Utilise la clé par défaut de MessageCrypto
-            _encryptionIV = null;  // Utilise l'IV par défaut de MessageCrypto
+            // Configuration par dÃ©faut du cryptage
+            _encryptionEnabled = true; // Cryptage activÃ© par dÃ©faut
+            _encryptionKey = null; // Utilise la clÃ© par dÃ©faut de MessageCrypto
+            _encryptionIV = null;  // Utilise l'IV par dÃ©faut de MessageCrypto
         }
 
         /// <summary>
-        /// Configure le système de cryptage
+        /// Configure le systÃ¨me de cryptage
         /// </summary>
-        /// <param name="enabled">Active ou désactive le cryptage</param>
-        /// <param name="key">Clé de cryptage personnalisée (null pour utiliser la clé par défaut)</param>
-        /// <param name="iv">IV personnalisé (null pour utiliser l'IV par défaut)</param>
+        /// <param name="enabled">Active ou dÃ©sactive le cryptage</param>
+        /// <param name="key">ClÃ© de cryptage personnalisÃ©e (null pour utiliser la clÃ© par dÃ©faut)</param>
+        /// <param name="iv">IV personnalisÃ© (null pour utiliser l'IV par dÃ©faut)</param>
         public void ConfigureEncryption(bool enabled, byte[] key = null, byte[] iv = null)
         {
             lock (_lockObject)
@@ -51,13 +51,13 @@ namespace Satsuki.Networks
                 _encryptionKey = key;
                 _encryptionIV = iv;
                 
-                Console.WriteLine($"Cryptage des messages: {(enabled ? "ACTIVÉ" : "DÉSACTIVÉ")}" +
-                    $"{(enabled && key != null ? "\nClé de cryptage personnalisée configurée" : "")}");
+                Console.WriteLine($"Cryptage des messages: {(enabled ? "ACTIVÃ‰" : "DÃ‰SACTIVÃ‰")}" +
+                    $"{(enabled && key != null ? "\nClÃ© de cryptage personnalisÃ©e configurÃ©e" : "")}");
             }
         }
 
         /// <summary>
-        /// Génère et configure une nouvelle clé de cryptage aléatoire
+        /// GÃ©nÃ¨re et configure une nouvelle clÃ© de cryptage alÃ©atoire
         /// </summary>
         public void GenerateNewEncryptionKey()
         {
@@ -66,8 +66,8 @@ namespace Satsuki.Networks
                 _encryptionKey = MessageCrypto.GenerateRandomKey();
                 _encryptionIV = MessageCrypto.GenerateRandomIV();
                 
-                Console.WriteLine("Nouvelle clé de cryptage générée");
-                Console.WriteLine($"Clé: {MessageCrypto.BytesToBase64(_encryptionKey)}");
+                Console.WriteLine("Nouvelle clÃ© de cryptage gÃ©nÃ©rÃ©e");
+                Console.WriteLine($"ClÃ©: {MessageCrypto.BytesToBase64(_encryptionKey)}");
                 Console.WriteLine($"IV: {MessageCrypto.BytesToBase64(_encryptionIV)}");
             }
         }
@@ -75,7 +75,7 @@ namespace Satsuki.Networks
         /// <summary>
         /// Obtient les informations de cryptage actuelles
         /// </summary>
-        /// <returns>Tuple contenant l'état, la clé et l'IV en Base64</returns>
+        /// <returns>Tuple contenant l'Ã©tat, la clÃ© et l'IV en Base64</returns>
         public (bool enabled, string keyBase64, string ivBase64) GetEncryptionInfo()
         {
             lock (_lockObject)
@@ -87,7 +87,7 @@ namespace Satsuki.Networks
         }
 
         /// <summary>
-        /// Démarre le traitement des messages en arrière-plan
+        /// DÃ©marre le traitement des messages en arriÃ¨re-plan
         /// </summary>
         public void StartMessageProcessing()
         {
@@ -102,7 +102,7 @@ namespace Satsuki.Networks
         }
 
         /// <summary>
-        /// Arrête le traitement des messages
+        /// ArrÃªte le traitement des messages
         /// </summary>
         public async Task StopMessageProcessing()
         {
@@ -123,9 +123,9 @@ namespace Satsuki.Networks
         }
 
         /// <summary>
-        /// Ajoute un message reçu du réseau à la queue (avec cryptage automatique si activé)
+        /// Ajoute un message reÃ§u du rÃ©seau Ã  la queue (avec cryptage automatique si activÃ©)
         /// </summary>
-        /// <param name="content">Contenu du message (supposé en clair)</param>
+        /// <param name="content">Contenu du message (supposÃ© en clair)</param>
         public void AddReceivedMessage(string content)
         {
             if (_disposed || string.IsNullOrEmpty(content))
@@ -133,7 +133,7 @@ namespace Satsuki.Networks
 
             var message = new Message(content);
             
-            // Crypte automatiquement si le cryptage est activé
+            // Crypte automatiquement si le cryptage est activÃ©
             if (_encryptionEnabled)
             {
                 message.Encrypt(_encryptionKey, _encryptionIV);
@@ -144,24 +144,24 @@ namespace Satsuki.Networks
         }
 
         /// <summary>
-        /// Ajoute un message déjà crypté à la queue (pour messages reçus déjà cryptés)
+        /// Ajoute un message dÃ©jÃ  cryptÃ© Ã  la queue (pour messages reÃ§us dÃ©jÃ  cryptÃ©s)
         /// </summary>
-        /// <param name="encryptedContent">Contenu crypté</param>
+        /// <param name="encryptedContent">Contenu cryptÃ©</param>
         public void AddEncryptedMessage(string encryptedContent)
         {
             if (_disposed || string.IsNullOrEmpty(encryptedContent))
                 return;
 
-            // Crée le message comme étant déjà crypté
+            // CrÃ©e le message comme Ã©tant dÃ©jÃ  cryptÃ©
             var message = new Message(encryptedContent, true);
             _messageQueue.Enqueue(message);
             _messageAvailableSemaphore.Release();
         }
 
         /// <summary>
-        /// Ajoute un message déjà créé à la queue
+        /// Ajoute un message dÃ©jÃ  crÃ©Ã© Ã  la queue
         /// </summary>
-        /// <param name="message">Message à ajouter</param>
+        /// <param name="message">Message Ã  ajouter</param>
         public void AddReceivedMessage(Message message)
         {
             if (_disposed || message == null)
@@ -172,18 +172,18 @@ namespace Satsuki.Networks
         }
 
         /// <summary>
-        /// Récupère tous les messages disponibles triés par timestamp avec décryptage automatique
+        /// RÃ©cupÃ¨re tous les messages disponibles triÃ©s par timestamp avec dÃ©cryptage automatique
         /// </summary>
-        /// <param name="decryptMessages">Si true, décrypte automatiquement les messages cryptés</param>
-        /// <returns>Liste des messages triés par timestamp</returns>
+        /// <param name="decryptMessages">Si true, dÃ©crypte automatiquement les messages cryptÃ©s</param>
+        /// <returns>Liste des messages triÃ©s par timestamp</returns>
         public List<Message> GetMessagesByTimestamp(bool decryptMessages = true)
         {
             var messages = new List<Message>();
             
-            // Récupère tous les messages de la queue
+            // RÃ©cupÃ¨re tous les messages de la queue
             while (_messageQueue.TryDequeue(out Message message))
             {
-                // Décrypte automatiquement si demandé et si le message est crypté
+                // DÃ©crypte automatiquement si demandÃ© et si le message est cryptÃ©
                 if (decryptMessages && message.IsEncrypted)
                 {
                     message.Decrypt(_encryptionKey, _encryptionIV);
@@ -197,20 +197,20 @@ namespace Satsuki.Networks
         }
 
         /// <summary>
-        /// Récupère un nombre limité de messages triés par timestamp avec décryptage automatique
+        /// RÃ©cupÃ¨re un nombre limitÃ© de messages triÃ©s par timestamp avec dÃ©cryptage automatique
         /// </summary>
-        /// <param name="maxCount">Nombre maximum de messages à récupérer</param>
-        /// <param name="decryptMessages">Si true, décrypte automatiquement les messages cryptés</param>
-        /// <returns>Liste des messages triés par timestamp</returns>
+        /// <param name="maxCount">Nombre maximum de messages Ã  rÃ©cupÃ©rer</param>
+        /// <param name="decryptMessages">Si true, dÃ©crypte automatiquement les messages cryptÃ©s</param>
+        /// <returns>Liste des messages triÃ©s par timestamp</returns>
         public List<Message> GetMessagesByTimestamp(int maxCount, bool decryptMessages = true)
         {
             var messages = new List<Message>();
             int count = 0;
             
-            // Récupère les messages jusqu'à la limite
+            // RÃ©cupÃ¨re les messages jusqu'Ã  la limite
             while (_messageQueue.TryDequeue(out Message message) && count < maxCount)
             {
-                // Décrypte automatiquement si demandé et si le message est crypté
+                // DÃ©crypte automatiquement si demandÃ© et si le message est cryptÃ©
                 if (decryptMessages && message.IsEncrypted)
                 {
                     message.Decrypt(_encryptionKey, _encryptionIV);
@@ -225,16 +225,16 @@ namespace Satsuki.Networks
         }
 
         /// <summary>
-        /// Récupère les messages sans les décrypter (utile pour debug ou transfert)
+        /// RÃ©cupÃ¨re les messages sans les dÃ©crypter (utile pour debug ou transfert)
         /// </summary>
-        /// <returns>Liste des messages triés par timestamp (possiblement cryptés)</returns>
+        /// <returns>Liste des messages triÃ©s par timestamp (possiblement cryptÃ©s)</returns>
         public List<Message> GetEncryptedMessagesByTimestamp()
         {
             return GetMessagesByTimestamp(decryptMessages: false);
         }
 
         /// <summary>
-        /// Vérifie s'il y a des messages en attente
+        /// VÃ©rifie s'il y a des messages en attente
         /// </summary>
         /// <returns>True s'il y a des messages disponibles</returns>
         public bool HasPendingMessages()
@@ -260,7 +260,7 @@ namespace Satsuki.Networks
             {
                 while (!_cancellationTokenSource.Token.IsCancellationRequested)
                 {
-                    // Attend qu'un message soit disponible ou que l'annulation soit demandée
+                    // Attend qu'un message soit disponible ou que l'annulation soit demandÃ©e
                     await _messageAvailableSemaphore.WaitAsync(_cancellationTokenSource.Token);
 
                     if (_cancellationTokenSource.Token.IsCancellationRequested)
@@ -269,14 +269,14 @@ namespace Satsuki.Networks
                     // Logging avec information de cryptage
                     if (HasPendingMessages())
                     {
-                        string encStatus = _encryptionEnabled ? "CRYPTÉ" : "CLAIR";
+                        string encStatus = _encryptionEnabled ? "CRYPTÃ‰" : "CLAIR";
                         Console.WriteLine($"Messages en attente: {GetPendingMessageCount()} [{encStatus}]");
                     }
                 }
             }
             catch (OperationCanceledException)
             {
-                Console.WriteLine("MessageHandler: Arrêt du traitement des messages.");
+                Console.WriteLine("MessageHandler: ArrÃªt du traitement des messages.");
             }
             catch (Exception ex)
             {
@@ -297,7 +297,7 @@ namespace Satsuki.Networks
         {
             if (!_disposed && disposing)
             {
-                // Arrête le traitement en cours
+                // ArrÃªte le traitement en cours
                 StopMessageProcessing().Wait(TimeSpan.FromSeconds(5));
                 
                 _cancellationTokenSource?.Dispose();
@@ -306,7 +306,7 @@ namespace Satsuki.Networks
                 // Vide la queue
                 while (_messageQueue.TryDequeue(out _)) { }
                 
-                // Efface les clés de mémoire pour sécurité
+                // Efface les clÃ©s de mÃ©moire pour sÃ©curitÃ©
                 if (_encryptionKey != null)
                 {
                     Array.Clear(_encryptionKey, 0, _encryptionKey.Length);

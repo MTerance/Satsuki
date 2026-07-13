@@ -28,4 +28,19 @@ namespace Satsuki.Models
             PositionMainCamera = Vector3.Zero;
         }
     }
+
+    public class StageInfoResource
+    {
+        public Tuple<float, float, float> rectA { get; set; }
+        public Tuple<float, float, float> rectB { get; set; }
+        public Tuple<float, float, float> PositionTargetMainCamera { get; set; }
+        public Tuple<float, float, float> PositionMainCamera { get; set; }
+        public StageInfoResource()
+        {
+            rectA = Tuple.Create(0f, 0f, 0f);
+            rectB = Tuple.Create(0f, 0f, 0f);
+            PositionTargetMainCamera = Tuple.Create(0f, 0f, 0f);
+            PositionMainCamera = Tuple.Create(0f, 0f, 0f);
+        }
+    }
 }

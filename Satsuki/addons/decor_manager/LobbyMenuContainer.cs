@@ -10,7 +10,6 @@ using System.Security.Cryptography;
 #if TOOLS
 [Tool]
 
-
 public partial class LobbyMenuContainer : VBoxContainer
 {
 

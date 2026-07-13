@@ -1,11 +1,11 @@
-using Godot;
+ï»¿using Godot;
 using System;
 using System.Collections.Generic;
 
 namespace Satsuki.Scenes
 {
 	/// <summary>
-	/// Exemple de scène de quiz qui implémente GetSceneState()
+	/// Exemple de scÃ¨ne de quiz qui implÃ©mente GetSceneState()
 	/// </summary>
 	public partial class QuizScene : Node
 	{
@@ -18,11 +18,11 @@ namespace Satsuki.Scenes
 		
 		public override void _Ready()
 		{
-			GD.Print("?? QuizScene initialisée");
+			GD.Print("?? QuizScene initialisÃ©e");
 		}
 		
 		/// <summary>
-		/// Retourne l'état actuel de la scène de quiz
+		/// Retourne l'Ã©tat actuel de la scÃ¨ne de quiz
 		/// </summary>
 		public object GetSceneState()
 		{
@@ -50,7 +50,7 @@ namespace Satsuki.Scenes
 			};
 		}
 		
-		// Méthodes exemple pour manipuler l'état
+		// MÃ©thodes exemple pour manipuler l'Ã©tat
 		public void StartQuiz(string title, int questionCount)
 		{
 			_quizTitle = title;
@@ -58,7 +58,7 @@ namespace Satsuki.Scenes
 			_currentQuestionIndex = 0;
 			_score = 0;
 			_isActive = true;
-			GD.Print($"?? Quiz démarré: {title} ({questionCount} questions)");
+			GD.Print($"?? Quiz dÃ©marrÃ©: {title} ({questionCount} questions)");
 		}
 		
 		public void AddPlayer(string playerName)
@@ -66,7 +66,7 @@ namespace Satsuki.Scenes
 			if (!_players.Contains(playerName))
 			{
 				_players.Add(playerName);
-				GD.Print($"?? Joueur ajouté: {playerName}");
+				GD.Print($"?? Joueur ajoutÃ©: {playerName}");
 			}
 		}
 		
@@ -80,7 +80,7 @@ namespace Satsuki.Scenes
 			else
 			{
 				_isActive = false;
-				GD.Print("? Quiz terminé!");
+				GD.Print("? Quiz terminÃ©!");
 			}
 		}
 		
