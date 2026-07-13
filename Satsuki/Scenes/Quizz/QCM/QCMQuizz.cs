@@ -1,4 +1,4 @@
-﻿using Godot;
+using Godot;
 using Satsuki.Interfaces.Quizz;
 using System;
 using System.Collections.Generic;
@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace Satsuki.Scenes.Quizz.QCM
 {
-    public class  AnswerQcmQuizzModel
+    public class AnswerQcmQuizzModel
     {
         public int Id { get; set; }
         public string Answer { get; set; }
-        public Tuple<int,int,int> Color { get; set; }
+        public Tuple<int, int, int> Color { get; set; }
     }
 
     public class QCMQuizzModel
@@ -56,8 +56,120 @@ namespace Satsuki.Scenes.Quizz.QCM
             ShowMediaBeforeQuestion,
             ShowingQuestion,
             ShowingPropositions,
-            // todo : write the rest of the states
-
+            BeginPlayersResponseTime,
+            ShowMediaBeforeAnswer,
+            ShowRightAnswer,
+            End
         }
+
+        private void ShowMedia(MediaModel media)
+        {
+            switch (media.Type)
+            {
+                case MediaModel.MediaType.Image:
+                    GD.Print("Show Image: " + media.Path);
+                    mediaDisplay.Texture = GD.Load<Texture2D>(media.Path);
+                    mediaDisplay.Visible = true;
+                    break;
+                case MediaModel.MediaType.Audio:
+                    GD.Print("Play Audio: " + media.Path);
+                    break;
+                case MediaModel.MediaType.Video:
+                    GD.Print("Play Video: " + media.Path);
+                    break;
+                default:
+                    GD.PrintErr("Unknown media type");
+                    break;
+            }
+        }
+
+        private void ShowProposals()
+        {
+            GD.Print("Show Proposals for Question: " + currentQuizz.Question);
+            foreach (var answer in currentQuizz.Answers)
+            {
+                GD.Print($"Proposal: {answer.Answer} (Color: {answer.Color})");
+            }
+        }
+
+        private void ShowQuestion()
+        {
+            if ((bool)currentQuizz.Medias.ContainsKey(QCMQuizzModel.ShowStateMedia.DuringQuestion))
+            {
+                ShowMedia(currentQuizz.Medias[QCMQuizzModel.ShowStateMedia.DuringQuestion]);
+            }
+            questionLabel.Text = currentQuizz.Question;
+            questionLabel.Visible = true;
+        }
+
+        private void ShowChrono()
+        {
+            GD.Print("Show Chrono for Players Response Time");
+        }
+
+        private void EndGame()
+        {
+            questionLabel.Visible = false;
+            GD.Print("Game Ended");
+        }
+
+        private bool CheckExistingMediaToShowInCurrentState()
+        {
+            return currentQuizz.Medias?.ContainsKey((QCMQuizzModel.ShowStateMedia)currentState) ?? false;
+        }
+
+
+        private void NextStateGame()
+        {
+            switch (currentState)
+            {
+                case GameState.Beginning:
+                    currentState = GameState.ShowMediaBeforeQuestion;
+                    if (!CheckExistingMediaToShowInCurrentState())
+                        NextStateGame(); // Skip to next state if no media to show
+                    else
+                        ShowMedia(currentQuizz.Medias[QCMQuizzModel.ShowStateMedia.BeforeQuestion]);
+                    break;
+                case GameState.ShowMediaBeforeQuestion:
+                    currentState = GameState.ShowingQuestion;
+                    ShowQuestion();
+                    break;
+                case GameState.ShowingQuestion:
+                    currentState = GameState.ShowingPropositions;
+                    ShowProposals();
+                    break;
+                case GameState.ShowingPropositions:
+                    currentState = GameState.BeginPlayersResponseTime;
+                    ShowChrono();
+                    break;
+                case GameState.BeginPlayersResponseTime:
+                    currentState = GameState.ShowMediaBeforeAnswer;
+                    break;
+                case GameState.ShowMediaBeforeAnswer:
+                    currentState = GameState.ShowRightAnswer;
+                    break;
+                case GameState.ShowRightAnswer:
+                    currentState = GameState.End;
+                    break;
+                case GameState.End:
+                    // End of the game, do nothing or reset
+                    break;
+            }
+        }
+
+        public override void _Ready()
+        {
+            questionLabel = GetNode<Label>("QuestionLabel");
+
+
+            currentState = GameState.Beginning;
+        }
+
+        public override void _Process(double delta)
+        {
+        }
+
     }
+
+
 }
