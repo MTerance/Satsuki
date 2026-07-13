@@ -82,6 +82,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="MainGame\" />
+    <Folder Include="Scenes\Quizz\QCM\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Documentation\CryptageSystem.md" />
