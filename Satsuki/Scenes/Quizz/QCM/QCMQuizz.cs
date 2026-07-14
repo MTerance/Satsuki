@@ -28,12 +28,14 @@ namespace Satsuki.Scenes.Quizz.QCM
 
         public string Question { get; set; }
         public List<AnswerQcmQuizzModel> Answers { get; set; }
+        public int RightAnswerId { get; set; } // Id of the right answer
         public Dictionary<ShowStateMedia, MediaModel> Medias { get; set; } // Path to media file (image, audio, video)
 
-        public QCMQuizzModel(string question, List<AnswerQcmQuizzModel> answers, Dictionary<ShowStateMedia, MediaModel> medias = null)
+        public QCMQuizzModel(string question, List<AnswerQcmQuizzModel> answers, int rightAnswerId, Dictionary<ShowStateMedia, MediaModel> medias = null)
         {
             Question = question;
             Answers = answers;
+            RightAnswerId = rightAnswerId;
             Medias = medias ?? new Dictionary<ShowStateMedia, MediaModel>();
         }
     }
@@ -85,6 +87,7 @@ namespace Satsuki.Scenes.Quizz.QCM
 
         private void ShowProposals()
         {
+            /// TODO: Implement the logic to show the proposals to the players
             GD.Print("Show Proposals for Question: " + currentQuizz.Question);
             foreach (var answer in currentQuizz.Answers)
             {
@@ -104,7 +107,16 @@ namespace Satsuki.Scenes.Quizz.QCM
 
         private void ShowChrono()
         {
+            /// TODO: Implement the logic to show a countdown timer for players to respond
             GD.Print("Show Chrono for Players Response Time");
+        }
+
+        private void ShowRightAnswer()
+        {
+            /// TODO: Implement the logic to show the right answer to the players
+            GD.Print("Show Right Answer for Question: " + currentQuizz.Answers.Where(x => 
+                x.Id == currentQuizz.RightAnswerId));
+            var rightAnswer = currentQuizz.Answers.FirstOrDefault(a => a.Id == currentQuizz.RightAnswerId);
         }
 
         private void EndGame()
@@ -147,6 +159,7 @@ namespace Satsuki.Scenes.Quizz.QCM
                     break;
                 case GameState.ShowMediaBeforeAnswer:
                     currentState = GameState.ShowRightAnswer;
+                    ShowRightAnswer();
                     break;
                 case GameState.ShowRightAnswer:
                     currentState = GameState.End;
