@@ -225,8 +225,10 @@ namespace Satsuki.Scenes.Quizz.QCM
 					break;
 				case GameState.ShowRightAnswer:
 					currentState = GameState.End;
+					EndGame();
 					break;
 				case GameState.End:
+				default:
 					// End of the game, do nothing or reset
 					break;
 			}
