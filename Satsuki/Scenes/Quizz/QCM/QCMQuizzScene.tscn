@@ -17,12 +17,58 @@ offset_right = 40.0
 offset_bottom = 40.0
 
 [node name="QuizzVBoxContainer" type="VBoxContainer" parent="." unique_id=508178427]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
 
-[node name="MarginContainer" type="MarginContainer" parent="QuizzVBoxContainer" unique_id=1070920825]
+[node name="MarginContainerVisualMedia" type="MarginContainer" parent="QuizzVBoxContainer" unique_id=1070920825]
 layout_mode = 2
 
-[node name="TextureRect" type="TextureRect" parent="QuizzVBoxContainer/MarginContainer" unique_id=1655962076]
+[node name="MediaDisplay" type="TextureRect" parent="QuizzVBoxContainer/MarginContainerVisualMedia" unique_id=1655962076]
 layout_mode = 2
+
+[node name="QuestionMarginContainer" type="MarginContainer" parent="QuizzVBoxContainer" unique_id=949050488]
+layout_mode = 2
+
+[node name="QuestionLabel" type="Label" parent="QuizzVBoxContainer/QuestionMarginContainer" unique_id=1149032547]
+layout_mode = 2
+text = "Question Label"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="ProposalBoxContainerUp" type="HBoxContainer" parent="QuizzVBoxContainer" unique_id=1234116288]
+layout_mode = 2
+alignment = 1
+
+[node name="ProposalLabelAlpha" type="Label" parent="QuizzVBoxContainer/ProposalBoxContainerUp" unique_id=785643274]
+layout_mode = 2
+text = "Propos	al Alpha"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ProposalLabelBeta" type="Label" parent="QuizzVBoxContainer/ProposalBoxContainerUp" unique_id=1375470447]
+layout_mode = 2
+text = "Proposal Beta"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ProposalBoxContainerDown" type="HBoxContainer" parent="QuizzVBoxContainer" unique_id=1020510381]
+layout_mode = 2
+alignment = 1
+
+[node name="ProposalLabelGamma" type="Label" parent="QuizzVBoxContainer/ProposalBoxContainerDown" unique_id=1945730540]
+layout_mode = 2
+text = "Proposal Gamma"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ProposalLabelDelta" type="Label" parent="QuizzVBoxContainer/ProposalBoxContainerDown" unique_id=1355676726]
+layout_mode = 2
+text = "Proposal Delta"
+horizontal_alignment = 1
+vertical_alignment = 1
