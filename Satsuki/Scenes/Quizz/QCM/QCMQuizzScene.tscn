@@ -46,13 +46,18 @@ layout_mode = 2
 alignment = 1
 
 [node name="ProposalLabelAlpha" type="Label" parent="QuizzVBoxContainer/ProposalBoxContainerUp" unique_id=785643274]
+clip_contents = true
 layout_mode = 2
-text = "Propos	al Alpha"
+size_flags_horizontal = 3
+size_flags_vertical = 1
+text = "Propos	al Alpha "
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="ProposalLabelBeta" type="Label" parent="QuizzVBoxContainer/ProposalBoxContainerUp" unique_id=1375470447]
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
 text = "Proposal Beta"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -63,12 +68,16 @@ alignment = 1
 
 [node name="ProposalLabelGamma" type="Label" parent="QuizzVBoxContainer/ProposalBoxContainerDown" unique_id=1945730540]
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
 text = "Proposal Gamma"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="ProposalLabelDelta" type="Label" parent="QuizzVBoxContainer/ProposalBoxContainerDown" unique_id=1355676726]
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
 text = "Proposal Delta"
 horizontal_alignment = 1
 vertical_alignment = 1

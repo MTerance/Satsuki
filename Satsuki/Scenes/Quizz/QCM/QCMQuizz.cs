@@ -163,6 +163,12 @@ namespace Satsuki.Scenes.Quizz.QCM
 			GD.Print("Show Chrono for Players Response Time");
 		}
 
+		private void WaitingWhilePlayersResponding()
+		{
+			GD.Print("Waiting for Players to Respond");
+        }
+-
+
 		private void ShowRightAnswer()
 		{
 			/// TODO: Implement the logic to show the right answer to the players
