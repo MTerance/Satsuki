@@ -15,4 +15,9 @@ namespace Satsuki.Interfaces.Quizz
         /// <returns></returns>
         string GetQuizzState();
     }
+
+    public interface IQuizzModel
+    {
+        
+    }
 }

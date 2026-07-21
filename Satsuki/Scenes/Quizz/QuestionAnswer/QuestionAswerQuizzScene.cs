@@ -25,7 +25,7 @@ public class MediaModel
 	}
 }
 
-public class QuestionAnswerQuizzModel
+public class QuestionAnswerQuizzModel : IQuizzModel
 {
 	public enum ShowStateMedia
 	{
