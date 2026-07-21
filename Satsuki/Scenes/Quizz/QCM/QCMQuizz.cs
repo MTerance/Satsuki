@@ -32,7 +32,7 @@ namespace Satsuki.Scenes.Quizz.QCM
             Type = type;
         }
     }
-    public class QCMQuizzModel
+    public class QCMQuizzModel : IQuizzModel
 	{
 		public enum ShowStateMedia
 		{

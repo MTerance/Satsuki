@@ -39,7 +39,6 @@ layout_mode = 2
 text = "Question Label"
 horizontal_alignment = 1
 vertical_alignment = 1
-autowrap_mode = 2
 
 [node name="ProposalBoxContainerUp" type="HBoxContainer" parent="QuizzVBoxContainer" unique_id=1234116288]
 layout_mode = 2
