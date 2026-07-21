@@ -167,7 +167,6 @@ namespace Satsuki.Scenes.Quizz.QCM
 		{
 			GD.Print("Waiting for Players to Respond");
         }
--
 
 		private void ShowRightAnswer()
 		{
