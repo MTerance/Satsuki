@@ -1,5 +1,6 @@
 using Godot;
 using Satsuki.Interfaces.Quizz;
+using Satsuki.Scenes.Quizz.QCM.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,53 +10,8 @@ using System.Threading.Tasks;
 
 namespace Satsuki.Scenes.Quizz.QCM
 {
-	public class AnswerQcmQuizzModel
-	{
-		public int Id { get; set; }
-		public string Answer { get; set; }
-		public Tuple<int, int, int> Color { get; set; }
-	}
 
-	public class MediaModel
-    {
-        public enum MediaType
-        {
-            Image,
-            Audio,
-            Video
-        }
-        public string Path { get; set; }
-        public MediaType Type { get; set; }
-        public MediaModel(string path, MediaType type)
-        {
-            Path = path;
-            Type = type;
-        }
-    }
-    public class QCMQuizzModel : IQuizzModel
-	{
-		public enum ShowStateMedia
-		{
-			BeforeQuestion,
-			BeforeAnswer,
-			DuringQuestion,
-			DuringAnswer,
-			AfterAnswer
-		}
-
-		public string Question { get; set; }
-		public List<AnswerQcmQuizzModel> Answers { get; set; }
-		public int RightAnswerId { get; set; } // Id of the right answer
-		public Dictionary<ShowStateMedia, MediaModel> Medias { get; set; } // Path to media file (image, audio, video)
-
-		public QCMQuizzModel(string question, List<AnswerQcmQuizzModel> answers, int rightAnswerId, Dictionary<ShowStateMedia, MediaModel> medias = null)
-		{
-			Question = question;
-			Answers = answers;
-			RightAnswerId = rightAnswerId;
-			Medias = medias ?? new Dictionary<ShowStateMedia, MediaModel>();
-		}
-	}
+   
 
 	public partial class QCMQuizzScene : Control, IQuizz
 	{
