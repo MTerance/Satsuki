@@ -1,5 +1,6 @@
 using Godot;
 using Satsuki.Interfaces.Quizz;
+using Satsuki.Models.Resources;
 using Satsuki.Scenes.Quizz.QCM.Models;
 using System;
 using System.Collections.Generic;

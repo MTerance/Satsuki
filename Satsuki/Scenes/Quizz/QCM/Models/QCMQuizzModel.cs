@@ -1,4 +1,5 @@
 ﻿using Satsuki.Interfaces.Quizz;
+using Satsuki.Models.Resources;
 using System;
 using System.Collections.Generic;
 using System.Linq;

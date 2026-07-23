@@ -1,29 +1,12 @@
 using Godot;
 using Godot.Collections;
 using Satsuki.Interfaces.Quizz;
+using Satsuki.Models.Resources;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net.Http.Json;
 using System.Text.Json;
-
-
-public class MediaModel
-{
-	public enum MediaType
-	{
-		Image,
-		Audio,
-		Video
-	}
-	public MediaType Type { get; set; }
-	public string Path { get; set; } // Path to media file
-	public MediaModel(MediaType type, string path)
-	{
-		Type = type;
-		Path = path;
-	}
-}
 
 public class QuestionAnswerQuizzModel : IQuizzModel
 {
@@ -95,8 +78,8 @@ public partial class QuestionAswerQuizzScene : Control, IQuizz
 	{
 		var medias = new System.Collections.Generic.Dictionary<QuestionAnswerQuizzModel.ShowStateMedia, MediaModel>
 		{
-			{ QuestionAnswerQuizzModel.ShowStateMedia.DuringQuestion, new MediaModel(MediaModel.MediaType.Image, "res://Assets/Img/drapeau-france-2.png") },
-			{ QuestionAnswerQuizzModel.ShowStateMedia.DuringAnswer, new MediaModel(MediaModel.MediaType.Image, "res://Assets/Img/La_Tour_Eiffel.webp") }
+			{ QuestionAnswerQuizzModel.ShowStateMedia.DuringQuestion, new MediaModel("res://Assets/Img/drapeau-france-2.png", MediaModel.MediaType.Image) },
+			{ QuestionAnswerQuizzModel.ShowStateMedia.DuringAnswer, new MediaModel("res://Assets/Img/La_Tour_Eiffel.webp", MediaModel.MediaType.Image) }
 		};
 		currentQuizz = new QuestionAnswerQuizzModel("What is the capital of France?", "The capital of France is Paris.", medias);
 	}
