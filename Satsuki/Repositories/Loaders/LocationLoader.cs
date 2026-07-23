@@ -5,19 +5,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Godot.WebSocketPeer;
 
 namespace Satsuki.Repositories.Loaders
 {
     public class LocationLoader
     {
-        public Node LoadStage(int id)
+        public StageResource LoadStageRsc(int id)
         {
             StageResource stage = new StageResource();
             stage.Load(id);
-            var scene = GD.Load<PackedScene>(stage.ScenePath);
-            return scene.Instantiate<Node3D>();
+            return stage;
         }
 
+        public Node LoadStage(StageResource rsc)
+        {
+            var scene = GD.Load<PackedScene>(rsc.ScenePath);
+            return scene.Instantiate<Node3D>();
+        }
 
     }
 }
