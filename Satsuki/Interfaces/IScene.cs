@@ -1,3 +1,5 @@
+using Satsuki.Interfaces.Models;
+
 namespace Satsuki.Interfaces
 {
 	/// <summary>

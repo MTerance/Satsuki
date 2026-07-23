@@ -8,5 +8,6 @@ namespace Satsuki.Interfaces.Models
 {
     public interface IGameRecord
     {
+
     }
 }

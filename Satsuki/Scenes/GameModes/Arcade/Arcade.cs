@@ -5,11 +5,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Satsuki.Interfaces.Models;
 
 namespace Satsuki.Scenes
 {
-	public partial class Arcade : Node, IScene
+	public partial class Arcade : Node, IScene, IGameRecordUser
 	{
+		private IGameRecord _currentGameRecord;
 
 		private void LoadStage()
 		{ 
@@ -72,6 +74,16 @@ namespace Satsuki.Scenes
 					IsPaused = false
 				}
 			};
+		}
+
+		public IGameRecord LoadCurrentGameRecord()
+		{
+			return _currentGameRecord;
+		}
+
+		public void SetGameRecord(IGameRecord gameRecord)
+		{
+			_currentGameRecord = gameRecord;
 		}
 	}
 }

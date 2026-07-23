@@ -4,13 +4,14 @@ using Satsuki.Scenes;
 using Satsuki.Scenes.Locations;
 using Satsuki.Systems;
 using Satsuki.Manager;
+using Satsuki.Interfaces.Models;
 using System;
 
 /// <summary>
 /// Scene principale du jeu - Orchestrateur simplifie
 /// Gere Credits, Title et delegue locations au LocationManager
 /// </summary>
-public partial class MainGameScene : Node, IScene
+public partial class MainGameScene : Node, IScene, IGameRecordUser
 {
 	#region Private Fields
 	private GameServerHandler _gameServerHandler;
@@ -18,6 +19,11 @@ public partial class MainGameScene : Node, IScene
 	private bool _hasLoadedCredits = false;
 	private bool _debugMode = true;
 	
+	//**/
+	private IGameRecord _currentGameRecord;
+	//**/
+
+
 	private Node _currentScene;
 	#endregion
 
@@ -384,6 +390,16 @@ public partial class MainGameScene : Node, IScene
 	}
 
 	public object GetGameSceneState() => GetSceneState();
+
+	public IGameRecord LoadCurrentGameRecord()
+	{
+		return _currentGameRecord;
+	}
+
+	public void SetGameRecord(IGameRecord gameRecord)
+	{
+		_currentGameRecord = gameRecord;
+	}
 	#endregion
 
 	#region Input Handling (Debug)

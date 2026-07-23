@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://bd3w332fgdyr4"]
+
+[ext_resource type="Script" uid="uid://wh2e83mo2x5i" path="res://Scenes/GameModes/Arcade/Arcade.cs" id="1_eenj3"]
+
+[node name="Arcade" type="Node3D" unique_id=196656192]
+script = ExtResource("1_eenj3")

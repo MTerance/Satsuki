@@ -1,5 +1,6 @@
 using Godot;
 using Satsuki.Interfaces;
+using Satsuki.Interfaces.Models;
 using System;
 
 namespace Satsuki.Scenes
@@ -69,7 +70,7 @@ namespace Satsuki.Scenes
 			}
 		}
 
-		private void StartGame()
+        private void StartGame()
 		{
 			GD.Print("Title: Demande de demarrage du jeu...");
 			EmitSignal(SignalName.StartGameRequested);
