@@ -6,17 +6,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Satsuki.Interfaces.Models;
+using Satsuki.Scenes.GameModes.Arcade.Models;
 
 namespace Satsuki.Scenes
 {
 	public partial class Arcade : Node, IScene, IGameRecordUser
 	{
-		private IGameRecord _currentGameRecord;
+		private ArcadeGameRecord _currentGameRecord;
 
 		private void LoadStage()
-		{ 
-			int id = 1; // Example stage ID
-			var stageResource = new Repositories.Loaders.LocationLoader().LoadStageRsc(id);
+		{
+			var stageResource = new Repositories.Loaders.LocationLoader().LoadStageRsc(_currentGameRecord.IdStage);
 			var stageNode = new Repositories.Loaders.LocationLoader().LoadStage(stageResource);
 			AddChild(stageNode);
 		}
@@ -83,7 +83,12 @@ namespace Satsuki.Scenes
 
 		public void SetGameRecord(IGameRecord gameRecord)
 		{
-			_currentGameRecord = gameRecord;
-		}
+			if (gameRecord is ArcadeGameRecord)
+				_currentGameRecord = gameRecord as ArcadeGameRecord;
+			else
+			{
+				GD.PrintErr("Invalid game record type. Expected ArcadeGameRecord.");
+			}
+        }
 	}
 }
