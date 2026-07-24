@@ -23,15 +23,6 @@ public partial class PlayerZonePlacementContainer : PanelContainer
 	public override void _Ready()
 	{
 		InitializeLineEdits();
-
-		// Create and add PlayerZone node (its own _Ready will run after AddChild)
-		if (PlayerZone == null)
-		{
-			PlayerZone = new PlayerZone();
-            SceneManager.Instance.AddNodeToScene(PlayerZone);
-			GD.Print("PlayerZonePlacementContainer: PlayerZone creee");
-		}
-
 		// Initialise avec des valeurs par defaut (modifiables)
 		InitializePlayerZone(Vector3.Zero, 50.0f);
 
@@ -47,8 +38,8 @@ public partial class PlayerZonePlacementContainer : PanelContainer
 		if (PlayerZone == null)
 		{
 			PlayerZone = new PlayerZone();
-			SceneManager.Instance.AddNodeToScene(PlayerZone);
-		}
+            PlayerZone.Name = "PlayerZone";
+        }
 
 		// Configure la zone (implémentation coté PlayerZoneNode3d)
 		PlayerZone.SetupPlayerZone(center, size);
@@ -57,9 +48,10 @@ public partial class PlayerZonePlacementContainer : PanelContainer
 		PlayerZone.Position = center;
 		PlayerZone.RotationDegrees = Vector3.Zero;
 
-		// Met à jour l'UI avec les valeurs actuelles
-		UpdateLineEditsFromPlayerZone();
-
+        // Met à jour l'UI avec les valeurs actuelles
+        SceneManager.Instance.AddNodeToScene(PlayerZone);
+        GD.Print("PlayerZonePlacementContainer: PlayerZone creee");
+        UpdateLineEditsFromPlayerZone();
 		GD.Print($"PlayerZonePlacementContainer: PlayerZone initialisee (center: {center}, size: {size})");
 	}
 

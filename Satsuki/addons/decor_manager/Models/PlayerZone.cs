@@ -16,7 +16,7 @@ namespace Satsuki.addons.decor_manager.Models
 
         public override void _Ready()
         {
-            CreateZone();
+           // CreateZone();
         }
 
         public void SetupPlayerZone(Vector3 center, float size)
@@ -30,23 +30,21 @@ namespace Satsuki.addons.decor_manager.Models
             // Met à jour la position et la taille de la zone
             this.Position = center;
             _zone.Position = new Vector3(0, 0.01f, 0);
-            if (_zone.Mesh is QuadMesh quadMesh)
-            {
-                quadMesh.Size = new Vector2(size, size/2);
-            }
         }
 
         private void CreateZone()
         {
             GD.Print("PlayerZone: CreateZone called");
-            var existing = GetNodeOrNull<MeshInstance3D>("PlayerZone_Mesh");
+            var existing = GetNodeOrNull<MeshInstance3D>($"PlayerZone_Mesh");
             if (existing != null && IsInstanceValid(existing))
             {
+                GD.Print("PlayerZone: Removing existing zone mesh");
+                SceneManager.Instance.RemoveNodeFromScene(existing);
                 existing.QueueFree();
             }
 
             var meshInstance = new MeshInstance3D();
-            meshInstance.Name = "PlayerZone_Mesh";
+            meshInstance.Name = $"PlayerZone_Mesh";
             var quad = new QuadMesh
             {
                 Size = new Vector2(6f, 2f)
@@ -66,6 +64,7 @@ namespace Satsuki.addons.decor_manager.Models
             meshInstance.MaterialOverride = material;
             meshInstance.Visible = true;
             _zone = meshInstance;
+            _zone.Name = "PlayerZoneForMainScene";
             AddChild(_zone);
         }
 

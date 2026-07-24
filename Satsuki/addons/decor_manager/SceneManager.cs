@@ -87,24 +87,6 @@ namespace Satsuki.addons.decor_manager
             else
                 _currentSceneRoot.RemoveChild(node);
             node.QueueFree();
-            /*
-
-            if (_currentSceneRoot == null 
-                || _loadedScene == null)
-            {
-                GD.PrintErr("Current scene root is not set. Call SetupRootSceneNode() first.");
-                return;
-            }
-            if (node.GetParent() == _loadedScene)
-            {
-                _loadedScene.RemoveChild(node);
-                node.QueueFree();
-            }
-            else
-            {
-                GD.PrintErr("Node is not a child of the loaded scene.");
-            }
-            */
         }
 
         public void LoadMainStage(PackedScene scene)
