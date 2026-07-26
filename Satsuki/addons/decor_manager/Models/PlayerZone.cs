@@ -11,35 +11,44 @@ namespace Satsuki.addons.decor_manager.Models
     [Tool]
     public partial class PlayerZone : Node3D
     {
-        MeshInstance3D _zone;
 
-
+        private MeshInstance3D _zone;
         public override void _Ready()
         {
-           // CreateZone();
+            // CreateZone();
         }
 
         public void SetupPlayerZone(Vector3 center, float size)
         {
             GD.Print("PlayerZone: SetupPlayerZone called with center=" + center + " size=" + size);
-
-            if (_zone == null || !IsInstanceValid(_zone))
-            {
-                CreateZone();
-            }
+            CreateZone(center, size);
             // Met à jour la position et la taille de la zone
             this.Position = center;
             _zone.Position = new Vector3(0, 0.01f, 0);
         }
 
-        private void CreateZone()
+        public float GetZoneSize()
+        {
+            if (_zone != null && IsInstanceValid(_zone))
+            {
+                var quadMesh = _zone.Mesh as QuadMesh;
+                if (quadMesh != null)
+                {
+                    return quadMesh.Size.X; // Assuming the size is uniform, return the X size
+                }
+            }
+            return 0f; // Return 0 if the zone or mesh is not valid
+        }
+
+        private void CreateZone(Vector3 center, float size)
         {
             GD.Print("PlayerZone: CreateZone called");
             var existing = GetNodeOrNull<MeshInstance3D>($"PlayerZone_Mesh");
             if (existing != null && IsInstanceValid(existing))
             {
                 GD.Print("PlayerZone: Removing existing zone mesh");
-                SceneManager.Instance.RemoveNodeFromScene(existing);
+                //SceneManager.Instance.RemoveNodeFromScene(existing);
+                RemoveChild(existing);
                 existing.QueueFree();
             }
 
@@ -47,7 +56,7 @@ namespace Satsuki.addons.decor_manager.Models
             meshInstance.Name = $"PlayerZone_Mesh";
             var quad = new QuadMesh
             {
-                Size = new Vector2(6f, 2f)
+                Size = new Vector2(size, size / 2)
             };
 
             meshInstance.Mesh = quad;
@@ -70,6 +79,7 @@ namespace Satsuki.addons.decor_manager.Models
 
         public override void _ExitTree()
         {
+            RemoveChild(_zone);
             if (_zone != null && IsInstanceValid(_zone))
             {
                 _zone.QueueFree();

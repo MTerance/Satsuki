@@ -220,9 +220,9 @@ public partial class CameraPlacementTemplate : PanelContainer
 		_rotationCameraX = FindChild("RotationCameraXSpinBox", true, false) as SpinBox;
 		_rotationCameraY = FindChild("RotationCameraYSpinBox", true, false) as SpinBox;
 		_rotationCameraZ = FindChild("RotationCameraZSpinBox", true, false) as SpinBox;
-		_positionTargetCameraX = FindChild("PositionCameraTargetXSpinBoxSpinBox", true, false) as SpinBox;
-		_positionTargetCameraY = FindChild("PositionCameraTargetYSpinBoxSpinBox", true, false) as SpinBox;
-		_positionTargetCameraZ = FindChild("PositionCameraTargetZSpinBoxSpinBox", true, false) as SpinBox;
+		_positionTargetCameraX = FindChild("PositionCameraTargetXSpinBox", true, false) as SpinBox;
+		_positionTargetCameraY = FindChild("PositionCameraTargetYSpinBox", true, false) as SpinBox;
+		_positionTargetCameraZ = FindChild("PositionCameraTargetZSpinBox", true, false) as SpinBox;
 
 		if (_positionCameraX != null) _positionCameraX.ValueChanged += OnSpinBoxUpdated;
 		if (_positionCameraY != null) _positionCameraY.ValueChanged += OnSpinBoxUpdated;

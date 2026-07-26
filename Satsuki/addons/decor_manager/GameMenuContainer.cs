@@ -1,4 +1,5 @@
 using Godot;
+using Satsuki.Models;
 using System;
 
 
@@ -14,5 +15,10 @@ public partial class GameMenuContainer : VBoxContainer
 	{
 		base._Ready();
 	}
+
+	public StageInfo GetStageInfo()
+	{
+		return new StageInfo();
+    }
 }
 #endif

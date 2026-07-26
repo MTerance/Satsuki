@@ -89,6 +89,6 @@ namespace Satsuki.Scenes
 			{
 				GD.PrintErr("Invalid game record type. Expected ArcadeGameRecord.");
 			}
-        }
+		}
 	}
 }

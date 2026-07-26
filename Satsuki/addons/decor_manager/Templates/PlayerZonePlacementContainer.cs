@@ -24,8 +24,7 @@ public partial class PlayerZonePlacementContainer : PanelContainer
 	{
 		InitializeLineEdits();
 		// Initialise avec des valeurs par defaut (modifiables)
-		InitializePlayerZone(Vector3.Zero, 50.0f);
-
+		InitializePlayerZone(Vector3.Zero, Vector3.Zero, 50.0f);
 		// Connect lineedit change events to update the PlayerZone
 		ConnectLineEditSignals();
 	}
@@ -33,7 +32,7 @@ public partial class PlayerZonePlacementContainer : PanelContainer
 	/// <summary>
 	/// Initialise la PlayerZone : configure centre, taille, et synchronise les LineEdits.
 	/// </summary>
-	public void InitializePlayerZone(Vector3 center, float size)
+	public void InitializePlayerZone(Vector3 center, Vector3 rotation, float size)
 	{
 		if (PlayerZone == null)
 		{
@@ -44,15 +43,16 @@ public partial class PlayerZonePlacementContainer : PanelContainer
 		// Configure la zone (implémentation coté PlayerZoneNode3d)
 		PlayerZone.SetupPlayerZone(center, size);
 
-		// Positionne le node et remet la rotation à zéro si besoin
+		// Positionne le node et applique la rotation
 		PlayerZone.Position = center;
-		PlayerZone.RotationDegrees = Vector3.Zero;
+		PlayerZone.RotationDegrees = rotation;
 
         // Met à jour l'UI avec les valeurs actuelles
-        SceneManager.Instance.AddNodeToScene(PlayerZone);
+        AddChild(PlayerZone);
         GD.Print("PlayerZonePlacementContainer: PlayerZone creee");
         UpdateLineEditsFromPlayerZone();
 		GD.Print($"PlayerZonePlacementContainer: PlayerZone initialisee (center: {center}, size: {size})");
+		GD.Print($"PlayerZonePlacementContainer: PlayerZone size actuelle: {PlayerZone.GetZoneSize()}");
 	}
 
 	/// <summary>
@@ -153,7 +153,7 @@ public partial class PlayerZonePlacementContainer : PanelContainer
 		DisconnectLineEditSignals();
 		if (PlayerZone != null)
 		{
-            SceneManager.Instance.RemoveNodeFromScene(PlayerZone);
+            RemoveChild(PlayerZone);
 			PlayerZone.QueueFree();
 			PlayerZone = null;
 		}
