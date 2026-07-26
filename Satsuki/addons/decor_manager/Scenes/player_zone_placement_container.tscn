@@ -1,70 +1,83 @@
-[gd_scene load_steps=2 format=3 uid="uid://2ki3rsj2sxy7"]
+[gd_scene format=3 uid="uid://2ki3rsj2sxy7"]
 
 [ext_resource type="Script" uid="uid://da7pqsi2cldef" path="res://addons/decor_manager/Templates/PlayerZonePlacementContainer.cs" id="1_u4run"]
 
-[node name="PlayerZonePlacementContainer" type="PanelContainer"]
+[node name="PlayerZonePlacementContainer" type="PanelContainer" unique_id=952500912]
 script = ExtResource("1_u4run")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="."]
+[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=511494281]
 layout_mode = 2
 alignment = 1
 
-[node name="CoordBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
+[node name="CoordBoxContainer" type="VBoxContainer" parent="HBoxContainer" unique_id=1190630080]
 layout_mode = 2
 alignment = 1
 
-[node name="CameraPositionBoxContainer" type="HBoxContainer" parent="HBoxContainer/CoordBoxContainer"]
+[node name="CameraPositionBoxContainer" type="HBoxContainer" parent="HBoxContainer/CoordBoxContainer" unique_id=646277301]
 layout_mode = 2
 
-[node name="Container" type="MarginContainer" parent="HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
+[node name="Container" type="MarginContainer" parent="HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer" unique_id=1605525823]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer/Container"]
+[node name="Label" type="Label" parent="HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer/Container" unique_id=547060197]
 layout_mode = 2
 text = "Zone Pos."
 
-[node name="ZonePositionX" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
+[node name="ZonePositionX" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer" unique_id=211058395]
 layout_mode = 2
-text = "X"
+text = "0,00"
 placeholder_text = "000"
 alignment = 1
 
-[node name="ZonePositionY" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
+[node name="ZonePositionY" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer" unique_id=1295890764]
 layout_mode = 2
-text = "Y"
+text = "0,00"
 placeholder_text = "000"
 alignment = 1
 
-[node name="ZonePositionZ" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer"]
+[node name="ZonePositionZ" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer" unique_id=1175311472]
 layout_mode = 2
-text = "Z"
+text = "0,00"
 placeholder_text = "000"
 alignment = 1
 
-[node name="TargetCameraBoxContainer" type="HBoxContainer" parent="HBoxContainer/CoordBoxContainer"]
+[node name="TargetCameraBoxContainer" type="HBoxContainer" parent="HBoxContainer/CoordBoxContainer" unique_id=187184176]
 layout_mode = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer" unique_id=992675606]
 layout_mode = 2
 
-[node name="Label2" type="Label" parent="HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer/MarginContainer"]
+[node name="Label2" type="Label" parent="HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer/MarginContainer" unique_id=544697850]
 layout_mode = 2
 text = "Zone Rot."
 
-[node name="ZoneRotationX" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
+[node name="ZoneRotationX" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer" unique_id=1506885170]
 layout_mode = 2
-text = "X"
+text = "0,00"
 placeholder_text = "000"
 alignment = 1
 
-[node name="ZoneRotationY" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
+[node name="ZoneRotationY" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer" unique_id=123648079]
 layout_mode = 2
-text = "Y"
+text = "0,00"
 placeholder_text = "000"
 alignment = 1
 
-[node name="ZoneRotationZ" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer"]
+[node name="ZoneRotationZ" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer" unique_id=524591508]
 layout_mode = 2
-text = "Z"
+text = "0,00"
 placeholder_text = "000"
 alignment = 1
+
+[node name="SizeBoxContainer" type="HBoxContainer" parent="HBoxContainer/CoordBoxContainer" unique_id=2024195862]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="HBoxContainer/CoordBoxContainer/SizeBoxContainer" unique_id=203259955]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer/CoordBoxContainer/SizeBoxContainer/MarginContainer" unique_id=74104647]
+layout_mode = 2
+text = "Size"
+
+[node name="SizeZonePlayer" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/SizeBoxContainer" unique_id=1542860946]
+layout_mode = 2

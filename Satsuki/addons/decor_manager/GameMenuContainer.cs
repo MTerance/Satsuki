@@ -1,4 +1,4 @@
-using Godot;
+﻿using Godot;
 using Satsuki.Models;
 using System;
 
@@ -9,16 +9,49 @@ using System;
 public partial class GameMenuContainer : VBoxContainer
 {
 
-	CameraPlacementTemplate _cameraPlacementPanel;
+    CameraPlacementTemplate _cameraPlacementPanel;
+    PlayerZonePlacementContainer _playerZonePlacementContainer;
 
-	public override void _Ready()
-	{
-		base._Ready();
-	}
+    public override void _Ready()
+    {
+        /*
+		string controlPath = "res://addons/decor_manager/Scenes/player_zone_placement_container.tscn";
+		if (!ResourceLoader.Exists(controlPath))
+		{
+			GD.PrintErr($"Resource not found: {controlPath}");
+			return;
+        }
+		PackedScene controlScene = ResourceLoader.Load<PackedScene>(controlPath);
+		Control control = controlScene.Instantiate<Control>();
+		AddChild(control);
+		*/
+        _cameraPlacementPanel = GetNode<CameraPlacementTemplate>("CameraPlacementContainerGame/CameraPlacementContainer");
+        if (_cameraPlacementPanel == null)
+            GD.PrintErr("CameraPlacementContainer node not found.");
+        _cameraPlacementPanel.Init("GameMainScene");
+        _playerZonePlacementContainer = GetNode<PlayerZonePlacementContainer>("PlayerZonePlacementContainer");
+        if (_playerZonePlacementContainer == null)
+            GD.PrintErr("PlayerZonePlacementContainer node not found.");
+    }
 
-	public StageInfo GetStageInfo()
-	{
-		return new StageInfo();
+    public void SetStageInfo(StageInfo stageInfo)
+    {
+        // Implémentation pour définir les informations de la scène
+    }
+
+    public StageInfo GetStageInfo()
+    {
+        CameraPlacement camera = null;
+        _cameraPlacementPanel.GetCameraPlacementInfo(out camera);
+
+        var stageInfo = new StageInfo()
+        {
+            PositionMainCamera = camera.Position,
+            PositionZonePlayer = _playerZonePlacementContainer.GetPlayerZonePosition(),
+            RotationZonePlayer = _playerZonePlacementContainer.GetPlayerZoneRotation(),
+            SizeZonePlayer = _playerZonePlacementContainer.GetPlayerZoneSize()
+        };
+        return stageInfo;
     }
 }
 #endif
