@@ -25,13 +25,14 @@ public partial class GameMenuContainer : VBoxContainer
 		Control control = controlScene.Instantiate<Control>();
 		AddChild(control);
 		*/
-        _cameraPlacementPanel = GetNode<CameraPlacementTemplate>("CameraPlacementContainerGame/CameraPlacementContainer");
+        _cameraPlacementPanel = FindChild("CameraPlacementContainer", true, false) as CameraPlacementTemplate;
         if (_cameraPlacementPanel == null)
             GD.PrintErr("CameraPlacementContainer node not found.");
         _cameraPlacementPanel.Init("GameMainScene");
-        _playerZonePlacementContainer = GetNode<PlayerZonePlacementContainer>("PlayerZonePlacementContainer");
+        _playerZonePlacementContainer = FindChild("PlayerZonePlacementContainer", true, false) as PlayerZonePlacementContainer;
         if (_playerZonePlacementContainer == null)
             GD.PrintErr("PlayerZonePlacementContainer node not found.");
+
     }
 
     public void SetStageInfo(StageInfo stageInfo)
