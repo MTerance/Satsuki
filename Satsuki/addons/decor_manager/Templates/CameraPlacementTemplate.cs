@@ -78,14 +78,22 @@ public partial class CameraPlacementTemplate : PanelContainer
 
     private void UpdateCameraPositionUI()
     {
-        if (_nodeCamera != null && _positionCameraX != null)
+        if (_nodeCamera != null &&
+            _positionCameraX != null &&
+            _positionCameraTextBox != null &&
+            _rotationCameraTextBox != null)
         {
+            _positionCameraTextBox?.SetValue(_nodeCamera.Position);
+            _rotationCameraTextBox?.SetValue(_nodeCamera.RotationDegrees);
+
+            /// TO_DELETE after verify position and rotation are correctly updated in the UI
             _positionCameraX.Value = _nodeCamera.Position.X;
             _positionCameraY.Value = _nodeCamera.Position.Y;
             _positionCameraZ.Value = _nodeCamera.Position.Z;
             _rotationCameraX.Value = _nodeCamera.RotationDegrees.X;
             _rotationCameraY.Value = _nodeCamera.RotationDegrees.Y;
             _rotationCameraZ.Value = _nodeCamera.RotationDegrees.Z;
+            
         }
     }
 
@@ -93,6 +101,7 @@ public partial class CameraPlacementTemplate : PanelContainer
     {
         if (_nodeTargetCamera != null && _positionTargetCameraX != null)
         {
+
             _positionTargetCameraX.Value = _nodeTargetCamera.Position.X;
             _positionTargetCameraY.Value = _nodeTargetCamera.Position.Y;
             _positionTargetCameraZ.Value = _nodeTargetCamera.Position.Z;
@@ -204,6 +213,10 @@ public partial class CameraPlacementTemplate : PanelContainer
         var rotBox = FindChild("RotationBoxContainer2", true, false);
         var targetBox = FindChild("TargetPositionBoxContainer", true, false);
 
+        _positionCameraTextBox.Setup("Position Camera", Vector3.Zero);
+        _rotationCameraTextBox.Setup("Rotation Camera", Vector3.Zero);
+        _targetCameraTextBox.Setup("Target Camera", Vector3.Zero);
+
         _labelPositionCamera = posBox?.FindChild("LabelPositionCamera", false, false) as Label;
         _labelRotationCamera = rotBox?.FindChild("LabelRotationCamera", false, false) as Label;
         _labelPositionTargetCamera = targetBox?.FindChild("LabelPositionTarget", false, false) as Label;
@@ -233,6 +246,10 @@ public partial class CameraPlacementTemplate : PanelContainer
 
     private void InitCameraPlacementTemplate()
     {
+        _rotationCameraTextBox = FindChild("RotationBox", true, false) as Vector3dTextBox;
+        _positionCameraTextBox = FindChild("PositionBox", true, false) as Vector3dTextBox;
+        _targetCameraTextBox = FindChild("TargetBox", true, false) as Vector3dTextBox;
+
         _positionCameraX = FindChild("PositionCameraXSpinBox", true, false) as SpinBox;
         _positionCameraY = FindChild("PositionCameraYSpinBox", true, false) as SpinBox;
         _positionCameraZ = FindChild("PositionCameraZSpinBox", true, false) as SpinBox;
@@ -242,6 +259,11 @@ public partial class CameraPlacementTemplate : PanelContainer
         _positionTargetCameraX = FindChild("PositionCameraTargetXSpinBox", true, false) as SpinBox;
         _positionTargetCameraY = FindChild("PositionCameraTargetYSpinBox", true, false) as SpinBox;
         _positionTargetCameraZ = FindChild("PositionCameraTargetZSpinBox", true, false) as SpinBox;
+
+        if (_positionCameraTextBox != null) _positionCameraTextBox.ValueChanged += OnVector3TextBoxUpdated;
+        if (_rotationCameraTextBox != null) _rotationCameraTextBox.ValueChanged += OnVector3TextBoxUpdated;
+        if (_targetCameraTextBox != null) _targetCameraTextBox.ValueChanged += OnVector3TextBoxUpdated;
+
 
         if (_positionCameraX != null) _positionCameraX.ValueChanged += OnSpinBoxUpdated;
         if (_positionCameraY != null) _positionCameraY.ValueChanged += OnSpinBoxUpdated;
@@ -253,6 +275,15 @@ public partial class CameraPlacementTemplate : PanelContainer
         if (_positionTargetCameraY != null) _positionTargetCameraY.ValueChanged += OnSpinBoxUpdated;
         if (_positionTargetCameraZ != null) _positionTargetCameraZ.ValueChanged += OnSpinBoxUpdated;
     }
+
+    private void OnVector3TextBoxUpdated(object sender, EventArgs e)
+    {
+        Vector3 newCameraPosition = _positionCameraTextBox.GetValue();
+        Vector3 newTargetCameraPosition = _targetCameraTextBox.GetValue();
+        SetNodeCameraPosition(newCameraPosition);
+        SetNodeTargetCameraPosition(newTargetCameraPosition);
+    }
+
 
     private void OnSpinBoxUpdated(double value)
     {
@@ -266,6 +297,13 @@ public partial class CameraPlacementTemplate : PanelContainer
 
     private void CleanupSpinBoxEvents()
     {
+        if (_positionCameraTextBox != null)
+            _positionCameraTextBox.ValueChanged -= OnVector3TextBoxUpdated;
+        if (_rotationCameraTextBox != null)
+            _rotationCameraTextBox.ValueChanged -= OnVector3TextBoxUpdated;
+        if (_targetCameraTextBox != null)
+            _targetCameraTextBox.ValueChanged -= OnVector3TextBoxUpdated;
+
         if (_positionCameraX != null)
             _positionCameraX.ValueChanged -= OnSpinBoxUpdated;
         if (_positionCameraY != null)
