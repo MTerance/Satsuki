@@ -9,10 +9,19 @@ public partial class PlayerZonePlacementContainer : PanelContainer
 {
 	#region nodes definition
 	private PlayerZone PlayerZone { get; set; }
-	#endregion
+    #endregion
 
-	#region textbox definition
-	private LineEdit _zonePlayerPositionX;
+    #region PanelComponent definition
+
+    private Vector3dTextBox _positionZonePlayerTextBox;
+	private Vector3dTextBox _rotationZonePlayerTextBox;
+
+
+
+    #endregion
+
+    #region textbox definition
+    private LineEdit _zonePlayerPositionX;
 	private LineEdit _zonePlayerPositionY;
 	private LineEdit _zonePlayerPositionZ;
 	private LineEdit _zonePlayerRotationX;
@@ -25,9 +34,9 @@ public partial class PlayerZonePlacementContainer : PanelContainer
 	{
 		InitializeLineEdits();
 		// Initialise avec des valeurs par defaut (modifiables)
-		InitializePlayerZone(Vector3.Zero, Vector3.Zero, 50.0f);
 		// Connect lineedit change events to update the PlayerZone
 		ConnectLineEditSignals();
+		InitializePlayerZone(Vector3.Zero, Vector3.Zero, 50.0f);
 	}
 
 	/// <summary>
@@ -42,6 +51,7 @@ public partial class PlayerZonePlacementContainer : PanelContainer
 		}
 		// Configure la zone (implémentation coté PlayerZoneNode3d)
 		PlayerZone.SetupPlayerZone(center, size);
+		_zonePlayerSize.Text = size.ToString("F2");
 
 		// Positionne le node et applique la rotation
 		PlayerZone.Position = center;
@@ -60,19 +70,8 @@ public partial class PlayerZonePlacementContainer : PanelContainer
 	/// </summary>
 	private void InitializeLineEdits()
 	{
-		_zonePlayerPositionX = FindChild("ZonePositionX", true, false) as LineEdit;
-		checkIsLineEditValid(_zonePlayerPositionX);
-		_zonePlayerPositionY = FindChild("ZonePositionY", true, false) as LineEdit;
-		checkIsLineEditValid(_zonePlayerPositionY);	
-		_zonePlayerPositionZ = FindChild("ZonePositionZ", true, false) as LineEdit;
-		checkIsLineEditValid(_zonePlayerPositionZ);
-
-		_zonePlayerRotationX = FindChild("ZoneRotationX", true, false) as LineEdit;
-		checkIsLineEditValid(_zonePlayerRotationX);
-        _zonePlayerRotationY = FindChild("ZoneRotationY", true, false) as LineEdit;
-        checkIsLineEditValid(_zonePlayerRotationY);
-        _zonePlayerRotationZ = FindChild("ZoneRotationZ", true, false) as LineEdit;
-        checkIsLineEditValid(_zonePlayerRotationZ);
+        _positionZonePlayerTextBox = FindChild("PositionZoneBox", true, false) as Vector3dTextBox;
+        _rotationZonePlayerTextBox = FindChild("RotationZoneBox", true, false) as Vector3dTextBox;
         _zonePlayerSize = FindChild("SizeZonePlayer", true, false) as LineEdit;
         checkIsLineEditValid(_zonePlayerSize);
 	}
@@ -93,28 +92,33 @@ public partial class PlayerZonePlacementContainer : PanelContainer
 	/// </summary>
 	private void ConnectLineEditSignals()
 	{
-		if (_zonePlayerPositionX != null) _zonePlayerPositionX.TextChanged += OnLineEditChanged;
-		if (_zonePlayerPositionY != null) _zonePlayerPositionY.TextChanged += OnLineEditChanged;
-		if (_zonePlayerPositionZ != null) _zonePlayerPositionZ.TextChanged += OnLineEditChanged;
-		if (_zonePlayerRotationX != null) _zonePlayerRotationX.TextChanged += OnLineEditChanged;
-		if (_zonePlayerRotationY != null) _zonePlayerRotationY.TextChanged += OnLineEditChanged;
-		if (_zonePlayerRotationZ != null) _zonePlayerRotationZ.TextChanged += OnLineEditChanged;
-		if (_zonePlayerSize != null) _zonePlayerSize.TextChanged += OnLineEditChanged;
+
+        _positionZonePlayerTextBox.ValueChanged += _positionZonePlayerTextBox_ValueChanged;
+		_rotationZonePlayerTextBox.ValueChanged += _rotationZonePlayerTextBox_ValueChanged;
+
+        if (_zonePlayerSize != null) _zonePlayerSize.TextChanged += OnLineEditChanged;
 
 	}
 
-	/// <summary>
-	/// Déconnecte les signaux (appelé depuis _ExitTree si nécessaire).
-	/// </summary>
-	private void DisconnectLineEditSignals()
+	private void _rotationZonePlayerTextBox_ValueChanged(object sender, EventArgs e)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void _positionZonePlayerTextBox_ValueChanged(object sender, EventArgs e)
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <summary>
+    /// Déconnecte les signaux (appelé depuis _ExitTree si nécessaire).
+    /// </summary>
+    private void DisconnectLineEditSignals()
 	{
-		if (_zonePlayerPositionX != null) _zonePlayerPositionX.TextChanged -= OnLineEditChanged;
-		if (_zonePlayerPositionY != null) _zonePlayerPositionY.TextChanged -= OnLineEditChanged;
-		if (_zonePlayerPositionZ != null) _zonePlayerPositionZ.TextChanged -= OnLineEditChanged;
-		if (_zonePlayerRotationX != null) _zonePlayerRotationX.TextChanged -= OnLineEditChanged;
-		if (_zonePlayerRotationY != null) _zonePlayerRotationY.TextChanged -= OnLineEditChanged;
-		if (_zonePlayerRotationZ != null) _zonePlayerRotationZ.TextChanged -= OnLineEditChanged;
-		if (_zonePlayerSize != null) _zonePlayerSize.TextChanged -= OnLineEditChanged;
+
+		_positionZonePlayerTextBox.ValueChanged -= _positionZonePlayerTextBox_ValueChanged;
+        _rotationZonePlayerTextBox.ValueChanged -= _rotationZonePlayerTextBox_ValueChanged;
+        if (_zonePlayerSize != null) _zonePlayerSize.TextChanged -= OnLineEditChanged;
 	}
 
 	private void OnLineEditChanged(string _)

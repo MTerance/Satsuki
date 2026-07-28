@@ -190,12 +190,12 @@ public partial class CameraPlacementTemplate : PanelContainer
 		_targetCameraTextBox = FindChild("TargetBox", true, false) as Vector3dTextBox;
 
 		if (_positionCameraTextBox != null) _positionCameraTextBox.ValueChanged += OnVector3TextBoxUpdated;
-        else GD.PrintErr("PositionBox not found in CameraPlacementTemplate");
-        if (_rotationCameraTextBox != null) _rotationCameraTextBox.ValueChanged += OnVector3TextBoxUpdated;
-        else GD.PrintErr("RotationBox not found in CameraPlacementTemplate");
-        if (_targetCameraTextBox != null) _targetCameraTextBox.ValueChanged += OnVector3TextBoxUpdated;
-        else GD.PrintErr("TargetBox not found in CameraPlacementTemplate");
-    }
+		else GD.PrintErr("PositionBox not found in CameraPlacementTemplate");
+		if (_rotationCameraTextBox != null) _rotationCameraTextBox.ValueChanged += OnVector3TextBoxUpdated;
+		else GD.PrintErr("RotationBox not found in CameraPlacementTemplate");
+		if (_targetCameraTextBox != null) _targetCameraTextBox.ValueChanged += OnVector3TextBoxUpdated;
+		else GD.PrintErr("TargetBox not found in CameraPlacementTemplate");
+	}
 
 	private void OnVector3TextBoxUpdated(object sender, EventArgs e)
 	{

@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://cwhptm70bahx7"]
 
 [ext_resource type="Script" uid="uid://doe7w2uql05yr" path="res://addons/decor_manager/GameMenuContainer.cs" id="1_8pjnx"]
-[ext_resource type="Script" uid="uid://egot5kly21n7" path="res://addons/decor_manager/Templates/CameraPlacementTemplate.cs" id="1_bfc0n"]
+[ext_resource type="PackedScene" uid="uid://cprrdorcpeg5p" path="res://addons/decor_manager/Scenes/camera_placement_container.tscn" id="2_8pjnx"]
 [ext_resource type="PackedScene" uid="uid://2ki3rsj2sxy7" path="res://addons/decor_manager/Scenes/player_zone_placement_container.tscn" id="3_mfhe8"]
 
 [node name="GameMenuContainer" type="VBoxContainer" unique_id=526741255]
@@ -16,78 +16,10 @@ horizontal_alignment = 1
 layout_mode = 2
 text = "Quizz Game Info Manager"
 
-[node name="CameraPlacementContainerGame" type="VBoxContainer" parent="." unique_id=1974718334]
-layout_mode = 2
-
-[node name="CameraPlacementContainer" type="PanelContainer" parent="CameraPlacementContainerGame" unique_id=862433594]
-layout_mode = 2
-script = ExtResource("1_bfc0n")
-
-[node name="HBoxContainer" type="HBoxContainer" parent="CameraPlacementContainerGame/CameraPlacementContainer" unique_id=979523829]
-layout_mode = 2
-alignment = 1
-
-[node name="CoordBoxContainer" type="VBoxContainer" parent="CameraPlacementContainerGame/CameraPlacementContainer/HBoxContainer" unique_id=245794110]
-layout_mode = 2
-alignment = 1
-
-[node name="CameraPositionBoxContainer" type="HBoxContainer" parent="CameraPlacementContainerGame/CameraPlacementContainer/HBoxContainer/CoordBoxContainer" unique_id=101894136]
-layout_mode = 2
-
-[node name="Container" type="MarginContainer" parent="CameraPlacementContainerGame/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer" unique_id=543437011]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="CameraPlacementContainerGame/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer/Container" unique_id=1242042113]
-layout_mode = 2
-text = "Coord. Camera"
-
-[node name="CameraPositionX" type="LineEdit" parent="CameraPlacementContainerGame/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer" unique_id=2052181524]
-layout_mode = 2
-text = "0"
-placeholder_text = "000"
-alignment = 1
-
-[node name="CameraPositionY" type="LineEdit" parent="CameraPlacementContainerGame/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer" unique_id=965273524]
-layout_mode = 2
-text = "0"
-placeholder_text = "000"
-alignment = 1
-
-[node name="CameraPositionZ" type="LineEdit" parent="CameraPlacementContainerGame/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer" unique_id=1019993964]
-layout_mode = 2
-text = "0"
-placeholder_text = "000"
-alignment = 1
-
-[node name="TargetCameraBoxContainer" type="HBoxContainer" parent="CameraPlacementContainerGame/CameraPlacementContainer/HBoxContainer/CoordBoxContainer" unique_id=381763243]
-layout_mode = 2
-
-[node name="MarginContainer" type="MarginContainer" parent="CameraPlacementContainerGame/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer" unique_id=1572022026]
-layout_mode = 2
-
-[node name="Label2" type="Label" parent="CameraPlacementContainerGame/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer/MarginContainer" unique_id=2130368482]
-layout_mode = 2
-text = "Coord. Target"
-
-[node name="TargetCameraX" type="LineEdit" parent="CameraPlacementContainerGame/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer" unique_id=1432328410]
-layout_mode = 2
-text = "0"
-placeholder_text = "000"
-alignment = 1
-
-[node name="TargetCameraY" type="LineEdit" parent="CameraPlacementContainerGame/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer" unique_id=779826770]
-layout_mode = 2
-text = "0"
-placeholder_text = "000"
-alignment = 1
-
-[node name="TargetCameraZ" type="LineEdit" parent="CameraPlacementContainerGame/CameraPlacementContainer/HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer" unique_id=1420599611]
-layout_mode = 2
-text = "0"
-placeholder_text = "000"
-alignment = 1
-
 [node name="CameraPlacementContainerLobby" type="VBoxContainer" parent="." unique_id=469134308]
+layout_mode = 2
+
+[node name="CameraPlacementContainer" parent="." unique_id=1336999674 instance=ExtResource("2_8pjnx")]
 layout_mode = 2
 
 [node name="ZoneGameInfoManager" type="Label" parent="." unique_id=506904414]

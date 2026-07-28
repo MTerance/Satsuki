@@ -25,6 +25,9 @@ namespace Satsuki.Models
         public Godot.Vector3 PositionTargetMainCamera { get; set; }
         [Export]
         public Godot.Vector3 PositionMainCamera { get; set; }
+        [Export]
+        public CameraPlacement CameraPlacement { get; set; } = new CameraPlacement();
+
 
         public StageInfo()
         {
@@ -47,6 +50,8 @@ namespace Satsuki.Models
         public float SizeZonePlayer { get; set; }
         public Tuple<float, float, float> PositionTargetMainCamera { get; set; }
         public Tuple<float, float, float> PositionMainCamera { get; set; }
+        public CameraPlacementResource CameraPlacement { get; set; } = new CameraPlacementResource();
+
         public StageInfoResource()
         {
             rectA = Tuple.Create(0f, 0f, 0f);

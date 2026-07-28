@@ -1,6 +1,8 @@
 [gd_scene format=3 uid="uid://2ki3rsj2sxy7"]
 
 [ext_resource type="Script" uid="uid://da7pqsi2cldef" path="res://addons/decor_manager/Templates/PlayerZonePlacementContainer.cs" id="1_u4run"]
+[ext_resource type="PackedScene" uid="uid://bp136d28cqn4u" path="res://addons/decor_manager/Utils/Vector3DTextBox/Vector3DTextBox.tscn" id="2_wgelp"]
+[ext_resource type="Script" uid="uid://dd6ndvhrr2tbp" path="res://addons/decor_manager/Models/PlayerZone.cs" id="3_efj8p"]
 
 [node name="PlayerZonePlacementContainer" type="PanelContainer" unique_id=952500912]
 script = ExtResource("1_u4run")
@@ -11,62 +13,6 @@ alignment = 1
 
 [node name="CoordBoxContainer" type="VBoxContainer" parent="HBoxContainer" unique_id=1190630080]
 layout_mode = 2
-alignment = 1
-
-[node name="CameraPositionBoxContainer" type="HBoxContainer" parent="HBoxContainer/CoordBoxContainer" unique_id=646277301]
-layout_mode = 2
-
-[node name="Container" type="MarginContainer" parent="HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer" unique_id=1605525823]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer/Container" unique_id=547060197]
-layout_mode = 2
-text = "Zone Pos."
-
-[node name="ZonePositionX" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer" unique_id=211058395]
-layout_mode = 2
-text = "0,00"
-placeholder_text = "000"
-alignment = 1
-
-[node name="ZonePositionY" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer" unique_id=1295890764]
-layout_mode = 2
-text = "0,00"
-placeholder_text = "000"
-alignment = 1
-
-[node name="ZonePositionZ" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/CameraPositionBoxContainer" unique_id=1175311472]
-layout_mode = 2
-text = "0,00"
-placeholder_text = "000"
-alignment = 1
-
-[node name="TargetCameraBoxContainer" type="HBoxContainer" parent="HBoxContainer/CoordBoxContainer" unique_id=187184176]
-layout_mode = 2
-
-[node name="MarginContainer" type="MarginContainer" parent="HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer" unique_id=992675606]
-layout_mode = 2
-
-[node name="Label2" type="Label" parent="HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer/MarginContainer" unique_id=544697850]
-layout_mode = 2
-text = "Zone Rot."
-
-[node name="ZoneRotationX" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer" unique_id=1506885170]
-layout_mode = 2
-text = "0,00"
-placeholder_text = "000"
-alignment = 1
-
-[node name="ZoneRotationY" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer" unique_id=123648079]
-layout_mode = 2
-text = "0,00"
-placeholder_text = "000"
-alignment = 1
-
-[node name="ZoneRotationZ" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/TargetCameraBoxContainer" unique_id=524591508]
-layout_mode = 2
-text = "0,00"
-placeholder_text = "000"
 alignment = 1
 
 [node name="SizeBoxContainer" type="HBoxContainer" parent="HBoxContainer/CoordBoxContainer" unique_id=2024195862]
@@ -81,3 +27,12 @@ text = "Size"
 
 [node name="SizeZonePlayer" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/SizeBoxContainer" unique_id=1542860946]
 layout_mode = 2
+
+[node name="PositionZoneBox" parent="HBoxContainer/CoordBoxContainer" unique_id=950821846 instance=ExtResource("2_wgelp")]
+layout_mode = 2
+
+[node name="RotationZoneBox" parent="HBoxContainer/CoordBoxContainer" unique_id=1769450293 instance=ExtResource("2_wgelp")]
+layout_mode = 2
+
+[node name="PlayerZone" type="Node3D" parent="." unique_id=1937528135]
+script = ExtResource("3_efj8p")
