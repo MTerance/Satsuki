@@ -123,6 +123,7 @@ public partial class CameraPlacementTemplate : PanelContainer
 		_idTemplateCamera = camera.Index.ToString();
 		_typeTemplateCamera = camera.TypeTemplateCamera;
 		SetNodeCameraPosition(camera.Position);
+		SetNodeCameraRotation(camera.Rotation);
 		SetNodeTargetCameraPosition(camera.Target);
 		UpdateCameraNode();
 	}
@@ -175,7 +176,13 @@ public partial class CameraPlacementTemplate : PanelContainer
 			_nodeCamera.Position = nodeCameraPosition;
 	}
 
-	private void InitLabels()
+    private void SetNodeCameraRotation(Vector3 nodeCameraRotation)
+    {
+        if (_nodeCamera != null)
+            _nodeCamera.RotationDegrees = nodeCameraRotation;
+    }
+
+    private void InitLabels()
 	{
 		_positionCameraTextBox.Setup("Position Camera", Vector3.Zero);
 		_rotationCameraTextBox.Setup("Rotation Camera", Vector3.Zero);
