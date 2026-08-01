@@ -165,15 +165,15 @@ public partial class PlayerZonePlacementContainer : PanelContainer
 			_positionZonePlayerTextBox.SetValue(PlayerZone.Position);
 		if (_rotationZonePlayerTextBox != null)
 			_rotationZonePlayerTextBox.SetValue(PlayerZone.RotationDegrees);
-        if (_zonePlayerSize != null)
-            _zonePlayerSize.Text = PlayerZone.GetZoneSize().ToString("F2");
+		if (_zonePlayerSize != null)
+			_zonePlayerSize.Text = PlayerZone.GetZoneSize().ToString("F2");
 
-    }
+	}
 
 	public Vector3 GetPlayerZonePosition()
 	{
 		return _positionZonePlayerTextBox != null ? _positionZonePlayerTextBox.GetValue() : Vector3.Zero;
-    }
+	}
 
 	public Vector3  GetPlayerZoneRotation()
 	{

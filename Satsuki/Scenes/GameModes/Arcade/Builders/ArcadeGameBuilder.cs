@@ -2,6 +2,7 @@ using Godot;
 using Satsuki.Models;
 using Satsuki.Repositories.Loaders;
 using Satsuki.Scenes.GameModes.Arcade.Models;
+using Satsuki.Tools.Converters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -97,11 +98,11 @@ namespace Satsuki.Scenes.GameModes.Arcade.Builders
 			BuildStage();
 			BuildPlayers();
 			/**/
-			var stageRsc = locationLoader.LoadStageRsc(record.IdStage);
+			var stageRsc = StageInfoConverter.ConvertFrom(locationLoader.LoadStageRsc(record.IdStage).StageInfo);
 			/**/
 			var nbPlayers = record.Players.Count;
 			//  var positionMainScene = stageRsc.StageInfo.
-
+			GetSpawnPositionsForPlayers(stageRsc, nbPlayers);
 			/**/
 			return stage;
 

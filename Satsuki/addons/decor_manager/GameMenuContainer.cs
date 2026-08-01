@@ -39,7 +39,7 @@ public partial class GameMenuContainer : VBoxContainer
 		// Implémentation pour définir les informations de la scène
 		_cameraPlacementPanel.Load(stageInfo.CameraPlacement);
 		_playerZonePlacementContainer.Load(stageInfo.PositionZonePlayer, stageInfo.RotationZonePlayer, stageInfo.SizeZonePlayer);
-    }
+	}
 
 	public StageInfo GetStageInfo()
 	{
