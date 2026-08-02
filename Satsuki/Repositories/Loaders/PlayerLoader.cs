@@ -11,7 +11,7 @@ namespace Satsuki.Repositories.Loaders
     {
         public Node LoadPlayerMesh()
         {
-            var node = GD.Load<PackedScene>("res://Assets/Models/Player/Player.tscn");
+            var node = GD.Load<PackedScene>("res://Scenes/Characters/Character.tscn");
             return node.Instantiate<Node3D>();
         }
     }
