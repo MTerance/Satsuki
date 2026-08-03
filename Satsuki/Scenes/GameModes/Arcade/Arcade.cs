@@ -7,14 +7,16 @@ using System.Text;
 using System.Threading.Tasks;
 using Satsuki.Interfaces.Models;
 using Satsuki.Scenes.GameModes.Arcade.Models;
+using Satsuki.Manager;
 
 namespace Satsuki.Scenes
 {
 	public partial class Arcade : Node, IScene, IGameRecordUser
 	{
 		private ArcadeGameRecord _currentGameRecord;
+		private PlayerManager _playerManager;
 
-		private void LoadStage()
+        private void LoadStage()
 		{
 			var stageResource = new Repositories.Loaders.LocationLoader().LoadStageRsc(_currentGameRecord.IdStage);
 			var stageNode = new Repositories.Loaders.LocationLoader().LoadStage(stageResource);

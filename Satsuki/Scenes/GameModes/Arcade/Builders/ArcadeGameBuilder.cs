@@ -45,7 +45,6 @@ namespace Satsuki.Scenes.GameModes.Arcade.Builders
 			}
 		}
 
-
 		private List<Vector3> GetSpawnPositionsForPlayers(StageInfoResource rsc, int nbPlayers)
 		{
 			int MaxPlayerPerLine = 4;
