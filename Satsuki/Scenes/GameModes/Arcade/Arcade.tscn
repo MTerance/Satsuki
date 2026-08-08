@@ -4,3 +4,5 @@
 
 [node name="Arcade" type="Node3D" unique_id=196656192]
 script = ExtResource("1_eenj3")
+
+[node name="GameCamera" type="Camera3D" parent="." unique_id=260232297]

@@ -10,14 +10,14 @@ namespace Satsuki.Manager
 {
     public class PlayerManager
     {
-        private Dictionary<PlayerInfo, Node> players;
+        private Dictionary<PlayerInfo, Node3D> players;
 
         public PlayerManager()
         {
-            players = new Dictionary<PlayerInfo, Node>();
+            players = new Dictionary<PlayerInfo, Node3D>();
         }
 
-        public void AddPlayer(PlayerInfo playerInfo, Node playerNode)
+        public void AddPlayer(PlayerInfo playerInfo, Node3D playerNode)
         {
             if (!players.ContainsKey(playerInfo))
             {
@@ -25,11 +25,11 @@ namespace Satsuki.Manager
             }
         }
 
-        public Node GetPlayerNode(PlayerInfo playerInfo)
+        public Node3D GetPlayerNode(PlayerInfo playerInfo)
         {
             if (players.TryGetValue(playerInfo, out var playerNode))
             {
-                return playerNode;
+                return playerNode as Node3D;
             }
             return null;
         }

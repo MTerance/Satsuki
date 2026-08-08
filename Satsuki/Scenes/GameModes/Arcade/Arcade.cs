@@ -14,9 +14,10 @@ namespace Satsuki.Scenes
 	public partial class Arcade : Node, IScene, IGameRecordUser
 	{
 		private ArcadeGameRecord _currentGameRecord;
+		private Camera3D _gameCamera;
 		private PlayerManager _playerManager;
 
-        private void LoadStage()
+		private void LoadStage()
 		{
 			var stageResource = new Repositories.Loaders.LocationLoader().LoadStageRsc(_currentGameRecord.IdStage);
 			var stageNode = new Repositories.Loaders.LocationLoader().LoadStage(stageResource);
@@ -43,8 +44,9 @@ namespace Satsuki.Scenes
 
 		public override void _Ready()
 		{
-			// Get the GameRecord 
-			LoadGameRecord();
+            _gameCamera = GetNode<Camera3D>("GameCamera");
+            // Get the GameRecord 
+            LoadGameRecord();
 			// Load the StageInfo and SpawnPointData from the GameRecord
 			LoadStage();
 			LoadPlayers();
