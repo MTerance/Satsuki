@@ -1,13 +1,10 @@
 using Godot;
-using Satsuki.Interfaces;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Satsuki.Manager;
+using Satsuki.Interfaces;
 using Satsuki.Interfaces.Models;
 using Satsuki.Scenes.GameModes.Arcade.Models;
-using Satsuki.Manager;
+using Satsuki.Scenes.GameModes.Arcade.Builders;
 
 namespace Satsuki.Scenes
 {
@@ -40,6 +37,18 @@ namespace Satsuki.Scenes
 		{
 			// Load the Quizz data from the database or other storage
 			// This is a placeholder for actual quizz loading logic
+		}
+
+		public void BuildGame(ArcadeGameRecord gameRecord)
+		{
+			SetGameRecord(gameRecord);
+			var builder = new ArcadeGameBuilder(gameRecord);
+			var nodeBuilded = builder.Build();
+			AddChild(nodeBuilded.Stage);
+			foreach (var player in nodeBuilded.Players)
+			{
+				AddChild(player.Value);
+			}
 		}
 
 		public override void _Ready()

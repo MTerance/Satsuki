@@ -16,9 +16,12 @@ namespace Satsuki.Scenes.GameModes.Arcade.Builders
 		private ArcadeGameRecord record;
 		private LocationLoader locationLoader;
 		private PlayerLoader playerLoader;
-		//
-		private Node stage;
-		private Dictionary<int, Node3D> players;
+
+		private ArcadeBuildResult result = new ArcadeBuildResult();
+
+        //
+        //private Node stage;
+		//private Dictionary<int, Node3D> players;
 
 
 		public ArcadeGameBuilder(ArcadeGameRecord record)
@@ -32,7 +35,7 @@ namespace Satsuki.Scenes.GameModes.Arcade.Builders
 		private void BuildStage()
 		{
 			var stageRsc = locationLoader.LoadStageRsc(record.IdStage);
-			stage = locationLoader.LoadStage(stageRsc);
+			result.Stage = locationLoader.LoadStage(stageRsc);
 		}
 
 		private void BuildPlayers()
@@ -40,7 +43,7 @@ namespace Satsuki.Scenes.GameModes.Arcade.Builders
 			foreach (var playerRecord in record.Players)
 			{
 				var player = playerLoader.LoadPlayerMesh();
-				players.Add(playerRecord.Id, player);
+				result.Players.Add(playerRecord.Id, player);
 				// Add player to the scene or perform other setup
 			}
 		}
@@ -62,9 +65,7 @@ namespace Satsuki.Scenes.GameModes.Arcade.Builders
 			{
 				nbLines++;
 			}
-			int nbColumns = nbPlayers % nbLines;
-
-			// Implement logic to retrieve spawn positions based on the stage and player count
+			int nbColumns = (int)Math.Ceiling(nbPlayers / (float)nbLines);
 
 			float columnSpacing = nbColumns > 1 ? length / (nbColumns - 1) : 0f;
 
@@ -80,7 +81,6 @@ namespace Satsuki.Scenes.GameModes.Arcade.Builders
 					float x = startX + column * columnSpacing;
 					float y = 0;
 					float z = startZ + line * lineSpacing;
-					// Calculate spawn position based on line and column
 					spawnPositions.Add(new Vector3(x, y, z));
 				}
 			}
@@ -90,34 +90,23 @@ namespace Satsuki.Scenes.GameModes.Arcade.Builders
 		private void SetPlayersPositionsForMainScene(List<Vector3> spawnPositions)
 		{
 			int count = 0;
-            // Implement logic to position players based on the stage and spawn points
-            foreach (var player in players)
+            foreach (var player in result.Players)
             {
-                // Assign spawn position to player
 				player.Value.Position = spawnPositions[count];
                 count++;
-                // Example: player.Value.Position = spawnPositions[player.Key];
             }
         }
 
-		public Node Build()
+		public ArcadeBuildResult Build()
 		{
 			BuildStage();
 			BuildPlayers();
-			/**/
 			var stageRsc = StageInfoConverter.ConvertFrom(locationLoader.LoadStageRsc(record.IdStage).StageInfo);
-			/**/
 			var nbPlayers = record.Players.Count;
-			//  var positionMainScene = stageRsc.StageInfo.
 			var listSpots = GetSpawnPositionsForPlayers(stageRsc, nbPlayers);
 			SetPlayersPositionsForMainScene(listSpots);
-            /**/
-			// set mainCamera
-
-            return stage;
-
+			// TODO : set mainCamera
+            return result;
 		}
-
-
 	}
 }
