@@ -12,10 +12,6 @@ public partial class StageInfoContainer : Control
 	private LineEdit _stageNameLineEdit;
 	private LineEdit _pathStageAssetLineEdit;
 
-	/*
-	[Signal]
-	public delegate void LoadStageAssetRequestedEventHandler(PackedScene scene);
-	*/
 	private string _stageAssetPath;
 	private string _stageName;
 

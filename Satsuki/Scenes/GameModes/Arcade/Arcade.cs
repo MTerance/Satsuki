@@ -1,107 +1,1 @@
-using Godot;
-using System;
-using Satsuki.Manager;
-using Satsuki.Interfaces;
-using Satsuki.Interfaces.Models;
-using Satsuki.Scenes.GameModes.Arcade.Models;
-using Satsuki.Scenes.GameModes.Arcade.Builders;
-
-namespace Satsuki.Scenes
-{
-	public partial class Arcade : Node, IScene, IGameRecordUser
-	{
-		private ArcadeGameRecord _currentGameRecord;
-		private Camera3D _gameCamera;
-		private PlayerManager _playerManager;
-
-		private void LoadStage()
-		{
-			var stageResource = new Repositories.Loaders.LocationLoader().LoadStageRsc(_currentGameRecord.IdStage);
-			var stageNode = new Repositories.Loaders.LocationLoader().LoadStage(stageResource);
-			AddChild(stageNode);
-		}
-
-		private void LoadPlayers()
-		{
-			// Load players and their positions based on the SpawnPointData
-			// This is a placeholder for actual player loading logic
-		}
-
-		private void LoadGameRecord()
-		{
-			// Load the GameRecord from the database or other storage
-			// This is a placeholder for actual game record loading logic
-		}
-
-		private void LoadQuizz()
-		{
-			// Load the Quizz data from the database or other storage
-			// This is a placeholder for actual quizz loading logic
-		}
-
-		public void BuildGame(ArcadeGameRecord gameRecord)
-		{
-			SetGameRecord(gameRecord);
-			var builder = new ArcadeGameBuilder(gameRecord);
-			var nodeBuilded = builder.Build();
-			AddChild(nodeBuilded.Stage);
-			foreach (var player in nodeBuilded.Players)
-			{
-				AddChild(player.Value);
-			}
-		}
-
-		public override void _Ready()
-		{
-            _gameCamera = GetNode<Camera3D>("GameCamera");
-            // Get the GameRecord 
-            LoadGameRecord();
-			// Load the StageInfo and SpawnPointData from the GameRecord
-			LoadStage();
-			LoadPlayers();
-			// Load the Quizz data from the GameRecord
-			LoadQuizz();
-			base._Ready();
-		}
-
-		public override void _Process(double delta)
-		{
-			base._Process(delta);
-		}
-
-		public object GetSceneState()
-		{
-			return new
-			{
-				SceneInfo = new
-				{
-					SceneName = "Arcade",
-					SceneType = "Game",
-					StartTime = DateTime.UtcNow,
-					ElapsedTime = 0.0,
-					ElapsedTimeFormatted = "00:00"
-				},
-				Status = new
-				{
-					IsActive = true,
-					IsPaused = false
-				}
-			};
-		}
-
-		public IGameRecord LoadCurrentGameRecord()
-		{
-			return _currentGameRecord;
-		}
-
-		public void SetGameRecord(IGameRecord gameRecord)
-		{
-			if (gameRecord is ArcadeGameRecord)
-				_currentGameRecord = gameRecord as ArcadeGameRecord;
-			else
-			{
-				GD.PrintErr("Invalid game record type. Expected ArcadeGameRecord.");
-			}
-		}
-	}
-}
+﻿using Godot; using System; using Satsuki.Manager; using Satsuki.Interfaces; using Satsuki.Interfaces.Models; using Satsuki.Scenes.GameModes.Arcade.Models; using Satsuki.Scenes.GameModes.Arcade.Builders;  namespace Satsuki.Scenes { 	public partial class Arcade : Node, IScene, IGameRecordUser 	{ 		private ArcadeGameRecord _currentGameRecord; 		private Camera3D _gameCamera; 		private PlayerManager _playerManager;          private void LoadStage() 		{ 			var stageResource = new Repositories.Loaders.LocationLoader().LoadStageRsc(_currentGameRecord.IdStage); 			var stageNode = new Repositories.Loaders.LocationLoader().LoadStage(stageResource); 			AddChild(stageNode); 		}  		public void BuildGame(ArcadeGameRecord gameRecord) 		{ 			SetGameRecord(gameRecord); 			var builder = new ArcadeGameBuilder(gameRecord); 			var nodeBuilded = builder.Build(); 			AddChild(nodeBuilded.Stage); 			foreach (var player in nodeBuilded.Players) 			{ 				AddChild(player.Value); 			} 		}  		public override void _Ready() 		{             _gameCamera = GetNode<Camera3D>("GameCamera"); 			// Load the StageInfo and SpawnPointData from the GameRecord 			BuildGame(_currentGameRecord); 			base._Ready(); 		}  		public override void _Process(double delta) 		{ 			base._Process(delta); 		}  		public object GetSceneState() 		{ 			return new 			{ 				SceneInfo = new 				{ 					SceneName = "Arcade", 					SceneType = "Game", 					StartTime = DateTime.UtcNow, 					ElapsedTime = 0.0, 					ElapsedTimeFormatted = "00:00" 				}, 				Status = new 				{ 					IsActive = true, 					IsPaused = false 				} 			}; 		}  		public IGameRecord LoadCurrentGameRecord() 		{ 			return _currentGameRecord; 		}  		public void SetGameRecord(IGameRecord gameRecord) 		{ 			if (gameRecord is ArcadeGameRecord) 				_currentGameRecord = gameRecord as ArcadeGameRecord; 			else 			{ 				GD.PrintErr("Invalid game record type. Expected ArcadeGameRecord."); 			} 		} 	} } 

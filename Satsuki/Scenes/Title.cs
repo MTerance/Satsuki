@@ -70,7 +70,7 @@ namespace Satsuki.Scenes
 			}
 		}
 
-        private void StartGame()
+		private void StartGame()
 		{
 			GD.Print("Title: Demande de demarrage du jeu...");
 			EmitSignal(SignalName.StartGameRequested);

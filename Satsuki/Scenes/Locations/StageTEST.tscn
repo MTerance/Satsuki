@@ -1,0 +1,157 @@
+[gd_scene format=3 uid="uid://3r3iapqhvvs0"]
+
+[ext_resource type="Texture2D" uid="uid://cddwiy6e60uii" path="res://Assets/PolygonPrototype_Texture_06.png" id="1_lhql5"]
+[ext_resource type="ArrayMesh" uid="uid://cfibwwol3twai" path="res://Assets/SM_Buildings_Floor_5x5_01P.obj" id="2_tbnmx"]
+[ext_resource type="Texture2D" uid="uid://yypg7deyd0q8" path="res://Assets/PolygonPrototype_Texture_09.png" id="3_80wlo"]
+[ext_resource type="Texture2D" uid="uid://lx6ut4v1e186" path="res://Assets/PolygonPrototype_Texture_08.png" id="4_w33uk"]
+[ext_resource type="Texture2D" uid="uid://b6xdvm8be4sah" path="res://Assets/PolygonPrototype_Texture_10.png" id="5_i5prf"]
+[ext_resource type="Texture2D" uid="uid://dhxhncb52mv2y" path="res://Assets/PolygonPrototype_Texture_05.png" id="6_a6kyg"]
+[ext_resource type="ArrayMesh" uid="uid://b64i0u3tqvrxj" path="res://Assets/SM_Icon_Letter_T_01.obj" id="7_ueagc"]
+[ext_resource type="Texture2D" uid="uid://ewncaauybxdd" path="res://Assets/PolygonPrototype_Texture_04.png" id="8_i81tv"]
+[ext_resource type="ArrayMesh" uid="uid://csmvvy8gp6rlo" path="res://Assets/SM_Icon_Letter_E_01.obj" id="9_i8w0u"]
+[ext_resource type="Texture2D" uid="uid://beifbsrb7amgf" path="res://Assets/PolygonPrototype_Texture_03.png" id="10_nkoca"]
+[ext_resource type="ArrayMesh" uid="uid://wq7507capfd8" path="res://Assets/SM_Icon_Letter_S_01.obj" id="11_7tku5"]
+[ext_resource type="Texture2D" uid="uid://0y244pfwn6dl" path="res://Assets/PolygonPrototype_Texture_01.png" id="12_b6m4a"]
+[ext_resource type="ArrayMesh" uid="uid://cpd8m8td6eo50" path="res://Assets/SM_Icon_Star_02.obj" id="13_fv2ss"]
+[ext_resource type="Texture2D" uid="uid://txknc1iusy2h" path="res://Assets/PolygonPrototype_Texture_02.png" id="14_fvl8d"]
+[ext_resource type="ArrayMesh" uid="uid://buk5e8rjyksyf" path="res://Assets/SM_Prop_Tree_Palm_02.obj" id="15_f1sc5"]
+[ext_resource type="ArrayMesh" uid="uid://bqksnqlsipfl1" path="res://Assets/SM_Veh_Car_Sports_01.obj" id="16_kwamf"]
+[ext_resource type="ArrayMesh" uid="uid://2jbvo80l2hwl" path="res://Assets/SM_Icon_Boat_01.obj" id="17_tbnmx"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_eadc7"]
+albedo_texture = ExtResource("1_lhql5")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_acska"]
+albedo_texture = ExtResource("3_80wlo")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_foti8"]
+albedo_texture = ExtResource("4_w33uk")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ejpoc"]
+albedo_texture = ExtResource("5_i5prf")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dnj6a"]
+albedo_texture = ExtResource("6_a6kyg")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_78dsd"]
+albedo_texture = ExtResource("8_i81tv")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ojqe4"]
+albedo_texture = ExtResource("10_nkoca")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dqxkf"]
+albedo_texture = ExtResource("3_80wlo")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kh8p1"]
+albedo_texture = ExtResource("12_b6m4a")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tmfwo"]
+albedo_texture = ExtResource("12_b6m4a")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_v6e6y"]
+albedo_texture = ExtResource("14_fvl8d")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4p45t"]
+albedo_texture = ExtResource("14_fvl8d")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_iwfqg"]
+albedo_texture = ExtResource("14_fvl8d")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_54ja8"]
+albedo_texture = ExtResource("14_fvl8d")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ypi54"]
+albedo_texture = ExtResource("14_fvl8d")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vreo4"]
+albedo_texture = ExtResource("8_i81tv")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_80wlo"]
+albedo_texture = ExtResource("12_b6m4a")
+
+[node name="Stage" type="Node3D" unique_id=1915906932]
+
+[node name="Floor5x5" type="MeshInstance3D" parent="." unique_id=93163057]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 1.2078238, 0, 0)
+material_override = SubResource("StandardMaterial3D_eadc7")
+mesh = ExtResource("2_tbnmx")
+
+[node name="Floor5x6" type="MeshInstance3D" parent="." unique_id=1304176374]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 51.101067, 0, 0)
+material_override = SubResource("StandardMaterial3D_acska")
+mesh = ExtResource("2_tbnmx")
+
+[node name="Floor5x7" type="MeshInstance3D" parent="." unique_id=1809068382]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 51.101067, 0, -49.781925)
+material_override = SubResource("StandardMaterial3D_foti8")
+mesh = ExtResource("2_tbnmx")
+
+[node name="Floor5x8" type="MeshInstance3D" parent="." unique_id=689625253]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 1.1776123, 0, -49.575024)
+material_override = SubResource("StandardMaterial3D_ejpoc")
+mesh = ExtResource("2_tbnmx")
+
+[node name="SmIconLetterT01" type="MeshInstance3D" parent="." unique_id=2079696452]
+transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, -27.958174, 10.801685, -46.49584)
+material_override = SubResource("StandardMaterial3D_dnj6a")
+mesh = ExtResource("7_ueagc")
+
+[node name="SmIconLetterE01" type="MeshInstance3D" parent="." unique_id=595849162]
+transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, -11.629368, 10.102762, -46.451176)
+material_override = SubResource("StandardMaterial3D_78dsd")
+mesh = ExtResource("9_i8w0u")
+
+[node name="SmIconLetterS01" type="MeshInstance3D" parent="." unique_id=1910223390]
+transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, 7.0231667, 10.609508, -46.29873)
+material_override = SubResource("StandardMaterial3D_ojqe4")
+mesh = ExtResource("11_7tku5")
+
+[node name="SmIconLetterT02" type="MeshInstance3D" parent="." unique_id=344628992]
+transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, 23.205433, 10.706089, -46.02832)
+material_override = SubResource("StandardMaterial3D_dqxkf")
+mesh = ExtResource("7_ueagc")
+
+[node name="SmIconStar02" type="MeshInstance3D" parent="." unique_id=1430989180]
+transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, 40.236954, 14.434738, -44.059868)
+material_override = SubResource("StandardMaterial3D_kh8p1")
+mesh = ExtResource("13_fv2ss")
+
+[node name="SmIconStar03" type="MeshInstance3D" parent="." unique_id=1691209816]
+transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, -45.11621, 14.434738, -44.059868)
+material_override = SubResource("StandardMaterial3D_tmfwo")
+mesh = ExtResource("13_fv2ss")
+
+[node name="SmPropTreePalm02" type="MeshInstance3D" parent="." unique_id=293307026]
+transform = Transform3D(0.07, 0, 0, 0, 0.07, 0, 0, 0, 0.07, -32.974052, 0, -19.600721)
+material_override = SubResource("StandardMaterial3D_v6e6y")
+mesh = ExtResource("15_f1sc5")
+
+[node name="SmPropTreePalm03" type="MeshInstance3D" parent="." unique_id=1900856007]
+transform = Transform3D(0.07, 0, 0, 0, 0.07, 0, 0, 0, 0.07, 30.816792, 0, -19.600721)
+material_override = SubResource("StandardMaterial3D_4p45t")
+mesh = ExtResource("15_f1sc5")
+
+[node name="SmPropTreePalm04" type="MeshInstance3D" parent="." unique_id=1662911142]
+transform = Transform3D(0.07, 0, 0, 0, 0.07, 0, 0, 0, 0.07, 37.173325, 0, -0.17219162)
+material_override = SubResource("StandardMaterial3D_iwfqg")
+mesh = ExtResource("15_f1sc5")
+
+[node name="SmPropTreePalm05" type="MeshInstance3D" parent="." unique_id=2133756420]
+transform = Transform3D(0.07, 0, 0, 0, 0.07, 0, 0, 0, 0.07, -29.091276, 0, 23.04287)
+material_override = SubResource("StandardMaterial3D_54ja8")
+mesh = ExtResource("15_f1sc5")
+
+[node name="SmPropTreePalm06" type="MeshInstance3D" parent="." unique_id=2020432925]
+transform = Transform3D(0.07, 0, 0, 0, 0.07, 0, 0, 0, 0.07, 28.807352, 0, 36.686123)
+material_override = SubResource("StandardMaterial3D_ypi54")
+mesh = ExtResource("15_f1sc5")
+
+[node name="SmVehCarSports01" type="MeshInstance3D" parent="." unique_id=1501466731]
+transform = Transform3D(0.028990516, 0, -0.027559932, 0, 0.04, 0, 0.027559932, 0, 0.028990516, 28.44517, -0.10441828, 14.522274)
+material_override = SubResource("StandardMaterial3D_vreo4")
+mesh = ExtResource("16_kwamf")
+
+[node name="SmIconBoat01" type="MeshInstance3D" parent="." unique_id=1235796547]
+transform = Transform3D(0.13656788, 0, 0.14611371, 0, 0.2, 0, -0.14611371, 0, 0.13656788, -26.37551, -0.3467598, -5.012726)
+material_override = SubResource("StandardMaterial3D_80wlo")
+mesh = ExtResource("17_tbnmx")

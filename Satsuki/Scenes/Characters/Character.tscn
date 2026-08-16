@@ -8,6 +8,7 @@
 [node name="Character" type="Node3D" unique_id=233961583]
 
 [node name="Y Bot" parent="." unique_id=1038522919 instance=ExtResource("1_6p7dp")]
+transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 0, 0)
 
 [node name="Animation" type="AnimationPlayer" parent="Y Bot" unique_id=1167053796]
 libraries/Idle = ExtResource("2_an0dn")

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.XPath;
 
 namespace Satsuki.Scenes.GameModes.Arcade.Builders
 {
@@ -36,7 +37,7 @@ namespace Satsuki.Scenes.GameModes.Arcade.Builders
 		{
 			var stageRsc = locationLoader.LoadStageRsc(record.IdStage);
 			result.Stage = locationLoader.LoadStage(stageRsc);
-		}
+			result.GameCameraPosition = stageRsc.StageInfo.PositionMainCamera;        }
 
 		private void BuildPlayers()
 		{
