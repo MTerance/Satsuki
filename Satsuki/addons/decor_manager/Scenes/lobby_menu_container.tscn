@@ -31,3 +31,8 @@ layout_mode = 2
 [node name="AddPlayerSpawnButton" type="Button" parent="." unique_id=1968491331]
 layout_mode = 2
 text = "+"
+
+[node name="Camera_lobby_656098088" type="Node3D" parent="." unique_id=1210198537]
+
+[node name="CameraTarget_lobby_656098088" type="Node3D" parent="." unique_id=108851290]
+transform = Transform3D(-4.371139e-08, -1, 0, -4.371139e-08, 1.9106855e-15, 1, -1, 4.371139e-08, -4.371139e-08, 0, 0, 0)

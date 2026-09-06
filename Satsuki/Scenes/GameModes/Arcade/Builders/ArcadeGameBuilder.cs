@@ -20,8 +20,8 @@ namespace Satsuki.Scenes.GameModes.Arcade.Builders
 
 		private ArcadeBuildResult result = new ArcadeBuildResult();
 
-        //
-        //private Node stage;
+		//
+		//private Node stage;
 		//private Dictionary<int, Node3D> players;
 
 
@@ -37,7 +37,9 @@ namespace Satsuki.Scenes.GameModes.Arcade.Builders
 		{
 			var stageRsc = locationLoader.LoadStageRsc(record.IdStage);
 			result.Stage = locationLoader.LoadStage(stageRsc);
-			result.GameCameraPosition = stageRsc.StageInfo.PositionMainCamera;        }
+			result.GameCameraPosition = stageRsc.StageInfo.PositionMainCamera;
+			result.GameCameraTarget = stageRsc.StageInfo.PositionTargetMainCamera;
+		}
 
 		private void BuildPlayers()
 		{
@@ -91,12 +93,12 @@ namespace Satsuki.Scenes.GameModes.Arcade.Builders
 		private void SetPlayersPositionsForMainScene(List<Vector3> spawnPositions)
 		{
 			int count = 0;
-            foreach (var player in result.Players)
-            {
+			foreach (var player in result.Players)
+			{
 				player.Value.Position = spawnPositions[count];
-                count++;
-            }
-        }
+				count++;
+			}
+		}
 
 		public ArcadeBuildResult Build()
 		{
@@ -107,7 +109,7 @@ namespace Satsuki.Scenes.GameModes.Arcade.Builders
 			var listSpots = GetSpawnPositionsForPlayers(stageRsc, nbPlayers);
 			SetPlayersPositionsForMainScene(listSpots);
 			// TODO : set mainCamera
-            return result;
+			return result;
 		}
 	}
 }

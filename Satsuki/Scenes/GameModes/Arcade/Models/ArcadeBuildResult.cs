@@ -12,6 +12,6 @@ namespace Satsuki.Scenes.GameModes.Arcade.Models
         public Node Stage { get; set; }
         public Dictionary<int, Node3D> Players { get; set; } = new ();
         public Vector3 GameCameraPosition { get; set; }
-        public Vector3 GameCameraRotation { get; set; }
+        public Vector3 GameCameraTarget { get; set; }
     }
 }

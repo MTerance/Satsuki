@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" uid="uid://da7pqsi2cldef" path="res://addons/decor_manager/Templates/PlayerZonePlacementContainer.cs" id="1_u4run"]
 [ext_resource type="PackedScene" uid="uid://bp136d28cqn4u" path="res://addons/decor_manager/Utils/Vector3DTextBox/Vector3DTextBox.tscn" id="2_wgelp"]
-[ext_resource type="Script" uid="uid://dd6ndvhrr2tbp" path="res://addons/decor_manager/Models/PlayerZone.cs" id="3_efj8p"]
 
 [node name="PlayerZonePlacementContainer" type="PanelContainer" unique_id=952500912]
 script = ExtResource("1_u4run")
@@ -33,6 +32,4 @@ text = "Size"
 
 [node name="SizeZonePlayer" type="LineEdit" parent="HBoxContainer/CoordBoxContainer/SizeBoxContainer" unique_id=1542860946]
 layout_mode = 2
-
-[node name="PlayerZone" type="Node3D" parent="." unique_id=1937528135]
-script = ExtResource("3_efj8p")
+text = "50,00"

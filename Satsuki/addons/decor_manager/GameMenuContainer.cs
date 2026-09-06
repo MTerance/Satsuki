@@ -53,6 +53,7 @@ public partial class GameMenuContainer : VBoxContainer
 			PositionZonePlayer = _playerZonePlacementContainer.GetPlayerZonePosition(),
 			RotationZonePlayer = _playerZonePlacementContainer.GetPlayerZoneRotation(),
 			SizeZonePlayer = _playerZonePlacementContainer.GetPlayerZoneSize(),
+			PositionTargetMainCamera = _playerZonePlacementContainer.GetPlayerZonePosition()
 		};
 		return stageInfo;
 	}

@@ -60,34 +60,36 @@ public partial class PlayerZonePlacementContainer : PanelContainer
 	public void Load(Vector3 position, Vector3 rotation, float size)
 	{
 		PlayerZone.Position = position;
-        PlayerZone.RotationDegrees = rotation;
-        PlayerZone.SetZoneSize(size);
+		PlayerZone.RotationDegrees = rotation;
+		PlayerZone.SetZoneSize(size);
 		UpdateLineEditsFromPlayerZone();
-    }
+	}
 
 	/// <summary>
 	/// Récupère les LineEdit depuis le .tscn (nom des nodes doit correspondre).
 	/// </summary>
 	private void InitializeLineEdits()
 	{
-        _positionZonePlayerTextBox = FindChild("PositionZoneBox", true, false) as Vector3dTextBox;
-        _rotationZonePlayerTextBox = FindChild("RotationZoneBox", true, false) as Vector3dTextBox;
-        _zonePlayerSize = FindChild("SizeZonePlayer", true, false) as LineEdit;
-        checkIsLineEditValid(_zonePlayerSize);
+		_positionZonePlayerTextBox = FindChild("PositionZoneBox", true, false) as Vector3dTextBox;
+		_rotationZonePlayerTextBox = FindChild("RotationZoneBox", true, false) as Vector3dTextBox;
+		_zonePlayerSize = FindChild("SizeZonePlayer", true, false) as LineEdit;
+		_positionZonePlayerTextBox.Setup("Position\n Zone Player", Vector3.Zero);
+		_rotationZonePlayerTextBox.Setup("Rotation\n Zone Player", Vector3.Zero);
+		checkIsLineEditValid(_zonePlayerSize);
 	}
 
 	private bool checkIsLineEditValid(LineEdit lineEdit)
-    {
-        if (lineEdit == null)
-        {
-            GD.PrintErr($"PlayerZonePlacementContainer: LineEdit introuvable { lineEdit }");
-            return false;
-        }
+	{
+		if (lineEdit == null)
+		{
+			GD.PrintErr($"PlayerZonePlacementContainer: LineEdit introuvable { lineEdit }");
+			return false;
+		}
 		GD.Print($"PlayerZonePlacementContainer: LineEdit trouve {lineEdit.Name}");
-        return true;
-    }
+		return true;
+	}
 
-    /// <summary>
+	/// <summary>
 	/// Connecte les signaux TextChanged des LineEdit à l'update.
 	/// </summary>
 	private void ConnectLineEditSignals()

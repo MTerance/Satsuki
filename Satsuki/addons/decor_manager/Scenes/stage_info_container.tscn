@@ -1,48 +1,48 @@
-[gd_scene load_steps=2 format=3 uid="uid://drt6bgtsk5o6g"]
+[gd_scene format=3 uid="uid://drt6bgtsk5o6g"]
 
 [ext_resource type="Script" uid="uid://dcp83ynqlqlge" path="res://addons/decor_manager/StageInfoContainer.cs" id="1_fmwap"]
 
-[node name="StageInfoContainer" type="VBoxContainer"]
+[node name="StageInfoContainer" type="VBoxContainer" unique_id=1550713960]
 offset_right = 469.0
 offset_bottom = 101.0
 script = ExtResource("1_fmwap")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="."]
+[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=1235172046]
 layout_mode = 2
 alignment = 1
 
-[node name="LoadStageAssetButton" type="Button" parent="HBoxContainer"]
+[node name="LoadStageAssetButton" type="Button" parent="HBoxContainer" unique_id=627801496]
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
 text = "Load Stage Asset"
 
-[node name="HBoxContainer2" type="HBoxContainer" parent="."]
+[node name="HBoxContainer2" type="HBoxContainer" parent="." unique_id=1377662276]
 layout_mode = 2
 alignment = 1
 
-[node name="Label" type="Label" parent="HBoxContainer2"]
-layout_direction = 2
+[node name="Label" type="Label" parent="HBoxContainer2" unique_id=1267023206]
 layout_mode = 2
+layout_direction = 2
 text = "Scene Name"
 vertical_alignment = 1
 
-[node name="StageNameLineEdit" type="LineEdit" parent="HBoxContainer2"]
+[node name="StageNameLineEdit" type="LineEdit" parent="HBoxContainer2" unique_id=1934760219]
 custom_minimum_size = Vector2(400, 0)
 layout_mode = 2
 alignment = 3
 max_length = 255
 editable = false
 
-[node name="HBoxContainer3" type="HBoxContainer" parent="."]
+[node name="HBoxContainer3" type="HBoxContainer" parent="." unique_id=623170964]
 layout_mode = 2
 alignment = 1
 
-[node name="Label" type="Label" parent="HBoxContainer3"]
+[node name="Label" type="Label" parent="HBoxContainer3" unique_id=667566983]
 layout_mode = 2
 text = "Path Scene"
 vertical_alignment = 1
 
-[node name="PathStageAssetLineEdit" type="LineEdit" parent="HBoxContainer3"]
+[node name="PathStageAssetLineEdit" type="LineEdit" parent="HBoxContainer3" unique_id=1772666729]
 custom_minimum_size = Vector2(400, 0)
 layout_mode = 2
 alignment = 3
