@@ -39,6 +39,18 @@ public partial class QuestionAswerQuizzScene : Control, IQuizz
 		}
 	}
 
+	public void SetQuizzContent(IQuizzModel model)
+	{
+		if (model is QuestionAnswerQuizzModel questionAnswerModel)
+		{
+			currentQuizz = questionAnswerModel;
+		}
+		else
+		{
+			GD.PrintErr("Invalid quizz model type");
+		}
+	}
+
 	public string GetQuizzState()
 	{
 		var quizzState = new Dictionary

@@ -2,6 +2,7 @@ using Godot;
 using Satsuki.Interfaces.Quizz;
 using Satsuki.Models.Resources;
 using Satsuki.Scenes.Quizz.QCM.Models;
+using Satsuki.Scenes.Quizz.QuestionAnswer.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,6 +29,18 @@ namespace Satsuki.Scenes.Quizz.QCM
         private Label ProposalGamma;
         private Label ProposalDelta;
         //
+
+        public void SetQuizzContent(IQuizzModel model)
+        {
+            if (model is QCMQuizzModel qcmQuizzModel)
+            {
+                currentQuizz = qcmQuizzModel;
+            }
+            else
+            {
+                GD.PrintErr("Invalid quizz model type");
+            }
+        }
 
         public string GetQuizzState()
 		{

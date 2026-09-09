@@ -13,11 +13,7 @@ namespace Satsuki.Interfaces.Quizz
         ///  return content of the quizz in a serializable format (JSON)
         /// </summary>
         /// <returns></returns>
-        string GetQuizzState();
-    }
-
-    public interface IQuizzModel
-    {
-        
+        string      GetQuizzState();
+        void        SetQuizzContent(IQuizzModel model);
     }
 }
