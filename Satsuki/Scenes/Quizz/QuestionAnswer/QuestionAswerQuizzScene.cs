@@ -8,6 +8,7 @@ using System.Text.Json;
 
 public partial class QuestionAswerQuizzScene : Control, IQuizz
 {
+	private const string QuizzTypeName = "QuestionAnswerQuizz";
 	private Label questionLabel;
 	private Label answerLabel;
 	private GameState currentState;
@@ -39,7 +40,12 @@ public partial class QuestionAswerQuizzScene : Control, IQuizz
 		}
 	}
 
-	public void SetQuizzContent(IQuizzModel model)
+    public string GetQuizzTypeName()
+    {
+        return QuizzTypeName;
+    }
+
+    public void SetQuizzContent(IQuizzModel model)
 	{
 		if (model is QuestionAnswerQuizzModel questionAnswerModel)
 		{

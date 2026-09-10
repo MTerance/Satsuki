@@ -29,8 +29,12 @@ public partial class QuizzManager : Node
     {
         if (currentQuizz.MoveNext())
         {
+
             var quizz = currentQuizz.Current;
-            GD.Print("Next Quizz: " + quizz.TypeQuizz);
+
+
+
+            GD.Print("Next Quizz: ");
         }
         else
         {

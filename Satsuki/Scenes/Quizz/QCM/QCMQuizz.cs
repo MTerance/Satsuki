@@ -17,7 +17,8 @@ namespace Satsuki.Scenes.Quizz.QCM
 
 	public partial class QCMQuizzScene : Control, IQuizz
 	{
-		private Label questionLabel;
+		private const string QuizzTypeName = "QCMQuizz";
+        private Label questionLabel;
 		private GameState currentState;
 		private TextureRect mediaDisplay;
 		private QCMQuizzModel currentQuizz;
@@ -29,6 +30,12 @@ namespace Satsuki.Scenes.Quizz.QCM
         private Label ProposalGamma;
         private Label ProposalDelta;
         //
+
+
+        public string GetQuizzTypeName()
+        {
+            return QuizzTypeName;
+        }
 
         public void SetQuizzContent(IQuizzModel model)
         {
