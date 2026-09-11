@@ -5,7 +5,9 @@ using Satsuki.Scenes.Locations;
 using Satsuki.Systems;
 using Satsuki.Manager;
 using Satsuki.Interfaces.Models;
+using Satsuki.Interfaces.GameMode;
 using System;
+using Satsuki.Scenes.GameModes;
 
 /// <summary>
 /// Scene principale du jeu - Orchestrateur simplifie
@@ -16,7 +18,8 @@ public partial class MainGameScene : Node, IScene, IGameRecordUser
 	#region Private Fields
 	private GameServerHandler _gameServerHandler;
 	private LocationManager _locationManager;
-	private bool _hasLoadedCredits = false;
+	private GameModeLoader _gameModeLoader;
+    private bool _hasLoadedCredits = false;
 	private bool _debugMode = true;
 	
 	//**/
@@ -40,8 +43,10 @@ public partial class MainGameScene : Node, IScene, IGameRecordUser
 	public override void _Ready()
 	{
 		GD.Print("MainGameScene: Initialisation...");
-		
-		_gameServerHandler = new GameServerHandler();
+
+        _gameModeLoader = new GameModeLoader();
+
+        _gameServerHandler = new GameServerHandler();
 		AddChild(_gameServerHandler);
 		
 		_locationManager = new LocationManager();
@@ -256,7 +261,41 @@ public partial class MainGameScene : Node, IScene, IGameRecordUser
 		}
 	}
 
-	private void UnloadCurrentScene()
+
+	public void LoadGameMode(string gamemodeName)
+    {
+        try
+        {
+            GD.Print($"MainGameScene: Chargement GameMode '{gamemodeName}'...");
+            UnloadCurrentScene();
+            var gameModeScene = _gameModeLoader.LoadGameMode(gamemodeName);
+            if (gameModeScene != null)
+            {
+                AddChild(gameModeScene);
+                _currentScene = gameModeScene;
+				if (_currentScene is IGameMode gameMode)
+				{
+					gameMode.GameModeRequested += OnGameModeRequested;
+				}
+                GD.Print($"GameMode '{gamemodeName}' charge");
+            }
+            else
+            {
+                GD.PrintErr($"Echec chargement GameMode '{gamemodeName}'");
+            }
+        }
+        catch (Exception ex)
+        {
+            GD.PrintErr($"Erreur chargement GameMode '{gamemodeName}': {ex.Message}");
+        }
+    }
+
+    private void OnGameModeRequested(string newGameMode)
+    {
+        LoadGameMode(newGameMode);
+    }
+
+    private void UnloadCurrentScene()
 	{
 		if (_currentScene == null) return;
 
