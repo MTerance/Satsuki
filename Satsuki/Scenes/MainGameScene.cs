@@ -15,11 +15,19 @@ using Satsuki.Scenes.GameModes;
 /// </summary>
 public partial class MainGameScene : Node, IScene, IGameRecordUser
 {
+
+	#region Signals
+
+	[Signal]
+	delegate void GameModeRequestedEventHandler(string newGameMode);
+
+	#endregion
+
 	#region Private Fields
 	private GameServerHandler _gameServerHandler;
 	private LocationManager _locationManager;
 	private GameModeLoader _gameModeLoader;
-    private bool _hasLoadedCredits = false;
+	private bool _hasLoadedCredits = false;
 	private bool _debugMode = true;
 	
 	//**/
@@ -44,9 +52,9 @@ public partial class MainGameScene : Node, IScene, IGameRecordUser
 	{
 		GD.Print("MainGameScene: Initialisation...");
 
-        _gameModeLoader = new GameModeLoader();
+		_gameModeLoader = new GameModeLoader();
 
-        _gameServerHandler = new GameServerHandler();
+		_gameServerHandler = new GameServerHandler();
 		AddChild(_gameServerHandler);
 		
 		_locationManager = new LocationManager();
@@ -263,39 +271,39 @@ public partial class MainGameScene : Node, IScene, IGameRecordUser
 
 
 	public void LoadGameMode(string gamemodeName)
-    {
-        try
-        {
-            GD.Print($"MainGameScene: Chargement GameMode '{gamemodeName}'...");
-            UnloadCurrentScene();
-            var gameModeScene = _gameModeLoader.LoadGameMode(gamemodeName);
-            if (gameModeScene != null)
-            {
-                AddChild(gameModeScene);
-                _currentScene = gameModeScene;
+	{
+		try
+		{
+			GD.Print($"MainGameScene: Chargement GameMode '{gamemodeName}'...");
+			UnloadCurrentScene();
+			var gameModeScene = _gameModeLoader.LoadGameMode(gamemodeName);
+			if (gameModeScene != null)
+			{
+				AddChild(gameModeScene);
+				_currentScene = gameModeScene;
 				if (_currentScene is IGameMode gameMode)
 				{
-					gameMode.GameModeRequested += OnGameModeRequested;
+					this.GameModeRequested += OnGameModeRequested;
 				}
-                GD.Print($"GameMode '{gamemodeName}' charge");
-            }
-            else
-            {
-                GD.PrintErr($"Echec chargement GameMode '{gamemodeName}'");
-            }
-        }
-        catch (Exception ex)
-        {
-            GD.PrintErr($"Erreur chargement GameMode '{gamemodeName}': {ex.Message}");
-        }
-    }
+				GD.Print($"GameMode '{gamemodeName}' charge");
+			}
+			else
+			{
+				GD.PrintErr($"Echec chargement GameMode '{gamemodeName}'");
+			}
+		}
+		catch (Exception ex)
+		{
+			GD.PrintErr($"Erreur chargement GameMode '{gamemodeName}': {ex.Message}");
+		}
+	}
 
-    private void OnGameModeRequested(string newGameMode)
-    {
-        LoadGameMode(newGameMode);
-    }
+	private void OnGameModeRequested(string newGameMode)
+	{
+		LoadGameMode(newGameMode);
+	}
 
-    private void UnloadCurrentScene()
+	private void UnloadCurrentScene()
 	{
 		if (_currentScene == null) return;
 

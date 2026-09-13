@@ -9,7 +9,9 @@ namespace Satsuki.Interfaces.GameMode
 {
     public interface IGameMode : IScene
     {
+        /*
         [Signal]
         delegate void GameModeRequestedEventHandler(string newGameMode);
+        */
     }
 }
