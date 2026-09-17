@@ -1,4 +1,5 @@
 using Godot;
+using Satsuki.Models;
 using Satsuki.Networks;
 using Satsuki.Utils;
 using System;
@@ -158,14 +159,58 @@ namespace Satsuki.Systems
 			MessageReceiver.GetInstance.GenerateNewEncryptionKey();
 			Console.WriteLine("?? Nouvelle clé de cryptage générée");
 		}
-		#endregion
+        #endregion
 
-		#region Message Processing
-		/// <summary>
-		/// Traite les messages entrants du MessageReceiver avec décryptage automatique
-		/// </summary>
-		/// <param name="maxMessages">Nombre maximum de messages à traiter (0 = tous)</param>
-		private void ProcessIncomingMessages(int maxMessages = 0)
+
+        private void ProcessMessageAsOrderRequest(Message message)
+        {
+            try
+            {
+                if (message.IsEncrypted)
+                {
+                    message.Decrypt(_encryptionKey, _encryptionIV);
+                }
+
+                var orderRequest = JsonSerializer.Deserialize<OrderRequest>(message.Content);
+                ProcessOrderRequest(orderRequest);
+            }
+            catch (Exception ex)
+            {
+                GD.PrintErr($"GameServerHandler: Erreur lors de la désérialisation du message : {ex.Message}");
+            }
+        }
+
+        private void ProcessOrderRequest(OrderRequest orderRequest)
+        {
+            GD.Print($"Order reçu : {orderRequest.Order} (Target: {orderRequest.Target})");
+
+            switch (orderRequest.Target)
+            {
+                case "System":
+                    // Appeler un handler système
+                    break;
+                case "Scene":
+                    //_mainGameScene?.OnMessageReceived(orderRequest);
+                    break;
+                case "Quizz":
+                    // Appeler le handler Quizz
+                    break;
+                default:
+                    GD.PrintErr($"Cible inconnue : {orderRequest.Target}");
+                    break;
+            }
+        }
+
+
+
+
+
+        #region Message Processing
+        /// <summary>
+        /// Traite les messages entrants du MessageReceiver avec décryptage automatique
+        /// </summary>
+        /// <param name="maxMessages">Nombre maximum de messages à traiter (0 = tous)</param>
+        private void ProcessIncomingMessages(int maxMessages = 0)
 		{
 			if (MessageReceiver.GetInstance.HasPendingMessages())
 			{
@@ -174,7 +219,7 @@ namespace Satsuki.Systems
 
 				foreach (var message in messages)
 				{
-					HandleMessage(message);
+					ProcessMessageAsOrderRequest(message);
 				}
 			}
 		}

@@ -1,18 +1,22 @@
 using Godot;
+using Satsuki.Models;
 using Satsuki.Networks;
 using Satsuki.Utils;
-using Satsuki.Systems;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
+namespace Satsuki.Systems
+{
 public partial class ServerManager : Node
 {
 	private Network _network;
 	private bool _isServerRunning = false;
-	private GameServerHandler _gameServerHandler;
 	private bool _hasHadFirstClient = false;
-	
+	private Timer _messageProcessingTimer;
+
 	private const string BACKEND_PASSWORD = "***Satsuk1***";
 
 	[Signal] public delegate void ServerStartedEventHandler();
@@ -22,19 +26,78 @@ public partial class ServerManager : Node
 	[Signal] public delegate void ClientTypeReceivedEventHandler(string clientId, string clientType);
 	[Signal] public delegate void BackendAuthenticationFailedEventHandler(string clientId, string reason);
 
+	[Signal] public delegate void SystemOrderReceivedEventHandler(string orderRequestJson);
+	[Signal] public delegate void SceneOrderReceivedEventHandler(string orderRequestJson);
+	[Signal] public delegate void QuizzOrderReceivedEventHandler(string orderRequestJson);
+
 	public override void _Ready()
 	{
 		GD.Print("Server Manager: Initialisation du serveur Satsuki...");
-		
+
 		CallDeferred(nameof(StartServerAsync));
-		
+		SetupMessageProcessing();
+
 		GetTree().AutoAcceptQuit = false;
 	}
 
-	public void SetGameServerHandler(GameServerHandler gameServerHandler)
+	private void SetupMessageProcessing()
 	{
-		_gameServerHandler = gameServerHandler;
-		GD.Print("ServerManager: GameServerHandler configure");
+		_messageProcessingTimer = new Timer();
+		_messageProcessingTimer.WaitTime = 0.1;
+		_messageProcessingTimer.Timeout += ProcessIncomingMessages;
+		_messageProcessingTimer.Autostart = true;
+		AddChild(_messageProcessingTimer);
+	}
+
+	private void ProcessIncomingMessages()
+	{
+		if (!MessageReceiver.GetInstance.HasPendingMessages())
+			return;
+
+		var messages = MessageReceiver.GetInstance.GetMessagesByArrivalOrder(decryptMessages: true);
+		foreach (var message in messages)
+		{
+			ProcessMessage(message);
+		}
+	}
+
+		private void ProcessMessage(Satsuki.Message message)
+	{
+		try
+		{
+			var orderRequest = JsonSerializer.Deserialize<OrderRequest>(message.Content);
+			DispatchOrderRequest(orderRequest);
+		}
+		catch (JsonException ex)
+		{
+			GD.PrintErr($"ServerManager: Message non reconnu comme OrderRequest : {ex.Message}");
+		}
+		catch (Exception ex)
+		{
+			GD.PrintErr($"ServerManager: Erreur de traitement du message : {ex.Message}");
+		}
+	}
+
+	private void DispatchOrderRequest(OrderRequest orderRequest)
+	{
+		GD.Print($"ServerManager: Order '{orderRequest.Order}' recu pour target '{orderRequest.Target}'");
+
+		string orderRequestJson = JsonSerializer.Serialize(orderRequest);
+		switch (orderRequest.Target)
+		{
+			case "System":
+				EmitSignal(SignalName.SystemOrderReceived, orderRequestJson);
+				break;
+			case "Scene":
+				EmitSignal(SignalName.SceneOrderReceived, orderRequestJson);
+				break;
+			case "Quizz":
+				EmitSignal(SignalName.QuizzOrderReceived, orderRequestJson);
+				break;
+			default:
+				GD.PrintErr($"ServerManager: Target inconnue '{orderRequest.Target}' pour l'ordre '{orderRequest.Order}'");
+				break;
+		}
 	}
 
 	private async void StartServerAsync()
@@ -78,36 +141,30 @@ public partial class ServerManager : Node
 	private async void HandleClientConnected(string clientId)
 	{
 		GD.Print($"ServerManager: Nouveau client connecte - {clientId}");
-		
+
 		EmitSignal(SignalName.ClientConnected, clientId);
-		
+
 		await RequestClientType(clientId);
-		
+
 		if (!_hasHadFirstClient)
 		{
 			_hasHadFirstClient = true;
 			GD.Print("Premier client connecte - Recuperation de l'etat du jeu...");
-			
-			if (_gameServerHandler != null)
+
+			try
 			{
-				try
-				{
-					var gameState = _gameServerHandler.GetCompleteGameState();
-					GD.Print("Etat du jeu recupere:");
-					
-					string gameStateJson = System.Text.Json.JsonSerializer.Serialize(gameState);
-					GD.Print($"   {gameStateJson}");
-					
-					await SendGameStateToClient(clientId, gameStateJson);
-				}
-				catch (Exception ex)
-				{
-					GD.PrintErr($"Erreur lors de la recuperation de l'etat du jeu: {ex.Message}");
-				}
+				var gameScene = GetNodeOrNull("/root/MainGameScene");
+				var gameState = ServerUtils.GetCompleteGameState(gameScene);
+				GD.Print("Etat du jeu recupere:");
+
+				string gameStateJson = System.Text.Json.JsonSerializer.Serialize(gameState);
+				GD.Print($"   {gameStateJson}");
+
+				await SendGameStateToClient(clientId, gameStateJson);
 			}
-			else
+			catch (Exception ex)
 			{
-				GD.PrintErr("GameServerHandler non disponible, impossible de recuperer l'etat du jeu");
+				GD.PrintErr($"Erreur lors de la recuperation de l'etat du jeu: {ex.Message}");
 			}
 		}
 	}
@@ -333,9 +390,17 @@ public partial class ServerManager : Node
 
 	public override void _ExitTree()
 	{
+		if (_messageProcessingTimer != null)
+		{
+			_messageProcessingTimer.Stop();
+			_messageProcessingTimer.QueueFree();
+			_messageProcessingTimer = null;
+		}
+
 		if (_network != null)
 		{
 			_network.OnClientConnected -= HandleClientConnected;
 		}
 	}
+}
 }

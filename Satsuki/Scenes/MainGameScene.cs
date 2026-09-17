@@ -8,12 +8,15 @@ using Satsuki.Interfaces.Models;
 using Satsuki.Interfaces.GameMode;
 using System;
 using Satsuki.Scenes.GameModes;
+using Satsuki.Scenes.Abstract;
+using Satsuki.Models;
+using System.Text.Json;
 
 /// <summary>
 /// Scene principale du jeu - Orchestrateur simplifie
 /// Gere Credits, Title et delegue locations au LocationManager
 /// </summary>
-public partial class MainGameScene : Node, IScene, IGameRecordUser
+public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 {
 
 	#region Signals
@@ -24,12 +27,12 @@ public partial class MainGameScene : Node, IScene, IGameRecordUser
 	#endregion
 
 	#region Private Fields
-	private GameServerHandler _gameServerHandler;
+	private ServerManager _serverManager;
 	private LocationManager _locationManager;
 	private GameModeLoader _gameModeLoader;
 	private bool _hasLoadedCredits = false;
 	private bool _debugMode = true;
-	
+
 	//**/
 	private IGameRecord _currentGameRecord;
 	//**/
@@ -43,8 +46,8 @@ public partial class MainGameScene : Node, IScene, IGameRecordUser
 		_locationManager?.CurrentLocation;
 	public IScene CurrentScene => 
 		_currentScene as IScene;
-	public GameServerHandler ServerHandler => 
-		_gameServerHandler;
+	public ServerManager Server => 
+		_serverManager;
 	#endregion
 
 	#region Godot Lifecycle
@@ -52,49 +55,59 @@ public partial class MainGameScene : Node, IScene, IGameRecordUser
 	{
 		GD.Print("MainGameScene: Initialisation...");
 
+		_serverManager = GetNodeOrNull<ServerManager>("/root/ServerManager");
+		if (_serverManager == null)
+		{
+			GD.PrintErr("MainGameScene: ServerManager introuvable en AutoLoad");
+		}
+
 		_gameModeLoader = new GameModeLoader();
 
-		_gameServerHandler = new GameServerHandler();
-		AddChild(_gameServerHandler);
-		
 		_locationManager = new LocationManager();
 		AddChild(_locationManager);
-		
+
 		_locationManager.LocationLoaded += OnLocationLoaded;
 		_locationManager.LocationLoadFailed += OnLocationLoadFailed;
-		
-		_gameServerHandler.ServerStarted += OnServerStarted;
-		_gameServerHandler.ServerStopped += OnServerStopped;
-		_gameServerHandler.ServerError += OnServerError;
-		_gameServerHandler.ClientConnected += OnClientConnected;
-		_gameServerHandler.ClientDisconnected += OnClientDisconnected;
-		_gameServerHandler.MessageReceived += OnMessageReceived;
+
+		if (_serverManager != null)
+		{
+			_serverManager.ServerStarted += OnServerStarted;
+			_serverManager.ServerStopped += OnServerStopped;
+			_serverManager.ServerError += OnServerError;
+			_serverManager.ClientConnected += OnClientConnected;
+			_serverManager.ClientTypeReceived += OnClientTypeReceived;
+			_serverManager.SystemOrderReceived += OnSystemOrderReceived;
+			_serverManager.SceneOrderReceived += OnSceneOrderReceived;
+			_serverManager.QuizzOrderReceived += OnQuizzOrderReceived;
+		}
 
 		GD.Print("MainGameScene: Initialisee");
-		
+
 		CallDeferred(nameof(LoadCredits));
 	}
 
 	public override void _ExitTree()
 	{
 		UnloadCurrentScene();
-		
+
 		if (_locationManager != null)
 		{
 			_locationManager.LocationLoaded -= OnLocationLoaded;
 			_locationManager.LocationLoadFailed -= OnLocationLoadFailed;
 		}
 
-		if (_gameServerHandler != null)
+		if (_serverManager != null)
 		{
-			_gameServerHandler.ServerStarted -= OnServerStarted;
-			_gameServerHandler.ServerStopped -= OnServerStopped;
-			_gameServerHandler.ServerError -= OnServerError;
-			_gameServerHandler.ClientConnected -= OnClientConnected;
-			_gameServerHandler.ClientDisconnected -= OnClientDisconnected;
-			_gameServerHandler.MessageReceived -= OnMessageReceived;
+			_serverManager.ServerStarted -= OnServerStarted;
+			_serverManager.ServerStopped -= OnServerStopped;
+			_serverManager.ServerError -= OnServerError;
+			_serverManager.ClientConnected -= OnClientConnected;
+			_serverManager.ClientTypeReceived -= OnClientTypeReceived;
+			_serverManager.SystemOrderReceived -= OnSystemOrderReceived;
+			_serverManager.SceneOrderReceived -= OnSceneOrderReceived;
+			_serverManager.QuizzOrderReceived -= OnQuizzOrderReceived;
 		}
-		
+
 		GD.Print("MainGameScene: Nettoyage termine");
 	}
 	
@@ -415,6 +428,60 @@ public partial class MainGameScene : Node, IScene, IGameRecordUser
 			GD.Print($"MainGameScene: Message de {clientId}: {content}");
 		}
 	}
+
+	private void OnClientTypeReceived(string clientId, string clientType)
+	{
+		GD.Print($"MainGameScene: Client {clientId} enregistre comme {clientType}");
+	}
+
+	private void OnSystemOrderReceived(string orderRequestJson)
+	{
+		try
+		{
+			var orderRequest = JsonSerializer.Deserialize<OrderRequest>(orderRequestJson);
+			if (_debugMode)
+			{
+				GD.Print($"MainGameScene: Ordre systeme '{orderRequest.Order}'");
+			}
+		}
+		catch (Exception ex)
+		{
+			GD.PrintErr($"MainGameScene: Erreur parsing ordre systeme: {ex.Message}");
+		}
+	}
+
+	private void OnSceneOrderReceived(string orderRequestJson)
+	{
+		try
+		{
+			var orderRequest = JsonSerializer.Deserialize<OrderRequest>(orderRequestJson);
+			if (_debugMode)
+			{
+				GD.Print($"MainGameScene: Ordre scene '{orderRequest.Order}'");
+			}
+			OnMessageReceived(orderRequest.ClientId, orderRequestJson);
+		}
+		catch (Exception ex)
+		{
+			GD.PrintErr($"MainGameScene: Erreur parsing ordre scene: {ex.Message}");
+		}
+	}
+
+	private void OnQuizzOrderReceived(string orderRequestJson)
+	{
+		try
+		{
+			var orderRequest = JsonSerializer.Deserialize<OrderRequest>(orderRequestJson);
+			if (_debugMode)
+			{
+				GD.Print($"MainGameScene: Ordre quizz '{orderRequest.Order}'");
+			}
+		}
+		catch (Exception ex)
+		{
+			GD.PrintErr($"MainGameScene: Erreur parsing ordre quizz: {ex.Message}");
+		}
+	}
 	#endregion
 
 	#region IScene Implementation
@@ -428,7 +495,7 @@ public partial class MainGameScene : Node, IScene, IGameRecordUser
 				HasLoadedCredits = _hasLoadedCredits,
 				CurrentScene = _currentScene?.GetType().Name ?? "None",
 				CurrentLocation = CurrentLocation?.LocationName ?? "None",
-				ConnectedClients = _gameServerHandler?.GetConnectedClientCount() ?? 0
+				ConnectedClients = _serverManager?.GetConnectedClientsCount() ?? 0
 			},
 			UIScene = CurrentScene?.GetSceneState(),
 			Location = CurrentLocation?.GetLocationState(),
@@ -457,14 +524,13 @@ public partial class MainGameScene : Node, IScene, IGameRecordUser
 		switch (keyEvent.Keycode)
 		{
 			case Key.F1:
-				_gameServerHandler?.BroadcastToAllClients("SERVER_BROADCAST:Test", encrypt: true);
+				_serverManager?.SendServerMessage("SERVER_BROADCAST:Test");
 				break;
 			case Key.F3:
-				_gameServerHandler?.ListConnectedClients();
+				_serverManager?.LogServerStatus();
 				break;
 			case Key.F4:
 				_debugMode = !_debugMode;
-				_gameServerHandler?.ToggleDebugMode();
 				GD.Print($"Mode debug: {(_debugMode ? "ON" : "OFF")}");
 				break;
 			case Key.F11:
