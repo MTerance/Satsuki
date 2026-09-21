@@ -7,7 +7,8 @@ public partial class Credits : Node, IScene
 {
 	private SplashScreenManager _splashScreenManager;
 	private DateTime _sceneStartTime;
-	
+	private Satsuki.Systems.ServerManager _serverManager;
+
 	#region Signals
 	[Signal]
 	public delegate void CreditsCompletedEventHandler();
@@ -19,20 +20,26 @@ public partial class Credits : Node, IScene
 	public override void _Ready()
 	{
 		_sceneStartTime = DateTime.UtcNow;
-		
+
 		GD.Print("Credits: Initialisation...");
-		
+
+		_serverManager = GetNodeOrNull<Satsuki.Systems.ServerManager>("/root/ServerManager");
+		if (_serverManager != null)
+		{
+			_serverManager.SceneOrderReceived += OnSceneOrderReceived;
+		}
+
 		_splashScreenManager = new SplashScreenManager();
 		AddChild(_splashScreenManager);
-		
+
 		_splashScreenManager.SplashScreenCompleted += OnSplashScreenCompleted;
 		_splashScreenManager.AllSplashScreensCompleted += OnAllSplashScreensCompleted;
 		_splashScreenManager.SplashScreenSkipped += OnSplashScreenSkipped;
 		_splashScreenManager.SequenceStarted += OnSequenceStarted;
-		
+
 		_splashScreenManager.SetupCustomCredits();
 		_splashScreenManager.StartSequence();
-		
+
 		GD.Print("Credits: SplashScreenManager configure et demarre");
 	}
 	
@@ -153,8 +160,25 @@ public partial class Credits : Node, IScene
 		}
 	}
 	
+	private void OnSceneOrderReceived(string orderRequestJson)
+	{
+		if (Satsuki.Utils.ServerUtils.TryDeserializeOrderRequest(orderRequestJson, out var orderRequest))
+		{
+			GD.Print($"Credits: Ordre scène reçu '{orderRequest.Order}'");
+		}
+		else
+		{
+			GD.PrintErr($"Credits: Impossible de désérialiser l'ordre scène: {orderRequestJson}");
+		}
+	}
+
 	public override void _ExitTree()
 	{
+		if (_serverManager != null)
+		{
+			_serverManager.SceneOrderReceived -= OnSceneOrderReceived;
+		}
+
 		if (_splashScreenManager != null)
 		{
 			_splashScreenManager.SplashScreenCompleted -= OnSplashScreenCompleted;

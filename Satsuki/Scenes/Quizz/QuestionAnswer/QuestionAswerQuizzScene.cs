@@ -183,6 +183,8 @@ public partial class QuestionAswerQuizzScene : Control, IQuizz
 	}
 
 	// Called when the node enters the scene tree for the first time.
+	private Satsuki.Systems.ServerManager _serverManager;
+
 	public override void _Ready()
 	{
 		GD.Print("QuestionAswerQuizzScene ready");
@@ -195,6 +197,13 @@ public partial class QuestionAswerQuizzScene : Control, IQuizz
 			GD.PrintErr("Labels not found!");
 			return;
 		}
+
+		_serverManager = GetNodeOrNull<Satsuki.Systems.ServerManager>("/root/ServerManager");
+		if (_serverManager != null)
+		{
+			_serverManager.QuizzOrderReceived += OnQuizzOrderReceived;
+		}
+
 		// pour les besoins de dev de QuestionAnswerQuizzScene
 		/*----------------------------------------------------------------------------------------------------------*/
 		GD.Print("TEST_SetNewQuizz ready");
@@ -202,6 +211,27 @@ public partial class QuestionAswerQuizzScene : Control, IQuizz
 		/*----------------------------------------------------------------------------------------------------------*/
 		StartGame();
 
+	}
+
+	public override void _ExitTree()
+	{
+		if (_serverManager != null)
+		{
+			_serverManager.QuizzOrderReceived -= OnQuizzOrderReceived;
+		}
+		base._ExitTree();
+	}
+
+	private void OnQuizzOrderReceived(string orderRequestJson)
+	{
+		if (Satsuki.Utils.ServerUtils.TryDeserializeOrderRequest(orderRequestJson, out var orderRequest))
+		{
+			GD.Print($"QuestionAswerQuizzScene: Ordre quizz reçu '{orderRequest.Order}'");
+		}
+		else
+		{
+			GD.PrintErr($"QuestionAswerQuizzScene: Impossible de désérialiser l'ordre quizz: {orderRequestJson}");
+		}
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.

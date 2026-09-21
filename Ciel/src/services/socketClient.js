@@ -1,25 +1,29 @@
 import { io } from 'socket.io-client';
-import { ref, reactive } from 'vue';
+import { ref } from 'vue';
+
+// Cibles d'ordre reconnues par le serveur Satsuki
+// (cf. Satsuki/Systems/ServerManager.cs - DispatchOrderRequest)
+export const OrderTarget = {
+    SYSTEM: 'System',
+    SCENE: 'Scene',
+    QUIZZ: 'Quizz'
+};
 
 class SocketClient {
     constructor() {
         this.socket = null;
         this.isConnected = ref(false);
         this.connectionStatus = ref('disconnected');
-        this.events = reactive({});
-        this.reconnectAttempts = 0;
-        this.maxReconnectAttempts = 5;
-        this.reconnectDelay = 1000;
-        
+
         // Configuration par défaut
         this.config = {
-            url: 'http://localhost:3001',
+            url: 'http://localhost:3002',
             options: {
                 autoConnect: false,
                 reconnection: true,
                 reconnectionDelay: 1000,
                 reconnectionDelayMax: 5000,
-                maxReconnectionAttempts: 5,
+                reconnectionAttempts: 5,
                 timeout: 20000,
                 forceNew: true
             }
@@ -33,9 +37,10 @@ class SocketClient {
             const socketOptions = { ...this.config.options, ...options };
             
             console.log(`Tentative de connexion au serveur Socket.IO: ${serverUrl}`);
-            
+            this.connectionStatus.value = 'connecting';
+
             this.socket = io(serverUrl, socketOptions);
-            
+
             this.setupEventListeners();
             this.socket.connect();
             
@@ -56,7 +61,6 @@ class SocketClient {
             console.log('✅ Connecté au serveur Socket.IO');
             this.isConnected.value = true;
             this.connectionStatus.value = 'connected';
-            this.reconnectAttempts = 0;
             this.emit('client:connected', { socketId: this.socket.id });
         });
 
@@ -70,7 +74,6 @@ class SocketClient {
         this.socket.on('connect_error', (error) => {
             console.error('❌ Erreur de connexion Socket.IO:', error);
             this.connectionStatus.value = 'error';
-            this.handleReconnection();
         });
 
         // Événements de reconnexion
@@ -78,7 +81,6 @@ class SocketClient {
             console.log(`✅ Reconnecté après ${attemptNumber} tentatives`);
             this.isConnected.value = true;
             this.connectionStatus.value = 'connected';
-            this.reconnectAttempts = 0;
         });
 
         this.socket.on('reconnect_attempt', (attemptNumber) => {
@@ -153,23 +155,6 @@ class SocketClient {
         });
     }
 
-    // Gérer la reconnexion manuelle
-    handleReconnection() {
-        if (this.reconnectAttempts < this.maxReconnectAttempts) {
-            this.reconnectAttempts++;
-            console.log(`🔄 Tentative de reconnexion ${this.reconnectAttempts}/${this.maxReconnectAttempts}`);
-            
-            setTimeout(() => {
-                if (this.socket && !this.isConnected.value) {
-                    this.socket.connect();
-                }
-            }, this.reconnectDelay * this.reconnectAttempts);
-        } else {
-            console.error('❌ Nombre maximum de tentatives de reconnexion atteint');
-            this.connectionStatus.value = 'failed';
-        }
-    }
-
     // Émettre un événement
     emit(event, data = {}) {
         if (this.socket && this.isConnected.value) {
@@ -178,6 +163,30 @@ class SocketClient {
         } else {
             console.warn(`⚠️ Impossible d'émettre l'événement ${event}: socket non connecté`);
         }
+    }
+
+    /**
+     * Envoie un ordre au serveur Satsuki au format OrderRequest.
+     * Format attendu par le serveur (cf. Satsuki/Models/OrderRequest.cs) :
+     * { ClientId, Target, Order, JsonData }
+     * Le serveur désérialise chaque message en OrderRequest puis le dispatche
+     * selon Target (System | Scene | Quizz).
+     *
+     * @param {string} order - Nom de l'ordre (ex: 'player_added')
+     * @param {object|string} data - Données de l'ordre (sérialisées dans JsonData)
+     * @param {string} target - Cible de l'ordre (OrderTarget)
+     * @returns {object} L'OrderRequest envoyé
+     */
+    sendOrder(order, data = {}, target = OrderTarget.QUIZZ) {
+        const orderRequest = {
+            ClientId: this.socket?.id || 'ciel-client',
+            Target: target,
+            Order: order,
+            JsonData: typeof data === 'string' ? data : JSON.stringify(data)
+        };
+
+        this.emit('order_request', orderRequest);
+        return orderRequest;
     }
 
     // Écouter un événement
@@ -266,8 +275,7 @@ class SocketClient {
         return {
             isConnected: this.isConnected.value,
             status: this.connectionStatus.value,
-            socketId: this.socket?.id || null,
-            reconnectAttempts: this.reconnectAttempts
+            socketId: this.socket?.id || null
         };
     }
 

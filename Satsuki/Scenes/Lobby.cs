@@ -25,9 +25,37 @@ public partial class Lobby : Node3D
 		}
 	}
 
+	private Satsuki.Systems.ServerManager _serverManager;
+
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
+		_serverManager = GetNodeOrNull<Satsuki.Systems.ServerManager>("/root/ServerManager");
+		if (_serverManager != null)
+		{
+			_serverManager.SceneOrderReceived += OnSceneOrderReceived;
+		}
+	}
+
+	public override void _ExitTree()
+	{
+		if (_serverManager != null)
+		{
+			_serverManager.SceneOrderReceived -= OnSceneOrderReceived;
+		}
+		base._ExitTree();
+	}
+
+	private void OnSceneOrderReceived(string orderRequestJson)
+	{
+		if (Satsuki.Utils.ServerUtils.TryDeserializeOrderRequest(orderRequestJson, out var orderRequest))
+		{
+			GD.Print($"Lobby: Ordre scène reçu '{orderRequest.Order}'");
+		}
+		else
+		{
+			GD.PrintErr($"Lobby: Impossible de désérialiser l'ordre scène: {orderRequestJson}");
+		}
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.

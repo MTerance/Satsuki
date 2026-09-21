@@ -49,7 +49,6 @@ export interface UseSocketReturn {
     isConnected: boolean;
     status: string;
     socketId: string | null;
-    reconnectAttempts: number;
   };
   getConnectionStats: () => {
     connected: boolean;

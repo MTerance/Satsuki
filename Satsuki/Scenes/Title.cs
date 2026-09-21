@@ -9,6 +9,7 @@ namespace Satsuki.Scenes
 	{
 		private DateTime _sceneStartTime;
 		private TextureRect _logoRect;
+		private Satsuki.Systems.ServerManager _serverManager;
 
 		#region Signals
 		[Signal]
@@ -19,6 +20,13 @@ namespace Satsuki.Scenes
 		{
 			_sceneStartTime = DateTime.UtcNow;
 			GD.Print("Title: Initialisation de l'ecran titre...");
+
+			_serverManager = GetNodeOrNull<Satsuki.Systems.ServerManager>("/root/ServerManager");
+			if (_serverManager != null)
+			{
+				_serverManager.SceneOrderReceived += OnSceneOrderReceived;
+			}
+
 			CreateUI();
 			GD.Print("Title: Ecran titre initialise");
 		}
@@ -89,7 +97,23 @@ namespace Satsuki.Scenes
 
 		public override void _ExitTree()
 		{
+			if (_serverManager != null)
+			{
+				_serverManager.SceneOrderReceived -= OnSceneOrderReceived;
+			}
 			GD.Print("Title: Nettoyage de la scene titre");
+		}
+
+		private void OnSceneOrderReceived(string orderRequestJson)
+		{
+			if (Satsuki.Utils.ServerUtils.TryDeserializeOrderRequest(orderRequestJson, out var orderRequest))
+			{
+				GD.Print($"Title: Ordre scène reçu '{orderRequest.Order}'");
+			}
+			else
+			{
+				GD.PrintErr($"Title: Impossible de désérialiser l'ordre scène: {orderRequestJson}");
+			}
 		}
 
 		public object GetSceneState()

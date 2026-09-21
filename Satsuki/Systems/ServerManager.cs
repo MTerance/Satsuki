@@ -63,7 +63,8 @@ public partial class ServerManager : Node
 
 		private void ProcessMessage(Satsuki.Message message)
 	{
-		try
+			GD.Print($"ServerManager: Message recu - Contenu: {message.Content}, Timestamp: {message.Timestamp}, SequenceNumber: {message.SequenceNumber}, IsEncrypted: {message.IsEncrypted}");
+            try
 		{
 			var orderRequest = JsonSerializer.Deserialize<OrderRequest>(message.Content);
 			DispatchOrderRequest(orderRequest);
@@ -114,15 +115,16 @@ public partial class ServerManager : Node
 			{
 				_isServerRunning = true;
 				GD.Print("Serveur Satsuki demarre avec succes!");
-				GD.Print("Serveur TCP: 127.0.0.1:80");
+				GD.Print("Serveur TCP: 127.0.0.1:3002");
 				GD.Print("Systeme de cryptage: Active");
 				GD.Print("Authentification BACKEND: Active");
 				
 				EmitSignal(SignalName.ServerStarted);
 				
 				await Task.Delay(1000);
-				await _network.BroadcastMessage("SERVER_READY: Serveur Satsuki en ligne");
-			}
+                GD.Print("SERVER_READY: Serveur Satsuki en ligne");
+                    //await _network.BroadcastMessage("SERVER_READY: Serveur Satsuki en ligne");
+                }
 			else
 			{
 				var error = "Echec du demarrage du serveur reseau";

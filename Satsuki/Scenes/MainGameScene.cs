@@ -459,6 +459,14 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 			{
 				GD.Print($"MainGameScene: Ordre scene '{orderRequest.Order}'");
 			}
+
+			if (_currentScene is Title && orderRequest.Order == "StartGame")
+			{
+				GD.Print("MainGameScene: Ordre reseau StartGame recu, passage au Lobby");
+				LoadLobby();
+				return;
+			}
+
 			OnMessageReceived(orderRequest.ClientId, orderRequestJson);
 		}
 		catch (Exception ex)

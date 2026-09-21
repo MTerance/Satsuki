@@ -6,9 +6,9 @@
 [ext_resource type="Script" uid="uid://bwlad18mbw1ic" path="res://Models/StageResource.cs" id="3_tq14f"]
 [ext_resource type="Script" uid="uid://df5jiawkde7ax" path="res://Models/StageInfo.cs" id="4_kr4ou"]
 
-[sub_resource type="Resource" id="Resource_fs73s"]
+[sub_resource type="Resource" id="Resource_kr4ou"]
 script = ExtResource("1_tq14f")
-Index = 268737633
+Index = 1421869718
 
 [sub_resource type="Resource" id="Resource_rli4b"]
 script = ExtResource("1_rli4b")
@@ -24,14 +24,14 @@ Type = 1
 script = ExtResource("2_ei2m2")
 SpawnPoints = Array[ExtResource("1_rli4b")]([SubResource("Resource_rli4b"), SubResource("Resource_ei2m2")])
 
-[sub_resource type="Resource" id="Resource_n7te2"]
+[sub_resource type="Resource" id="Resource_dfd4j"]
 script = ExtResource("1_tq14f")
-Index = 268884617
+Index = 1422023001
 
-[sub_resource type="Resource" id="Resource_avipw"]
+[sub_resource type="Resource" id="Resource_n7te2"]
 script = ExtResource("4_kr4ou")
 SizeZonePlayer = 50.0
-CameraPlacement = SubResource("Resource_n7te2")
+CameraPlacement = SubResource("Resource_dfd4j")
 
 [resource]
 script = ExtResource("3_tq14f")

@@ -67,7 +67,7 @@ public class Network : SingletonBase<Network>, INetwork, IDisposable
 
 		try
 		{
-			_server = new TcpListener(IPAddress.Parse("127.0.0.1"), 80);
+			_server = new TcpListener(IPAddress.Parse("127.0.0.1"), 3002);
 			_server.Start();
 			_isRunning = true;
 			
@@ -227,6 +227,7 @@ public class Network : SingletonBase<Network>, INetwork, IDisposable
 	/// <param name="message">Message a envoyer</param>
 	public async Task<bool> SendMessageToClient(string clientId, string message)
 	{
+		GD.Print($"Envoi du message au client {clientId}: {message}");
 		return await MessageReceiver.GetInstance.SendMessageToClient(clientId, message);
 	}
 

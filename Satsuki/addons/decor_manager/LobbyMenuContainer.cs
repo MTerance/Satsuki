@@ -342,5 +342,5 @@ public partial class LobbyMenuContainer : VBoxContainer
             GD.Print($"Spawn point {spawnPoint.Index} type changed to {type}");
         }
     }
-#endif
 }
+#endif

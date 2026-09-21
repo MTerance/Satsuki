@@ -22,6 +22,23 @@ namespace Satsuki.Utils
             _debugMode = enabled;
         }
 
+        /// <summary>
+        /// Tente de désérialiser une chaîne JSON en OrderRequest.
+        /// </summary>
+        public static bool TryDeserializeOrderRequest(string json, out Satsuki.Models.OrderRequest orderRequest)
+        {
+            try
+            {
+                orderRequest = System.Text.Json.JsonSerializer.Deserialize<Satsuki.Models.OrderRequest>(json);
+                return true;
+            }
+            catch
+            {
+                orderRequest = default;
+                return false;
+            }
+        }
+
         #region Client Communication
         /// <summary>
         /// Envoie un message à un client spécifique avec cryptage optionnel.

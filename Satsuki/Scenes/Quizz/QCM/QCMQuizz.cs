@@ -216,17 +216,47 @@ namespace Satsuki.Scenes.Quizz.QCM
 			}
 		}
 
+		private Satsuki.Systems.ServerManager _serverManager;
+
 		public override void _Ready()
 		{
 			questionLabel = GetNode<Label>("QuizzVBoxContainer/QuestionMarginContainer/QuestionLabel");
-            ProposalAlpha = GetNode<Label>("QuizzVBoxContainer/ProposalBoxContainerUp/ProposalAlpha");
-            ProposalBeta = GetNode<Label>("QuizzVBoxContainer/ProposalBoxContainerUp/ProposalBeta");
-            ProposalGamma = GetNode<Label>("QuizzVBoxContainer/ProposalBoxContainerDown/ProposalGamma");
-            ProposalDelta = GetNode<Label>("QuizzVBoxContainer/ProposalBoxContainerDown/ProposalDelta");
-            currentState = GameState.Beginning;
-            TEST_CreateQCMQuizz();
-            StartGame();
-        }
+			ProposalAlpha = GetNode<Label>("QuizzVBoxContainer/ProposalBoxContainerUp/ProposalAlpha");
+			ProposalBeta = GetNode<Label>("QuizzVBoxContainer/ProposalBoxContainerUp/ProposalBeta");
+			ProposalGamma = GetNode<Label>("QuizzVBoxContainer/ProposalBoxContainerDown/ProposalGamma");
+			ProposalDelta = GetNode<Label>("QuizzVBoxContainer/ProposalBoxContainerDown/ProposalDelta");
+
+			_serverManager = GetNodeOrNull<Satsuki.Systems.ServerManager>("/root/ServerManager");
+			if (_serverManager != null)
+			{
+				_serverManager.QuizzOrderReceived += OnQuizzOrderReceived;
+			}
+
+			currentState = GameState.Beginning;
+			TEST_CreateQCMQuizz();
+			StartGame();
+		}
+
+		public override void _ExitTree()
+		{
+			if (_serverManager != null)
+			{
+				_serverManager.QuizzOrderReceived -= OnQuizzOrderReceived;
+			}
+			base._ExitTree();
+		}
+
+		private void OnQuizzOrderReceived(string orderRequestJson)
+		{
+			if (Satsuki.Utils.ServerUtils.TryDeserializeOrderRequest(orderRequestJson, out var orderRequest))
+			{
+				GD.Print($"QCMQuizzScene: Ordre quizz reçu '{orderRequest.Order}'");
+			}
+			else
+			{
+				GD.PrintErr($"QCMQuizzScene: Impossible de désérialiser l'ordre quizz: {orderRequestJson}");
+			}
+		}
 
 		public override void _Process(double delta)
 		{

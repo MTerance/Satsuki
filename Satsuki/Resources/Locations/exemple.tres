@@ -27,14 +27,14 @@ script = ExtResource("3_n7te2")
 CameraPlacement = SubResource("Resource_rp56l")
 SpawnPoints = Array[ExtResource("2_dfd4j")]([SubResource("Resource_44ape"), SubResource("Resource_r5v8h")])
 
-[sub_resource type="Resource" id="Resource_n7te2"]
+[sub_resource type="Resource" id="Resource_dfd4j"]
 script = ExtResource("1_ot7le")
-Index = 268884617
+Index = 1422023001
 
-[sub_resource type="Resource" id="Resource_avipw"]
+[sub_resource type="Resource" id="Resource_n7te2"]
 script = ExtResource("4_dfd4j")
 SizeZonePlayer = 50.0
-CameraPlacement = SubResource("Resource_n7te2")
+CameraPlacement = SubResource("Resource_dfd4j")
 
 [resource]
 script = ExtResource("4_avipw")

@@ -5,7 +5,7 @@ using System;
 
 #if TOOLS
 [Tool]
-#endif
+
 public partial class StageInfoContainer : Control
 {
 	private Button _loadStageAssetButton;
@@ -113,9 +113,5 @@ public partial class StageInfoContainer : Control
 	{
 		SetStageInfo(path);
 	}
-
-
-
-
-
 }
+#endif

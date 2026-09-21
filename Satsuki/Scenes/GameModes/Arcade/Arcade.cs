@@ -1,1 +1,123 @@
-﻿using Godot; using System; using Satsuki.Manager; using Satsuki.Interfaces; using Satsuki.Interfaces.Models; using Satsuki.Scenes.GameModes.Arcade.Models; using Satsuki.Scenes.GameModes.Arcade.Builders; using Satsuki.Interfaces.GameMode; using Satsuki.Scenes.Abstract;  namespace Satsuki.Scenes { 	public partial class Arcade : Node, IGameMode, IGameRecordUser 	{ 		private ArcadeGameRecord _currentGameRecord; 		private Camera3D _gameCamera; 		private PlayerManager _playerManager; 		private QuizzManager _quizzManager;          private void LoadStage() 		{ 			var stageResource = new Repositories.Loaders.LocationLoader().LoadStageRsc(_currentGameRecord.IdStage); 			var stageNode = new Repositories.Loaders.LocationLoader().LoadStage(stageResource); 			AddChild(stageNode); 		}  		public void BuildGame(ArcadeGameRecord gameRecord) 		{ 			SetGameRecord(gameRecord); 			var builder = new ArcadeGameBuilder(gameRecord); 			var nodeBuilded = builder.Build(); 			AddChild(nodeBuilded.Stage); 			foreach (var player in nodeBuilded.Players) 			{ 				AddChild(player.Value); 			} 			_gameCamera.Position = nodeBuilded.GameCameraPosition; 			_gameCamera.LookAt(nodeBuilded.GameCameraTarget); 		}  		public override void _Ready() 		{             _gameCamera = GetNode<Camera3D>("GameCamera"); 			_quizzManager = GetNode<Node>("QuizzManager") as QuizzManager; 			// Load the StageInfo and SpawnPointData from the GameRecord 			BuildGame(_currentGameRecord); 			base._Ready(); 		}  		public override void _Process(double delta) 		{ 			base._Process(delta); 		}  		public object GetSceneState() 		{ 			return new 			{ 				SceneInfo = new 				{ 					SceneName = "Arcade", 					SceneType = "Game", 					StartTime = DateTime.UtcNow, 					ElapsedTime = 0.0, 					ElapsedTimeFormatted = "00:00" 				}, 				Status = new 				{ 					IsActive = true, 					IsPaused = false 				} 			}; 		}  		public IGameRecord LoadCurrentGameRecord() 		{ 			return _currentGameRecord; 		}  		public void SetGameRecord(IGameRecord gameRecord) 		{ 			if (gameRecord is ArcadeGameRecord) 				_currentGameRecord = gameRecord as ArcadeGameRecord; 			else 			{ 				GD.PrintErr("Invalid game record type. Expected ArcadeGameRecord."); 			} 		} 	} }
+using Godot;
+using System;
+using Satsuki.Manager;
+using Satsuki.Interfaces;
+using Satsuki.Interfaces.Models;
+using Satsuki.Scenes.GameModes.Arcade.Models;
+using Satsuki.Scenes.GameModes.Arcade.Builders;
+using Satsuki.Interfaces.GameMode;
+using Satsuki.Scenes.Abstract;
+using Satsuki.Models;
+using Satsuki.Systems;
+using Satsuki.Utils;
+using System.Text.Json;
+
+namespace Satsuki.Scenes
+{
+	public partial class Arcade : Node, IGameMode, IGameRecordUser
+	{
+		private ArcadeGameRecord _currentGameRecord;
+		private Camera3D _gameCamera;
+		private PlayerManager _playerManager;
+		private QuizzManager _quizzManager;
+		private ServerManager _serverManager;
+
+		private void LoadStage()
+		{
+			var stageResource = new Repositories.Loaders.LocationLoader().LoadStageRsc(_currentGameRecord.IdStage);
+			var stageNode = new Repositories.Loaders.LocationLoader().LoadStage(stageResource);
+			AddChild(stageNode);
+		}
+
+		public void BuildGame(ArcadeGameRecord gameRecord)
+		{
+			SetGameRecord(gameRecord);
+			var builder = new ArcadeGameBuilder(gameRecord);
+			var nodeBuilded = builder.Build();
+			AddChild(nodeBuilded.Stage);
+			foreach (var player in nodeBuilded.Players)
+			{
+				AddChild(player.Value);
+			}
+			_gameCamera.Position = nodeBuilded.GameCameraPosition;
+			_gameCamera.LookAt(nodeBuilded.GameCameraTarget);
+		}
+
+		public override void _Ready()
+		{
+			_gameCamera = GetNode<Camera3D>("GameCamera");
+			_quizzManager = GetNode<Node>("QuizzManager") as QuizzManager;
+
+			_serverManager = GetNodeOrNull<ServerManager>("/root/ServerManager");
+			if (_serverManager != null)
+			{
+				_serverManager.SceneOrderReceived += OnSceneOrderReceived;
+			}
+
+			// Load the StageInfo and SpawnPointData from the GameRecord
+			BuildGame(_currentGameRecord);
+			base._Ready();
+		}
+
+		public override void _ExitTree()
+		{
+			if (_serverManager != null)
+			{
+				_serverManager.SceneOrderReceived -= OnSceneOrderReceived;
+			}
+			base._ExitTree();
+		}
+
+		private void OnSceneOrderReceived(string orderRequestJson)
+		{
+			if (ServerUtils.TryDeserializeOrderRequest(orderRequestJson, out var orderRequest))
+			{
+				GD.Print($"Arcade: Ordre scène reçu '{orderRequest.Order}'");
+			}
+			else
+			{
+				GD.PrintErr($"Arcade: Impossible de désérialiser l'ordre scène: {orderRequestJson}");
+			}
+		}
+
+		public override void _Process(double delta)
+		{
+			base._Process(delta);
+		}
+
+		public object GetSceneState()
+		{
+			return new
+			{
+				SceneInfo = new
+				{
+					SceneName = "Arcade",
+					SceneType = "Game",
+					StartTime = DateTime.UtcNow,
+					ElapsedTime = 0.0,
+					ElapsedTimeFormatted = "00:00"
+				},
+				Status = new
+				{
+					IsActive = true,
+					IsPaused = false
+				}
+			};
+		}
+
+		public IGameRecord LoadCurrentGameRecord()
+		{
+			return _currentGameRecord;
+		}
+
+		public void SetGameRecord(IGameRecord gameRecord)
+		{
+			if (gameRecord is ArcadeGameRecord)
+				_currentGameRecord = gameRecord as ArcadeGameRecord;
+			else
+			{
+				GD.PrintErr("Invalid game record type. Expected ArcadeGameRecord.");
+			}
+		}
+	}
+}

@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Satsuki.Utils;
 using Satsuki;
+using Godot;
 
 namespace Satsuki.Networks
 {
@@ -338,6 +339,7 @@ namespace Satsuki.Networks
         /// </summary>
         private void OnMessageReceived(string clientId, string messageContent)
         {
+            GD.Print($"Message reçu de {clientId}: {messageContent}");
             // Crée le message avec préfixe client
             var message = new Message($"[{clientId}] {messageContent}");
             

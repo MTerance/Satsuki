@@ -5,10 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-#if TOOLS
+
 namespace Satsuki.addons.decor_manager.Models
 {
-	[Tool]
+#if TOOLS
+    [Tool]
 	public partial class PlayerZone : Node3D
 	{
 
@@ -103,5 +104,6 @@ namespace Satsuki.addons.decor_manager.Models
 			}
 		}
 	}
-}
 #endif
+}
+
