@@ -6,7 +6,7 @@
             </div>
             
             <div class="navbar-right">
-                <!-- Témoin de connexion Socket.IO -->
+                <!-- Témoin de connexion au serveur Satsuki -->
                 <div class="status-indicator" :class="connectionClass">
                     <div class="status-dot" :class="statusDotClass"></div>
                     <span class="status-text">{{ connectionText }}</span>
@@ -35,24 +35,12 @@
 
 <script setup lang="ts">
 import { computed, watch, onMounted, onUnmounted } from 'vue';
-import socketClient from '../services/socketClient.js';
+import clientService from '../services/clientService.js';
 
-// États réactifs délégués au service SocketClient (singleton partagé)
-const isConnected = socketClient.isConnected;
-const connectionStatus = socketClient.connectionStatus;
-const isConnecting = computed(() =>
-    connectionStatus.value === 'connecting' || connectionStatus.value === 'reconnecting'
-);
-
-// Événements serveur retransmis vers les autres composants via 'socket-response'
-const SERVER_EVENTS: string[] = [
-    'welcome',
-    'player_added_response',
-    'player_removed_response',
-    'quiz_added_response',
-    'quiz_removed_response',
-    'players_list'
-];
+// États réactifs délégués au service ClientService (singleton partagé)
+const isConnected = clientService.isConnected;
+const connectionStatus = clientService.status;
+const isConnecting = computed(() => connectionStatus.value === 'connecting');
 
 // Classes CSS dynamiques
 const connectionClass = computed(() => ({
@@ -73,32 +61,22 @@ const connectionText = computed(() => {
     return isConnected.value ? 'Connecté' : 'Non connecté';
 });
 
-// Connexion / déconnexion déléguées au service SocketClient
-const handleConnect = () => {
+// Connexion / déconnexion déléguées au service ClientService
+const handleConnect = async () => {
     if (isConnected.value || isConnecting.value) return;
 
     try {
-        socketClient.connect();
-        registerServerEventListeners();
+        const res = await clientService.connect();
+        if (!res.success) {
+            console.error('Erreur de connexion Satsuki:', res.message);
+        }
     } catch (error) {
-        console.error('Erreur de connexion Socket.IO:', error);
+        console.error('Erreur de connexion Satsuki:', error);
     }
 };
 
 const handleDisconnect = () => {
-    socketClient.disconnect();
-};
-
-// Abonne le socket aux événements du serveur et les retransmet aux autres composants
-const registerServerEventListeners = () => {
-    for (const eventName of SERVER_EVENTS) {
-        socketClient.on(eventName, (data: unknown) => {
-            console.log(`📨 Événement serveur reçu: ${eventName}`, data);
-            window.dispatchEvent(new CustomEvent('socket-response', {
-                detail: { eventName, data }
-            }));
-        });
-    }
+    clientService.disconnect();
 };
 
 // Transfère les événements de jeu (MainGameMenu) vers le serveur au format OrderRequest
@@ -107,9 +85,9 @@ const handleGameSocketEmit = (event: CustomEvent) => {
 
     if (isConnected.value) {
         console.log(`🎮 Envoi d'un ordre au serveur: ${eventName}`, data);
-        socketClient.sendOrder(eventName, data);
+        clientService.sendOrder(eventName, data);
     } else {
-        console.warn('⚠️ Socket non connecté, impossible de transférer:', eventName, data);
+        console.warn('⚠️ Non connecté, impossible de transférer:', eventName, data);
     }
 };
 
@@ -120,10 +98,19 @@ watch(isConnected, (connected) => {
     }));
 });
 
+let offServerMessage: (() => void) | null = null;
+
 // Configuration au montage
 onMounted(() => {
     // Écouter les événements de jeu depuis MainGameMenu
     window.addEventListener('game-socket-emit', handleGameSocketEmit as EventListener);
+
+    // Retransmettre tous les messages du serveur vers les autres composants
+    offServerMessage = clientService.onOrder('*', (payload: any) => {
+        window.dispatchEvent(new CustomEvent('socket-response', {
+            detail: { eventName: payload?.data?.order || 'message', data: payload?.data ?? payload?.raw }
+        }));
+    });
 
     // Tentative de connexion automatique au démarrage
     setTimeout(() => {
@@ -134,7 +121,8 @@ onMounted(() => {
 // Nettoyage au démontage
 onUnmounted(() => {
     window.removeEventListener('game-socket-emit', handleGameSocketEmit as EventListener);
-    // Le socket est un singleton partagé : on ne le déconnecte pas ici.
+    offServerMessage?.();
+    // La connexion est un singleton partagé : on ne la coupe pas ici.
 });
 </script>
 

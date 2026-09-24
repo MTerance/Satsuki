@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Satsuki.addons.decor_manager.Models
 {
 #if TOOLS
-    [Tool]
+	[Tool]
 	public partial class PlayerZone : Node3D
 	{
 
@@ -106,4 +106,3 @@ namespace Satsuki.addons.decor_manager.Models
 	}
 #endif
 }
-

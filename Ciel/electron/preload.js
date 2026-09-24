@@ -51,3 +51,23 @@ contextBridge.exposeInMainWorld('screenManager', {
     getCapabilities: () => ipcRenderer.invoke('screen-get-capabilities'),
     getBestDisplay: (preferences) => ipcRenderer.invoke('screen-get-best-display', preferences),
 });
+
+// Expose Satsuki TCP API to renderer process (serveur Godot)
+contextBridge.exposeInMainWorld('satsuki', {
+    connect: (opts) => ipcRenderer.invoke('satsuki-connect', opts),
+    sendOrder: (orderRequest) => ipcRenderer.invoke('satsuki-send-order', orderRequest),
+    sendRaw: (obj) => ipcRenderer.invoke('satsuki-send-raw', obj),
+    disconnect: () => ipcRenderer.invoke('satsuki-disconnect'),
+    getStatus: () => ipcRenderer.invoke('satsuki-status'),
+
+    // Event listeners
+    onMessage: (callback) => ipcRenderer.on('satsuki-message', (event, payload) => callback(payload)),
+    onStatus: (callback) => ipcRenderer.on('satsuki-status', (event, status) => callback(status)),
+    onError: (callback) => ipcRenderer.on('satsuki-error', (event, error) => callback(error)),
+
+    removeAllListeners: () => {
+        ipcRenderer.removeAllListeners('satsuki-message');
+        ipcRenderer.removeAllListeners('satsuki-status');
+        ipcRenderer.removeAllListeners('satsuki-error');
+    }
+});

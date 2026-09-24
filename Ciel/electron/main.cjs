@@ -1,6 +1,6 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
-const { websocketClient, databaseClient, processChecker, screenManager } = require('./modules/index.cjs');
+const { websocketClient, databaseClient, processChecker, screenManager, satsukiTcpClient } = require('./modules/index.cjs');
 
 let mainWindow;
 
@@ -37,6 +37,27 @@ function createWindow() {
   
   ipcMain.handle('websocket-status', async () => {
     return websocketClient.getStatus();
+  });
+
+  // Satsuki TCP IPC handlers (serveur Godot - protocole TCP+JSON+AES)
+  ipcMain.handle('satsuki-connect', async (event, opts) => {
+    return satsukiTcpClient.connect(opts);
+  });
+
+  ipcMain.handle('satsuki-send-order', async (event, orderRequest) => {
+    return satsukiTcpClient.sendOrder(orderRequest);
+  });
+
+  ipcMain.handle('satsuki-send-raw', async (event, obj) => {
+    return satsukiTcpClient.sendRaw(obj);
+  });
+
+  ipcMain.handle('satsuki-disconnect', async () => {
+    return satsukiTcpClient.disconnect();
+  });
+
+  ipcMain.handle('satsuki-status', async () => {
+    return satsukiTcpClient.getStatus();
   });
   
   ipcMain.handle('db-add-user', async (event, userData) => {
@@ -148,6 +169,8 @@ function createWindow() {
 
   // Set main window reference for WebSocket client
   websocketClient.setMainWindow(mainWindow);
+  // Set main window reference for Satsuki TCP client
+  satsukiTcpClient.setMainWindow(mainWindow);
 
   // Load the application
   if (process.env.NODE_ENV === 'development' && typeof MAIN_WINDOW_VITE_DEV_SERVER_URL !== 'undefined') {
@@ -160,6 +183,7 @@ function createWindow() {
     mainWindow = null;
     // Clean up WebSocket client reference
     websocketClient.setMainWindow(null);
+    satsukiTcpClient.setMainWindow(null);
   });
 }
 
@@ -178,6 +202,9 @@ app.on('window-all-closed', function () {
   // Clean up WebSocket connection when app is closing
   websocketClient.cleanup();
   console.log('WebSocket client cleaned up');
+
+  // Clean up Satsuki TCP connection when app is closing
+  satsukiTcpClient.disconnect();
   
   if (process.platform !== 'darwin') app.quit();
 });
