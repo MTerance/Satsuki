@@ -1,4 +1,5 @@
 using Godot;
+using Satsuki.Interfaces;
 using Satsuki.Models;
 using Satsuki.Networks;
 using Satsuki.Utils;
@@ -155,12 +156,16 @@ public partial class ServerManager : Node
 
 			try
 			{
-				var gameScene = GetNodeOrNull("/root/MainGameScene");
-				var gameState = ServerUtils.GetCompleteGameState(gameScene);
+				var gameScene = GetNodeOrNull("/root/MainGameScene") as IScene;
+
+				var gameState = gameScene?.GetSceneState();
+
+
+				///var gameState = ServerUtils.GetCompleteGameState(gameScene);
 				GD.Print("Etat du jeu recupere:");
 
 				string gameStateJson = System.Text.Json.JsonSerializer.Serialize(gameState);
-				GD.Print($"   {gameStateJson}");
+				GD.Print($" current game state : {gameStateJson}");
 
 				await SendGameStateToClient(clientId, gameStateJson);
 			}

@@ -23,11 +23,6 @@ const router = createRouter({
       component: () => import('../components/DatabaseDemo.vue'),
     },
     {
-      path: '/websocket',
-      name: 'websocket',
-      component: () => import('../components/WebSocketDemo.vue'),
-    },
-    {
       path: '/screen-detector',
       name: 'screen-detector',
       component: () => import('../views/ScreenDetector.vue'),

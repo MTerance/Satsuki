@@ -8,7 +8,7 @@
 
 [sub_resource type="Resource" id="Resource_kr4ou"]
 script = ExtResource("1_tq14f")
-Index = 1421869718
+Index = 365160139
 
 [sub_resource type="Resource" id="Resource_rli4b"]
 script = ExtResource("1_rli4b")
@@ -26,7 +26,7 @@ SpawnPoints = Array[ExtResource("1_rli4b")]([SubResource("Resource_rli4b"), SubR
 
 [sub_resource type="Resource" id="Resource_dfd4j"]
 script = ExtResource("1_tq14f")
-Index = 1422023001
+Index = 365436570
 
 [sub_resource type="Resource" id="Resource_n7te2"]
 script = ExtResource("4_kr4ou")

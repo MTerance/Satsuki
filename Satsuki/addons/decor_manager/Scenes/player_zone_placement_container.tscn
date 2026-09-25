@@ -37,3 +37,6 @@ text = "50,00"
 
 [node name="PlayerZone" type="Node3D" parent="." unique_id=1899849881]
 script = ExtResource("3_wgelp")
+
+[node name="@Node3D@20050" type="Node3D" parent="." unique_id=823788548]
+script = ExtResource("3_wgelp")

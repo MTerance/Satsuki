@@ -41,3 +41,8 @@ transform = Transform3D(-4.371139e-08, -1, 0, -4.371139e-08, 1.9106855e-15, 1, -
 
 [node name="CameraTarget_lobby_1861850071" type="Node3D" parent="." unique_id=55765717]
 transform = Transform3D(-4.371139e-08, -1, 0, -4.371139e-08, 1.9106855e-15, 1, -1, 4.371139e-08, -4.371139e-08, 0, 0, 0)
+
+[node name="Camera_lobby_775830787" type="Node3D" parent="." unique_id=1266708721]
+
+[node name="CameraTarget_lobby_775830787" type="Node3D" parent="." unique_id=1802529925]
+transform = Transform3D(-4.371139e-08, -1, 0, -4.371139e-08, 1.9106855e-15, 1, -1, 4.371139e-08, -4.371139e-08, 0, 0, 0)

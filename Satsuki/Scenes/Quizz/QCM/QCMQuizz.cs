@@ -18,7 +18,7 @@ namespace Satsuki.Scenes.Quizz.QCM
 	public partial class QCMQuizzScene : Control, IQuizz
 	{
 		private const string QuizzTypeName = "QCMQuizz";
-        private Label questionLabel;
+		private Label questionLabel;
 		private GameState currentState;
 		private TextureRect mediaDisplay;
 		private QCMQuizzModel currentQuizz;
@@ -26,30 +26,30 @@ namespace Satsuki.Scenes.Quizz.QCM
 		//
 
 		private Label ProposalAlpha;
-        private Label ProposalBeta;
-        private Label ProposalGamma;
-        private Label ProposalDelta;
-        //
+		private Label ProposalBeta;
+		private Label ProposalGamma;
+		private Label ProposalDelta;
+		//
 
 
-        public string GetQuizzTypeName()
-        {
-            return QuizzTypeName;
-        }
+		public string GetQuizzTypeName()
+		{
+			return QuizzTypeName;
+		}
 
-        public void SetQuizzContent(IQuizzModel model)
-        {
-            if (model is QCMQuizzModel qcmQuizzModel)
-            {
-                currentQuizz = qcmQuizzModel;
-            }
-            else
-            {
-                GD.PrintErr("Invalid quizz model type");
-            }
-        }
+		public void SetQuizzContent(IQuizzModel model)
+		{
+			if (model is QCMQuizzModel qcmQuizzModel)
+			{
+				currentQuizz = qcmQuizzModel;
+			}
+			else
+			{
+				GD.PrintErr("Invalid quizz model type");
+			}
+		}
 
-        public string GetQuizzState()
+		public string GetQuizzState()
 		{
 			throw new NotImplementedException();
 		}
@@ -92,7 +92,7 @@ namespace Satsuki.Scenes.Quizz.QCM
 		{
 			if (currentQuizz == null)
 			{
-				currentQuizz = JsonSerializer.Deserialize<QCMQuizzModel>(@"{""Id"":1,""Question"":""Quel est le nom du Gundam principalement piloté par Kira Yamato au début de Mobile Suit Gundam SEED ?"",""Answers"":[{""Id"":1,""Answer"":""Aegis Gundam"",""Color"":{""Item1"":255,""Item2"":80,""Item3"":80}},{""Id"":2,""Answer"":""Strike Gundam"",""Color"":{""Item1"":80,""Item2"":200,""Item3"":120}},{""Id"":3,""Answer"":""Blitz Gundam"",""Color"":{""Item1"":80,""Item2"":120,""Item3"":255}},{""Id"":4,""Answer"":""Buster Gundam"",""Color"":{""Item1"":255,""Item2"":190,""Item3"":60}}],""RightAnswerId"":2,""Medias"":{""DuringQuestion"":{""Path"":""res://Assets/Img/strike_gundam.png"",""Type"":""Image""}}}");
+				currentQuizz = JsonSerializer.Deserialize<QCMQuizzModel>(@"{""Id"":1,""Question"":""Quel est le nom du Gundam principalement pilotÃ© par Kira Yamato au dÃ©but de Mobile Suit Gundam SEED ?"",""Answers"":[{""Id"":1,""Answer"":""Aegis Gundam"",""Color"":{""Item1"":255,""Item2"":80,""Item3"":80}},{""Id"":2,""Answer"":""Strike Gundam"",""Color"":{""Item1"":80,""Item2"":200,""Item3"":120}},{""Id"":3,""Answer"":""Blitz Gundam"",""Color"":{""Item1"":80,""Item2"":120,""Item3"":255}},{""Id"":4,""Answer"":""Buster Gundam"",""Color"":{""Item1"":255,""Item2"":190,""Item3"":60}}],""RightAnswerId"":2,""Medias"":{""DuringQuestion"":{""Path"":""res://Assets/Img/strike_gundam.png"",""Type"":""Image""}}}");
 			}
 		}
 
@@ -112,17 +112,17 @@ namespace Satsuki.Scenes.Quizz.QCM
 			}
 			ProposalAlpha.Text = currentQuizz.Answers[0].Answer;
 			ProposalAlpha.Modulate = new Color(currentQuizz.Answers[0].Color.Item1 / 255f, currentQuizz.Answers[0].Color.Item2 / 255f, currentQuizz.Answers[0].Color.Item3 / 255f);
-            ProposalAlpha.Visible = true;
+			ProposalAlpha.Visible = true;
 			ProposalBeta.Visible = true;
-            ProposalBeta.Text = currentQuizz.Answers[1].Answer;
-            ProposalBeta.Modulate = new Color(currentQuizz.Answers[1].Color.Item1 / 255f, currentQuizz.Answers[1].Color.Item2 / 255f, currentQuizz.Answers[1].Color.Item3 / 255f);
-            ProposalGamma.Text = currentQuizz.Answers[2].Answer;
-            ProposalGamma.Visible = true;
-            ProposalGamma.Modulate = new Color(currentQuizz.Answers[2].Color.Item1 / 255f, currentQuizz.Answers[2].Color.Item2 / 255f, currentQuizz.Answers[2].Color.Item3 / 255f);
-            ProposalDelta.Text = currentQuizz.Answers[3].Answer;
-            ProposalDelta.Visible = true;
-            ProposalDelta.Modulate = new Color(currentQuizz.Answers[3].Color.Item1 / 255f, currentQuizz.Answers[3].Color.Item2 / 255f, currentQuizz.Answers[3].Color.Item3 / 255f);
-        }
+			ProposalBeta.Text = currentQuizz.Answers[1].Answer;
+			ProposalBeta.Modulate = new Color(currentQuizz.Answers[1].Color.Item1 / 255f, currentQuizz.Answers[1].Color.Item2 / 255f, currentQuizz.Answers[1].Color.Item3 / 255f);
+			ProposalGamma.Text = currentQuizz.Answers[2].Answer;
+			ProposalGamma.Visible = true;
+			ProposalGamma.Modulate = new Color(currentQuizz.Answers[2].Color.Item1 / 255f, currentQuizz.Answers[2].Color.Item2 / 255f, currentQuizz.Answers[2].Color.Item3 / 255f);
+			ProposalDelta.Text = currentQuizz.Answers[3].Answer;
+			ProposalDelta.Visible = true;
+			ProposalDelta.Modulate = new Color(currentQuizz.Answers[3].Color.Item1 / 255f, currentQuizz.Answers[3].Color.Item2 / 255f, currentQuizz.Answers[3].Color.Item3 / 255f);
+		}
 
 		private void ShowQuestion()
 		{
@@ -143,7 +143,7 @@ namespace Satsuki.Scenes.Quizz.QCM
 		private void WaitingWhilePlayersResponding()
 		{
 			GD.Print("Waiting for Players to Respond");
-        }
+		}
 
 		private void ShowRightAnswer()
 		{
@@ -165,17 +165,17 @@ namespace Satsuki.Scenes.Quizz.QCM
 		}
 
 		private void StartGame()
-        {
-            currentState = GameState.Beginning;
+		{
+			currentState = GameState.Beginning;
 			questionLabel.Visible = false;
 			ProposalAlpha.Visible = false;
 			ProposalBeta.Visible = false;
 			ProposalGamma.Visible = false;
 			ProposalDelta.Visible = false;
-            NextStateGame();
-        }
+			NextStateGame();
+		}
 
-        private void NextStateGame()
+		private void NextStateGame()
 		{
 			switch (currentState)
 			{
@@ -250,19 +250,16 @@ namespace Satsuki.Scenes.Quizz.QCM
 		{
 			if (Satsuki.Utils.ServerUtils.TryDeserializeOrderRequest(orderRequestJson, out var orderRequest))
 			{
-				GD.Print($"QCMQuizzScene: Ordre quizz reçu '{orderRequest.Order}'");
+				GD.Print($"QCMQuizzScene: Ordre quizz reÃ§u '{orderRequest.Order}'");
 			}
 			else
 			{
-				GD.PrintErr($"QCMQuizzScene: Impossible de désérialiser l'ordre quizz: {orderRequestJson}");
+				GD.PrintErr($"QCMQuizzScene: Impossible de dÃ©sÃ©rialiser l'ordre quizz: {orderRequestJson}");
 			}
 		}
 
 		public override void _Process(double delta)
 		{
 		}
-
 	}
-
-
 }

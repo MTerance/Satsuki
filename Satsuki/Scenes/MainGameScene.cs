@@ -497,16 +497,16 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 	{
 		return new
 		{
-			MainGameScene = new
+			CurrentStateScene = new
 			{
 				SceneName = "MainGameScene",
-				HasLoadedCredits = _hasLoadedCredits,
+				//HasLoadedCredits = _hasLoadedCredits,
 				CurrentScene = _currentScene?.GetType().Name ?? "None",
-				CurrentLocation = CurrentLocation?.LocationName ?? "None",
-				ConnectedClients = _serverManager?.GetConnectedClientsCount() ?? 0
+				//CurrentLocation = CurrentLocation?.LocationName ?? "None",
+				//ConnectedClients = _serverManager?.GetConnectedClientsCount() ?? 0
 			},
-			UIScene = CurrentScene?.GetSceneState(),
-			Location = CurrentLocation?.GetLocationState(),
+            CurrentSceneName = CurrentScene?.GetSceneState(),
+			//Location = CurrentLocation?.GetLocationState(),
 			Timestamp = DateTime.UtcNow
 		};
 	}
