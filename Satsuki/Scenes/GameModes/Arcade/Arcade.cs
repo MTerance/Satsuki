@@ -11,6 +11,7 @@ using Satsuki.Models;
 using Satsuki.Systems;
 using Satsuki.Utils;
 using System.Text.Json;
+using Satsuki.Interfaces.Quizz;
 
 namespace Satsuki.Scenes
 {
@@ -21,6 +22,7 @@ namespace Satsuki.Scenes
 		private PlayerManager _playerManager;
 		private QuizzManager _quizzManager;
 		private ServerManager _serverManager;
+		private IQuizz currentQuizz;
 
 		private void LoadStage()
 		{
@@ -93,7 +95,8 @@ namespace Satsuki.Scenes
 				{
 					SceneName = "Arcade",
 					SceneType = "Game",
-					StartTime = DateTime.UtcNow,
+					CurrentQuizz = _quizzManager?.GetCurrentQuizzInfo(),
+                    StartTime = DateTime.UtcNow,
 					ElapsedTime = 0.0,
 					ElapsedTimeFormatted = "00:00"
 				},
@@ -119,5 +122,10 @@ namespace Satsuki.Scenes
 				GD.PrintErr("Invalid game record type. Expected ArcadeGameRecord.");
 			}
 		}
-	}
+
+        public string GetSceneName()
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

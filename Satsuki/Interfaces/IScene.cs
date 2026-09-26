@@ -12,5 +12,7 @@ namespace Satsuki.Interfaces
 		/// </summary>
 		/// <returns>Un objet contenant l'état de la scène</returns>
 		object GetSceneState();
+
+		string GetSceneName();
 	}
 }

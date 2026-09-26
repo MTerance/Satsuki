@@ -189,4 +189,9 @@ public partial class Credits : Node, IScene
 		
 		GD.Print("Credits: Nettoyage termine");
 	}
+
+    public string GetSceneName()
+    {
+        return "CREDITS";
+    }
 }

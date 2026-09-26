@@ -137,5 +137,10 @@ namespace Satsuki.Scenes
 				}
 			};
 		}
-	}
+
+        public string GetSceneName()
+        {
+			return "TITLE";
+        }
+    }
 }

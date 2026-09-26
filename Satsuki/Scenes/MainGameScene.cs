@@ -499,13 +499,13 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 		{
 			CurrentStateScene = new
 			{
-				SceneName = "MainGameScene",
+				Order = "CurrentGameScene",
 				//HasLoadedCredits = _hasLoadedCredits,
 				CurrentScene = _currentScene?.GetType().Name ?? "None",
-				//CurrentLocation = CurrentLocation?.LocationName ?? "None",
-				//ConnectedClients = _serverManager?.GetConnectedClientsCount() ?? 0
-			},
-            CurrentSceneName = CurrentScene?.GetSceneState(),
+                Content = CurrentScene?.GetSceneState(),
+                //CurrentLocation = CurrentLocation?.LocationName ?? "None",
+                //ConnectedClients = _serverManager?.GetConnectedClientsCount() ?? 0
+            },
 			//Location = CurrentLocation?.GetLocationState(),
 			Timestamp = DateTime.UtcNow
 		};
@@ -550,5 +550,10 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 				break;
 		}
 	}
-	#endregion
+
+    public string GetSceneName()
+    {
+        throw new NotImplementedException();
+    }
+    #endregion
 }

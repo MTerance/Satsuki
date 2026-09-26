@@ -311,5 +311,10 @@ namespace Satsuki.Scenes.Examples
 			string json = JsonSerializer.Serialize(data);
 			GD.Print($"?? Envoi à {clientId}: {json}");
 		}
-	}
+
+        public string GetSceneName()
+        {
+            throw new NotImplementedException();
+        }
+    }
 }
