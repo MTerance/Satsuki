@@ -1,0 +1,596 @@
+{
+  "Id": 1,
+  "GameInstanceName": "Soirée anime et jeux vidéo japonais — quiz mixte",
+  "Players": [
+    {
+      "Id": 1,
+      "Name": "Alice",
+      "RGBColor": {
+        "Item1": 255,
+        "Item2": 0,
+        "Item3": 0
+      }
+    },
+    {
+      "Id": 2,
+      "Name": "Thomas",
+      "RGBColor": {
+        "Item1": 0,
+        "Item2": 128,
+        "Item3": 255
+      }
+    },
+    {
+      "Id": 3,
+      "Name": "Camille",
+      "RGBColor": {
+        "Item1": 0,
+        "Item2": 200,
+        "Item3": 80
+      }
+    },
+    {
+      "Id": 4,
+      "Name": "Hugo",
+      "RGBColor": {
+        "Item1": 255,
+        "Item2": 200,
+        "Item3": 0
+      }
+    },
+    {
+      "Id": 5,
+      "Name": "Léa",
+      "RGBColor": {
+        "Item1": 180,
+        "Item2": 0,
+        "Item3": 255
+      }
+    },
+    {
+      "Id": 6,
+      "Name": "Nicolas",
+      "RGBColor": {
+        "Item1": 255,
+        "Item2": 128,
+        "Item3": 0
+      }
+    }
+  ],
+  "Game": {
+    "Type": "Arcade",
+    "Name": "Quiz Japon 2004–2025 — Questions-réponses et QCM",
+    "durationTime": 30,
+    "Location": 1,
+    "Quizzs": [
+      {
+        "Question": "Dans Le Château ambulant (2004), comment se nomme le démon du feu qui fait fonctionner le château ?",
+        "Answer": "Calcifer",
+        "Medias": {
+          "DuringQuestion": {
+            "Path": "medias/dummy_qa_01_image.png",
+            "Type": 0
+          }
+        }
+      },
+      {
+        "Question": "Dans l’anime Death Note (2006), quel est le nom du lycéen qui trouve le Death Note ?",
+        "Answer": "Light Yagami",
+        "Medias": {
+          "BeforeQuestion": {
+            "Path": "medias/dummy_qa_02_audio.mp3",
+            "Type": 1
+          }
+        }
+      },
+      {
+        "Question": "Dans l’anime L’Attaque des Titans (2013), quel est le nom de famille d’Eren ?",
+        "Answer": "Jäger (également écrit Jaeger ou Yeager)",
+        "Medias": {}
+      },
+      {
+        "Question": "Dans l’anime My Hero Academia (2016), quel héros transmet le One For All à Izuku Midoriya ?",
+        "Answer": "All Might",
+        "Medias": {}
+      },
+      {
+        "Question": "Dans l’anime Demon Slayer: Kimetsu no Yaiba (2019), comment s’appelle la sœur de Tanjiro Kamado ?",
+        "Answer": "Nezuko Kamado",
+        "Medias": {
+          "AfterAnswer": {
+            "Path": "medias/dummy_qa_05_video.mp4",
+            "Type": 2
+          }
+        }
+      },
+      {
+        "Question": "Dans Splatoon (2015), comment s’appellent les personnages jouables capables de se transformer en calamars ?",
+        "Answer": "Les Inklings",
+        "Medias": {}
+      },
+      {
+        "Question": "Dans The Legend of Zelda: Breath of the Wild (2017), quel héros le joueur incarne-t-il ?",
+        "Answer": "Link",
+        "Medias": {
+          "DuringQuestion": {
+            "Path": "medias/dummy_qa_07_image.png",
+            "Type": 0
+          },
+          "DuringAnswer": {
+            "Path": "medias/dummy_qa_07_answer_image.png",
+            "Type": 0
+          }
+        }
+      },
+      {
+        "Question": "Dans Animal Crossing: New Horizons (2020), quel personnage propose la formule d’évasion sur une île déserte ?",
+        "Answer": "Tom Nook",
+        "Medias": {}
+      },
+      {
+        "Question": "Quel studio japonais a développé Elden Ring (2022) ?",
+        "Answer": "FromSoftware",
+        "Medias": {}
+      },
+      {
+        "Question": "Dans quelle région se déroule l’aventure principale de Pokémon Écarlate et Pokémon Violet (2022) ?",
+        "Answer": "Paldea",
+        "Medias": {}
+      },
+      {
+        "Question": "Dans l’anime SPY x FAMILY (2022), quel pouvoir possède Anya Forger ?",
+        "Answers": [
+          {
+            "Id": 1,
+            "Answer": "La téléportation",
+            "Color": {
+              "Item1": 230,
+              "Item2": 60,
+              "Item3": 60
+            }
+          },
+          {
+            "Id": 2,
+            "Answer": "La télépathie",
+            "Color": {
+              "Item1": 50,
+              "Item2": 120,
+              "Item3": 240
+            }
+          },
+          {
+            "Id": 3,
+            "Answer": "L’invisibilité",
+            "Color": {
+              "Item1": 240,
+              "Item2": 190,
+              "Item3": 40
+            }
+          },
+          {
+            "Id": 4,
+            "Answer": "Le contrôle du feu",
+            "Color": {
+              "Item1": 50,
+              "Item2": 180,
+              "Item3": 90
+            }
+          }
+        ],
+        "RightAnswerId": 2,
+        "Medias": {
+          "DuringQuestion": {
+            "Path": "medias/dummy_qcm_01_image.png",
+            "Type": 0
+          }
+        }
+      },
+      {
+        "Question": "Dans l’anime One-Punch Man (2015), quel héros est connu pour vaincre ses adversaires en un seul coup de poing ?",
+        "Answers": [
+          {
+            "Id": 1,
+            "Answer": "Genos",
+            "Color": {
+              "Item1": 230,
+              "Item2": 60,
+              "Item3": 60
+            }
+          },
+          {
+            "Id": 2,
+            "Answer": "Garou",
+            "Color": {
+              "Item1": 50,
+              "Item2": 120,
+              "Item3": 240
+            }
+          },
+          {
+            "Id": 3,
+            "Answer": "Saitama",
+            "Color": {
+              "Item1": 240,
+              "Item2": 190,
+              "Item3": 40
+            }
+          },
+          {
+            "Id": 4,
+            "Answer": "King",
+            "Color": {
+              "Item1": 50,
+              "Item2": 180,
+              "Item3": 90
+            }
+          }
+        ],
+        "RightAnswerId": 3,
+        "Medias": {}
+      },
+      {
+        "Question": "Qui a réalisé le film d’animation Your Name (2016) ?",
+        "Answers": [
+          {
+            "Id": 1,
+            "Answer": "Makoto Shinkai",
+            "Color": {
+              "Item1": 230,
+              "Item2": 60,
+              "Item3": 60
+            }
+          },
+          {
+            "Id": 2,
+            "Answer": "Hayao Miyazaki",
+            "Color": {
+              "Item1": 50,
+              "Item2": 120,
+              "Item3": 240
+            }
+          },
+          {
+            "Id": 3,
+            "Answer": "Mamoru Hosoda",
+            "Color": {
+              "Item1": 240,
+              "Item2": 190,
+              "Item3": 40
+            }
+          },
+          {
+            "Id": 4,
+            "Answer": "Satoshi Kon",
+            "Color": {
+              "Item1": 50,
+              "Item2": 180,
+              "Item3": 90
+            }
+          }
+        ],
+        "RightAnswerId": 1,
+        "Medias": {
+          "BeforeQuestion": {
+            "Path": "medias/dummy_qcm_03_video.mp4",
+            "Type": 2
+          }
+        }
+      },
+      {
+        "Question": "Dans l’anime Frieren (2023), à quel peuple appartient la magicienne Frieren ?",
+        "Answers": [
+          {
+            "Id": 1,
+            "Answer": "Les humains",
+            "Color": {
+              "Item1": 230,
+              "Item2": 60,
+              "Item3": 60
+            }
+          },
+          {
+            "Id": 2,
+            "Answer": "Les nains",
+            "Color": {
+              "Item1": 50,
+              "Item2": 120,
+              "Item3": 240
+            }
+          },
+          {
+            "Id": 3,
+            "Answer": "Les démons",
+            "Color": {
+              "Item1": 240,
+              "Item2": 190,
+              "Item3": 40
+            }
+          },
+          {
+            "Id": 4,
+            "Answer": "Les elfes",
+            "Color": {
+              "Item1": 50,
+              "Item2": 180,
+              "Item3": 90
+            }
+          }
+        ],
+        "RightAnswerId": 4,
+        "Medias": {}
+      },
+      {
+        "Question": "Quel sport est au centre de l’anime Haikyu!! (2014) ?",
+        "Answers": [
+          {
+            "Id": 1,
+            "Answer": "Le basketball",
+            "Color": {
+              "Item1": 230,
+              "Item2": 60,
+              "Item3": 60
+            }
+          },
+          {
+            "Id": 2,
+            "Answer": "Le volleyball",
+            "Color": {
+              "Item1": 50,
+              "Item2": 120,
+              "Item3": 240
+            }
+          },
+          {
+            "Id": 3,
+            "Answer": "Le baseball",
+            "Color": {
+              "Item1": 240,
+              "Item2": 190,
+              "Item3": 40
+            }
+          },
+          {
+            "Id": 4,
+            "Answer": "Le football",
+            "Color": {
+              "Item1": 50,
+              "Item2": 180,
+              "Item3": 90
+            }
+          }
+        ],
+        "RightAnswerId": 2,
+        "Medias": {}
+      },
+      {
+        "Question": "Dans Super Mario Odyssey (2017), comment s’appelle le compagnon de Mario qui prend la forme de sa casquette ?",
+        "Answers": [
+          {
+            "Id": 1,
+            "Answer": "Cappy",
+            "Color": {
+              "Item1": 230,
+              "Item2": 60,
+              "Item3": 60
+            }
+          },
+          {
+            "Id": 2,
+            "Answer": "Tippi",
+            "Color": {
+              "Item1": 50,
+              "Item2": 120,
+              "Item3": 240
+            }
+          },
+          {
+            "Id": 3,
+            "Answer": "Poochy",
+            "Color": {
+              "Item1": 240,
+              "Item2": 190,
+              "Item3": 40
+            }
+          },
+          {
+            "Id": 4,
+            "Answer": "Diddy Kong",
+            "Color": {
+              "Item1": 50,
+              "Item2": 180,
+              "Item3": 90
+            }
+          }
+        ],
+        "RightAnswerId": 1,
+        "Medias": {
+          "BeforeAnswer": {
+            "Path": "medias/dummy_qcm_06_audio.mp3",
+            "Type": 1
+          }
+        }
+      },
+      {
+        "Question": "Dans Légendes Pokémon : Arceus (2022), quelle région ancienne le joueur explore-t-il ?",
+        "Answers": [
+          {
+            "Id": 1,
+            "Answer": "Kanto",
+            "Color": {
+              "Item1": 230,
+              "Item2": 60,
+              "Item3": 60
+            }
+          },
+          {
+            "Id": 2,
+            "Answer": "Unys",
+            "Color": {
+              "Item1": 50,
+              "Item2": 120,
+              "Item3": 240
+            }
+          },
+          {
+            "Id": 3,
+            "Answer": "Hoenn",
+            "Color": {
+              "Item1": 240,
+              "Item2": 190,
+              "Item3": 40
+            }
+          },
+          {
+            "Id": 4,
+            "Answer": "Hisui",
+            "Color": {
+              "Item1": 50,
+              "Item2": 180,
+              "Item3": 90
+            }
+          }
+        ],
+        "RightAnswerId": 4,
+        "Medias": {}
+      },
+      {
+        "Question": "Dans Persona 5 Royal, quel est le nom de code du protagoniste au sein des Voleurs Fantômes ?",
+        "Answers": [
+          {
+            "Id": 1,
+            "Answer": "Skull",
+            "Color": {
+              "Item1": 230,
+              "Item2": 60,
+              "Item3": 60
+            }
+          },
+          {
+            "Id": 2,
+            "Answer": "Fox",
+            "Color": {
+              "Item1": 50,
+              "Item2": 120,
+              "Item3": 240
+            }
+          },
+          {
+            "Id": 3,
+            "Answer": "Joker",
+            "Color": {
+              "Item1": 240,
+              "Item2": 190,
+              "Item3": 40
+            }
+          },
+          {
+            "Id": 4,
+            "Answer": "Crow",
+            "Color": {
+              "Item1": 50,
+              "Item2": 180,
+              "Item3": 90
+            }
+          }
+        ],
+        "RightAnswerId": 3,
+        "Medias": {}
+      },
+      {
+        "Question": "Dans NieR:Automata (2017), quelle est la nature de 2B, 9S et A2 ?",
+        "Answers": [
+          {
+            "Id": 1,
+            "Answer": "Des androïdes",
+            "Color": {
+              "Item1": 230,
+              "Item2": 60,
+              "Item3": 60
+            }
+          },
+          {
+            "Id": 2,
+            "Answer": "Des humains",
+            "Color": {
+              "Item1": 50,
+              "Item2": 120,
+              "Item3": 240
+            }
+          },
+          {
+            "Id": 3,
+            "Answer": "Des extraterrestres",
+            "Color": {
+              "Item1": 240,
+              "Item2": 190,
+              "Item3": 40
+            }
+          },
+          {
+            "Id": 4,
+            "Answer": "Des fantômes",
+            "Color": {
+              "Item1": 50,
+              "Item2": 180,
+              "Item3": 90
+            }
+          }
+        ],
+        "RightAnswerId": 1,
+        "Medias": {
+          "DuringQuestion": {
+            "Path": "medias/dummy_qcm_09_image.png",
+            "Type": 0
+          },
+          "AfterAnswer": {
+            "Path": "medias/dummy_qcm_09_video.mp4",
+            "Type": 2
+          }
+        }
+      },
+      {
+        "Question": "Dans Splatoon 3 (2022), combien d’équipes de festival sont représentées dans un combat tricolore ?",
+        "Answers": [
+          {
+            "Id": 1,
+            "Answer": "Deux",
+            "Color": {
+              "Item1": 230,
+              "Item2": 60,
+              "Item3": 60
+            }
+          },
+          {
+            "Id": 2,
+            "Answer": "Quatre",
+            "Color": {
+              "Item1": 50,
+              "Item2": 120,
+              "Item3": 240
+            }
+          },
+          {
+            "Id": 3,
+            "Answer": "Six",
+            "Color": {
+              "Item1": 240,
+              "Item2": 190,
+              "Item3": 40
+            }
+          },
+          {
+            "Id": 4,
+            "Answer": "Trois",
+            "Color": {
+              "Item1": 50,
+              "Item2": 180,
+              "Item3": 90
+            }
+          }
+        ],
+        "RightAnswerId": 4,
+        "Medias": {}
+      }
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+[
+  { "id": 1, "Type": "Arcade", "Name": "Quiz Japon 2004–2025 — Questions-réponses et QCM", "durationTime": 30, "Location": 1 },
+  { "id": 2, "Type": "Arcade", "Name": "Quiz anime — Héros et personnages", "durationTime": 20, "Location": 1 },
+  { "id": 3, "Type": "Arcade", "Name": "Quiz jeux vidéo japonais — Nintendo", "durationTime": 25, "Location": 2 },
+  { "id": 4, "Type": "Arcade", "Name": "Blind test — Génériques d’anime", "durationTime": 20, "Location": 2 },
+  { "id": 5, "Type": "Arcade", "Name": "Quiz cinéma d’animation japonais", "durationTime": 30, "Location": 3 },
+  { "id": 6, "Type": "Arcade", "Name": "Quiz Pokémon — Régions et créatures", "durationTime": 25, "Location": 1 },
+  { "id": 7, "Type": "Arcade", "Name": "Blind test — Musiques de jeux vidéo japonais", "durationTime": 20, "Location": 3 },
+  { "id": 8, "Type": "Arcade", "Name": "Quiz JRPG — Univers et aventures", "durationTime": 35, "Location": 2 },
+  { "id": 9, "Type": "Arcade", "Name": "Quiz anime — Reconnaître une scène", "durationTime": 25, "Location": 3 },
+  { "id": 10, "Type": "Arcade", "Name": "Grand quiz — Culture japonaise anime et gaming", "durationTime": 45, "Location": 1 }
+]
