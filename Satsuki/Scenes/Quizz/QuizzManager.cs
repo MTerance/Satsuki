@@ -25,7 +25,14 @@ public partial class QuizzManager : Node
 	{
 	}
 
-	public void NextQuizz()
+    public string GetCurrentQuizzInfo()
+    {
+        return "";
+    }
+
+
+
+    public void NextQuizz()
     {
         if (currentQuizz.MoveNext())
         {
