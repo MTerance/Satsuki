@@ -364,20 +364,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import PlayerSection from './playersSection/PlayerSection.vue';
-
-// Interface pour un joueur
-interface Player {
-    id: number;
-    name: string;
-    color: string;
-    gender: 'male' | 'female';
-}
-
-// Interface pour le formulaire
-interface PlayerForm {
-    name: string;
-    gender: 'male' | 'female' | '';
-}
+import type { PlayerForm } from '@/models/playerForm.ts';
+import type { Player } from '@/models/player.ts';
 
 // Interface pour un quiz
 interface Quiz {
