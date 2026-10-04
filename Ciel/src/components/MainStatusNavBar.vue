@@ -1,10 +1,6 @@
 <template>
-    <nav class="navbar-primary">
-        <div class="container">
-            <div class="navbar-left">
-                <h1 class="title-gradient">Status Bar</h1>
-            </div>
-            
+    <nav class="navbar navbar-primary">
+        <div class="container">            
             <div class="navbar-right">
                 <!-- Témoin de connexion au serveur Satsuki -->
                 <div class="status-indicator" :class="connectionClass">
@@ -13,19 +9,14 @@
                 </div>
                 
                 <!-- Bouton de connexion/déconnexion -->
-                <button 
-                    v-if="!isConnected" 
-                    @click="handleConnect"
+                <button v-if="!isConnected" @click="handleConnect"
                     class="btn-base btn-success"
                     :disabled="isConnecting"
                 >
                     {{ isConnecting ? 'Connexion...' : 'Se connecter' }}
                 </button>
-                <button 
-                    v-else 
-                    @click="handleDisconnect" 
-                    class="btn-base btn-danger"
-                >
+                <button v-else @click="handleDisconnect" 
+                    class="btn-base btn-danger">
                     Se déconnecter
                 </button>
             </div>
