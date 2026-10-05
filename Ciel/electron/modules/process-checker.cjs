@@ -8,10 +8,25 @@ class ProcessChecker {
   constructor() {
     this.processName = 'Satsuki.exe';
     this.isWindows = os.platform() === 'win32';
+    // Patterns des exécutables à détecter : Satsuki.exe ou Godot_*.exe
+    this.processPatterns = [
+      /^Satsuki\.exe$/i,
+      /^Godot_.*\.exe$/i
+    ];
   }
 
   /**
-   * Vérifie si le processus Satsuki.exe est en cours d'exécution
+   * Vérifie si un nom de processus correspond aux patterns surveillés
+   * @param {string} name - Nom de l'exécutable (ex: "Godot_v4.2.exe")
+   * @returns {boolean}
+   */
+  _matchesProcessName(name) {
+    if (!name) return false;
+    return this.processPatterns.some(pattern => pattern.test(name.trim()));
+  }
+
+  /**
+   * Vérifie si le processus Satsuki.exe (ou un Godot_*.exe) est en cours d'exécution
    * @returns {Promise<{running: boolean, processInfo: Object|null, error: string|null}>}
    */
   async checkSatsukiProcess() {
@@ -19,11 +34,12 @@ class ProcessChecker {
       let command;
       
       if (this.isWindows) {
-        // Commande Windows pour vérifier si le processus existe
-        command = `tasklist /FI "IMAGENAME eq ${this.processName}" /FO CSV`;
+        // tasklist ne supporte pas les jokers dans IMAGENAME : on liste tout
+        // et on filtre côté JS avec les patterns (Satsuki.exe, Godot_*.exe)
+        command = 'tasklist /FO CSV /NH';
       } else {
         // Commande Unix/Linux/macOS
-        command = `pgrep -f ${this.processName}`;
+        command = 'pgrep -f "Satsuki|Godot_"';
       }
 
       const { stdout, stderr } = await execAsync(command);
@@ -51,19 +67,12 @@ class ProcessChecker {
   _parseWindowsTasklist(stdout) {
     const lines = stdout.split('\n').filter(line => line.trim());
     
-    // Si seulement la ligne d'en-tête est présente, aucun processus trouvé
-    if (lines.length <= 1) {
-      return {
-        running: false,
-        processInfo: null,
-        error: null
-      };
-    }
-
-    // Rechercher les lignes contenant Satsuki.exe
-    const processLines = lines.filter(line => 
-      line.toLowerCase().includes(this.processName.toLowerCase())
-    );
+    // Rechercher les lignes correspondant aux patterns surveillés
+    // (Satsuki.exe ou Godot_*.exe)
+    const processLines = lines.filter(line => {
+      const imageName = line.replace(/"/g, '').split(',')[0];
+      return this._matchesProcessName(imageName);
+    });
 
     if (processLines.length === 0) {
       return {
@@ -130,7 +139,7 @@ class ProcessChecker {
       
       return {
         raw: line,
-        processName: this.processName
+        processName: parts[0]?.trim() || this.processName
       };
       
     } catch (error) {
@@ -249,22 +258,25 @@ class ProcessChecker {
   }
 
   /**
-   * Obtient la liste de tous les processus Satsuki en cours
+   * Obtient la liste de tous les processus Satsuki/Godot en cours
    * @returns {Promise<Array>}
    */
   async getAllSatsukiProcesses() {
     try {
       if (this.isWindows) {
-        const command = `tasklist /FI "IMAGENAME eq ${this.processName}" /FO CSV`;
+        // On liste tout et on filtre par patterns (Satsuki.exe, Godot_*.exe)
+        const command = 'tasklist /FO CSV /NH';
         const { stdout } = await execAsync(command);
         
-        const lines = stdout.split('\n').filter(line => 
-          line.trim() && line.toLowerCase().includes(this.processName.toLowerCase())
-        );
+        const lines = stdout.split('\n').filter(line => {
+          if (!line.trim()) return false;
+          const imageName = line.replace(/"/g, '').split(',')[0];
+          return this._matchesProcessName(imageName);
+        });
         
         return lines.map(line => this._parseProcessLine(line));
       } else {
-        const command = `pgrep -f ${this.processName}`;
+        const command = 'pgrep -f "Satsuki|Godot_"';
         const { stdout } = await execAsync(command);
         const pids = stdout.trim().split('\n').filter(pid => pid.trim());
         

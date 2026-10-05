@@ -33,7 +33,7 @@ class ProcessService {
     }
 
     /**
-     * Vérifie si Satsuki.exe est en cours d'exécution
+     * Vérifie si Satsuki.exe ou un exécutable Godot_*.exe est en cours d'exécution
      * @returns {Promise<Object>}
      */
     async checkSatsukiProcess() {

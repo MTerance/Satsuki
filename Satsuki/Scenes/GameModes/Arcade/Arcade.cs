@@ -96,7 +96,7 @@ namespace Satsuki.Scenes
 					SceneName = "Arcade",
 					SceneType = "Game",
 					CurrentQuizz = _quizzManager?.GetCurrentQuizzInfo(),
-                    StartTime = DateTime.UtcNow,
+					StartTime = DateTime.UtcNow,
 					ElapsedTime = 0.0,
 					ElapsedTimeFormatted = "00:00"
 				},
@@ -123,9 +123,9 @@ namespace Satsuki.Scenes
 			}
 		}
 
-        public string GetSceneName()
-        {
-            throw new NotImplementedException();
-        }
-    }
+		public string GetSceneName()
+		{
+			throw new NotImplementedException();
+		}
+	}
 }

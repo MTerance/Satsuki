@@ -66,7 +66,7 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 			if (int.TryParse(options, out numScreen))
 				DisplayServer.WindowSetCurrentScreen(numScreen);
 		}
-        _serverManager = GetNodeOrNull<ServerManager>("/root/ServerManager");
+		_serverManager = GetNodeOrNull<ServerManager>("/root/ServerManager");
 		if (_serverManager == null)
 		{
 			GD.PrintErr("MainGameScene: ServerManager introuvable en AutoLoad");
@@ -513,10 +513,10 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 				Order = "CurrentGameScene",
 				//HasLoadedCredits = _hasLoadedCredits,
 				CurrentScene = _currentScene?.GetType().Name ?? "None",
-                Content = CurrentScene?.GetSceneState(),
-                //CurrentLocation = CurrentLocation?.LocationName ?? "None",
-                //ConnectedClients = _serverManager?.GetConnectedClientsCount() ?? 0
-            },
+				Content = CurrentScene?.GetSceneState(),
+				//CurrentLocation = CurrentLocation?.LocationName ?? "None",
+				//ConnectedClients = _serverManager?.GetConnectedClientsCount() ?? 0
+			},
 			//Location = CurrentLocation?.GetLocationState(),
 			Timestamp = DateTime.UtcNow
 		};
@@ -562,9 +562,9 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 		}
 	}
 
-    public string GetSceneName()
-    {
-        throw new NotImplementedException();
-    }
-    #endregion
+	public string GetSceneName()
+	{
+		throw new NotImplementedException();
+	}
+	#endregion
 }
