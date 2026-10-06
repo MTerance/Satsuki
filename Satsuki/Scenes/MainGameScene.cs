@@ -61,11 +61,20 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 		if (args.Count > 0)
 		{
 			var x = args.FirstOrDefault(x => x.Contains("--screen"));
-			var options = x.Split(" ")[1];
+			var optionScreen = x.Split(" ")[1];
 			var numScreen = 1;
-			if (int.TryParse(options, out numScreen))
+			if (int.TryParse(optionScreen, out numScreen))
 				DisplayServer.WindowSetCurrentScreen(numScreen);
+
+			var y = args.FirstOrDefault(x => x.Contains("--fullscreen"));
+			var fscreen = x.Split(" ")[1];
+			DisplayServer.WindowSetMode(DisplayServer.WindowMode.Fullscreen);
 		}
+
+
+
+
+
 		_serverManager = GetNodeOrNull<ServerManager>("/root/ServerManager");
 		if (_serverManager == null)
 		{

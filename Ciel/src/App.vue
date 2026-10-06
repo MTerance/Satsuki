@@ -7,7 +7,7 @@ import MainGameMenu from './components/gameMenu/MainGameMenu.vue'
 <template>
   <!-- Barre de statut Socket.IO en haut -->
   <MainStatusNavBar />
-  <SatsukiLauncher />
+  <MainView /> 
 </template>
 
 <style scoped>

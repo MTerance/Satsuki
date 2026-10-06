@@ -1,7 +1,8 @@
 <template>
 
 <div v-if="!isReady">
-    <p> Loading...</p>    
+    <p> Loading...</p>
+    <router-view/>
 </div>
 
 </template>
