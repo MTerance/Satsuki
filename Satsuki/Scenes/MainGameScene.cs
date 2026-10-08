@@ -57,6 +57,13 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 	{
 		GD.Print("MainGameScene: Initialisation...");
 
+		// Diagnostic AutoLoad
+		GD.Print("MainGameScene: Liste des nœuds sous /root :");
+		foreach (Node child in GetNode("/root").GetChildren())
+		{
+			GD.Print($"  - {child.Name} ({child.GetType().Name})");
+		}
+
 		var args = OS.GetCmdlineUserArgs().ToList();
 		if (args.Count > 0)
 		{
@@ -90,6 +97,7 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 			_serverManager.SystemOrderReceived += OnSystemOrderReceived;
 			_serverManager.SceneOrderReceived += OnSceneOrderReceived;
 			_serverManager.QuizzOrderReceived += OnQuizzOrderReceived;
+			_serverManager.SetMainGameScene(this);
 		}
 
 		GD.Print("MainGameScene: Initialisee");
@@ -138,19 +146,21 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 		try
 		{
 			GD.Print("MainGameScene: Chargement Credits...");
-			
+
 			UnloadCurrentScene();
-			
+
 			var credits = new Credits();
 			AddChild(credits);
 			_currentScene = credits;
-			
+
 			credits.CreditsCompleted += OnCreditsCompleted;
 			credits.LoadTitleSceneRequested += OnLoadTitleRequested;
 			credits.SetFadeSpeed(2.0f);
-			
+
 			_hasLoadedCredits = true;
 			GD.Print("Credits charge");
+
+			BroadcastSceneChange("Credits");
 		}
 		catch (Exception ex)
 		{
@@ -164,17 +174,19 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 		try
 		{
 			GD.Print("MainGameScene: Chargement Title...");
-			
+
 			UnloadCurrentScene();
-			
+
 			var title = new Title();
 			AddChild(title);
 			_currentScene = title;
-			
+
 			title.StartGameRequested += OnStartGameRequested;
-			
+
 			GD.Print("Title charge");
-			
+
+			BroadcastSceneChange("Title");
+
 			CallDeferred(nameof(ActivateTitleCamera));
 		}
 		catch (Exception ex)
@@ -285,6 +297,8 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 
 			GD.Print("Lobby charge");
 
+			BroadcastSceneChange("Lobby");
+
 			CallDeferred(nameof(ActivateLobbyCamera));
 		}
 		catch (Exception ex)
@@ -310,6 +324,8 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 					this.GameModeRequested += OnGameModeRequested;
 				}
 				GD.Print($"GameMode '{gamemodeName}' charge");
+
+				BroadcastSceneChange(gamemodeName);
 			}
 			else
 			{
@@ -319,6 +335,29 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 		catch (Exception ex)
 		{
 			GD.PrintErr($"Erreur chargement GameMode '{gamemodeName}': {ex.Message}");
+		}
+	}
+
+	/// <summary>
+	/// Diffuse le changement de scène à tous les clients connectés.
+	/// </summary>
+	private void BroadcastSceneChange(string sceneName)
+	{
+		if (_serverManager == null)
+			return;
+
+		try
+		{
+			var state = GetSceneState();
+			var stateJson = JsonSerializer.Serialize(state);
+			var message = $"SCENE_CHANGED:{sceneName}:{stateJson}";
+
+			_ = _serverManager.BroadcastMessageToAllClients(message);
+			GD.Print($"MainGameScene: Broadcast changement de scène '{sceneName}'");
+		}
+		catch (Exception ex)
+		{
+			GD.PrintErr($"MainGameScene: Erreur broadcast scène: {ex.Message}");
 		}
 	}
 
@@ -471,6 +510,17 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 				GD.Print($"MainGameScene: Ordre scene '{orderRequest.Order}'");
 			}
 
+			// Répondre à la demande d'état du jeu
+			if (orderRequest.Order == "GetGameState")
+			{
+				GD.Print("MainGameScene: Demande d'etat du jeu recue, envoi de l'etat...");
+				var state = GetSceneState();
+				var stateJson = JsonSerializer.Serialize(state);
+				_serverManager?.SendMessageToClient(orderRequest.ClientId, stateJson);
+				return;
+			}
+
+			// Transition Title -> Lobby via réseau
 			if (_currentScene is Title && orderRequest.Order == "StartGame")
 			{
 				GD.Print("MainGameScene: Ordre reseau StartGame recu, passage au Lobby");
@@ -511,13 +561,9 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 			CurrentStateScene = new
 			{
 				Order = "CurrentGameScene",
-				//HasLoadedCredits = _hasLoadedCredits,
 				CurrentScene = _currentScene?.GetType().Name ?? "None",
 				Content = CurrentScene?.GetSceneState(),
-				//CurrentLocation = CurrentLocation?.LocationName ?? "None",
-				//ConnectedClients = _serverManager?.GetConnectedClientsCount() ?? 0
 			},
-			//Location = CurrentLocation?.GetLocationState(),
 			Timestamp = DateTime.UtcNow
 		};
 	}

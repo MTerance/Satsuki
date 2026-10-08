@@ -1,4 +1,4 @@
-using Godot;
+﻿using Godot;
 using Satsuki.Interfaces;
 using Satsuki.Models;
 using Satsuki.Networks;
@@ -17,6 +17,7 @@ public partial class ServerManager : Node
 	private bool _isServerRunning = false;
 	private bool _hasHadFirstClient = false;
 	private Timer _messageProcessingTimer;
+	private MainGameScene _mainGameScene;
 
 	private const string BACKEND_PASSWORD = "***Satsuk1***";
 
@@ -33,12 +34,23 @@ public partial class ServerManager : Node
 
 	public override void _Ready()
 	{
+		GD.Print("==========================================");
 		GD.Print("Server Manager: Initialisation du serveur Satsuki...");
+		GD.Print("==========================================");
 
-		CallDeferred(nameof(StartServerAsync));
 		SetupMessageProcessing();
+		StartServer();
 
 		GetTree().AutoAcceptQuit = false;
+	}
+
+	/// <summary>
+	/// Enregistre la MainGameScene pour permettre la récupération de l'état du jeu.
+	/// </summary>
+	public void SetMainGameScene(MainGameScene scene)
+	{
+		_mainGameScene = scene;
+		GD.Print("ServerManager: MainGameScene enregistrée");
 	}
 
 	private void SetupMessageProcessing()
@@ -102,33 +114,37 @@ public partial class ServerManager : Node
 		}
 	}
 
-	private async void StartServerAsync()
+	private void StartServer()
 	{
 		try
 		{
 			GD.Print("Demarrage du serveur reseau...");
-			
+
 			_network = Network.GetInstance;
-			
+
+			if (_network == null)
+			{
+				GD.PrintErr("Network.GetInstance a retourne null!");
+				return;
+			}
+
 			_network.OnClientConnected += HandleClientConnected;
-			
-			if (_network.Start())
+
+			bool started = _network.Start();
+
+			if (started)
 			{
 				_isServerRunning = true;
-				GD.Print("Serveur Satsuki demarre avec succes!");
+				GD.Print("==========================================");
+				GD.Print("SERVEUR SATSUKI DEMARRE AVEC SUCCES!");
 				GD.Print("Serveur TCP: 127.0.0.1:3002");
-				GD.Print("Systeme de cryptage: Active");
-				GD.Print("Authentification BACKEND: Active");
-				
+				GD.Print("==========================================");
+
 				EmitSignal(SignalName.ServerStarted);
-				
-				await Task.Delay(1000);
-                GD.Print("SERVER_READY: Serveur Satsuki en ligne");
-                    //await _network.BroadcastMessage("SERVER_READY: Serveur Satsuki en ligne");
-                }
+			}
 			else
 			{
-				var error = "Echec du demarrage du serveur reseau";
+				var error = "Echec du demarrage du serveur reseau - Network.Start() a retourne false";
 				GD.PrintErr(error);
 				EmitSignal(SignalName.ServerError, error);
 			}
@@ -137,6 +153,7 @@ public partial class ServerManager : Node
 		{
 			var error = $"Erreur lors du demarrage du serveur: {ex.Message}";
 			GD.PrintErr(error);
+			GD.PrintErr($"StackTrace: {ex.StackTrace}");
 			EmitSignal(SignalName.ServerError, error);
 		}
 	}
@@ -156,12 +173,14 @@ public partial class ServerManager : Node
 
 			try
 			{
-				var gameScene = GetNodeOrNull("/root/MainGameScene") as IScene;
+				var gameState = _mainGameScene?.GetSceneState();
 
-				var gameState = gameScene?.GetSceneState();
+				if (gameState == null)
+				{
+					GD.PrintErr("ServerManager: MainGameScene non disponible pour GetSceneState");
+					return;
+				}
 
-
-				///var gameState = ServerUtils.GetCompleteGameState(gameScene);
 				GD.Print("Etat du jeu recupere:");
 
 				string gameStateJson = System.Text.Json.JsonSerializer.Serialize(gameState);
@@ -301,7 +320,7 @@ public partial class ServerManager : Node
 		try
 		{
 			string message = $"GAME_STATE:{gameStateJson}";
-			
+
 			bool success = await _network.SendMessageToClient(clientId, message);
 			if (success)
 			{
@@ -315,6 +334,50 @@ public partial class ServerManager : Node
 		catch (Exception ex)
 		{
 			GD.PrintErr($"Erreur lors de l'envoi de l'etat du jeu: {ex.Message}");
+		}
+	}
+
+	/// <summary>
+	/// Envoie un message à un client spécifique via le réseau.
+	/// </summary>
+	public async Task<bool> SendMessageToClient(string clientId, string message, bool encrypt = true)
+	{
+		if (_network == null || !_isServerRunning)
+		{
+			GD.PrintErr("ServerManager: Impossible d'envoyer le message, serveur non démarré");
+			return false;
+		}
+
+		try
+		{
+			return await _network.SendMessageToClient(clientId, message);
+		}
+		catch (Exception ex)
+		{
+			GD.PrintErr($"ServerManager: Erreur envoi message à {clientId}: {ex.Message}");
+			return false;
+		}
+	}
+
+	/// <summary>
+	/// Diffuse un message à tous les clients connectés.
+	/// </summary>
+	public async Task BroadcastMessageToAllClients(string message)
+	{
+		if (_network == null || !_isServerRunning)
+		{
+			GD.PrintErr("ServerManager: Impossible de diffuser, serveur non démarré");
+			return;
+		}
+
+		try
+		{
+			await _network.BroadcastMessage(message);
+			GD.Print($"ServerManager: Message diffusé à tous les clients");
+		}
+		catch (Exception ex)
+		{
+			GD.PrintErr($"ServerManager: Erreur diffusion message: {ex.Message}");
 		}
 	}
 

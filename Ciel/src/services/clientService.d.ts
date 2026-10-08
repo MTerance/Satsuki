@@ -1,4 +1,4 @@
-import type { Ref } from 'vue';
+import type { Ref, ComputedRef } from 'vue';
 
 export declare const ClientType: {
     readonly BACKEND: 'BACKEND';
@@ -24,11 +24,25 @@ export interface Result {
     message: string;
 }
 
+/** État de jeu tel que renvoyé par le serveur (message GAME_STATE:). */
+export interface GameState {
+    CurrentStateScene?: {
+        Order?: string;
+        /** Nom de classe C# : 'Credits' | 'Title' | 'MainMenu' | 'Lobby' | 'Arcade' | 'None' */
+        CurrentScene?: string;
+        Content?: unknown;
+    };
+    Timestamp?: string;
+    [key: string]: unknown;
+}
+
 export declare class ClientService {
     isConnected: Ref<boolean>;
     status: Ref<string>;
     clientId: Ref<string | null>;
     clientType: Ref<string | null>;
+    gameState: Ref<GameState | null>;
+    currentScene: ComputedRef<string | null>;
     readonly available: boolean;
 
     connect(opts?: ConnectOptions): Promise<Result>;
@@ -36,7 +50,8 @@ export declare class ClientService {
     sendOrder(order: string, data?: unknown, target?: string): Promise<Result>;
     onOrder(order: string, callback: (payload: any) => void): () => void;
     offOrder(order: string, callback: (payload: any) => void): void;
-    getStatus(): Promise<{ connected: boolean } & Record<string, unknown>>;
+    getStatus(): Promise<{ connected: boolean; gameState?: GameState | null; currentScene?: string | null } & Record<string, unknown>>;
+    requestGameState(): Promise<Result>;
 }
 
 declare const clientService: ClientService;

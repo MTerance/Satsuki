@@ -59,7 +59,12 @@ const handleConnect = async () => {
     try {
         const res = await clientService.connect();
         if (!res.success) {
-            console.error('Erreur de connexion Satsuki:', res.message);
+            // Message explicite si le serveur n'écoute pas (instance non lancée)
+            if (typeof res.message === 'string' && res.message.includes('ECONNREFUSED')) {
+                console.warn('⚠️ Aucune instance Satsuki n\'écoute sur 127.0.0.1:3002 — lancez le jeu via le launcher.');
+            } else {
+                console.error('Erreur de connexion Satsuki:', res.message);
+            }
         }
     } catch (error) {
         console.error('Erreur de connexion Satsuki:', error);

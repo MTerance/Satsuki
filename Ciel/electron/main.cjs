@@ -59,6 +59,10 @@ function createWindow() {
   ipcMain.handle('satsuki-status', async () => {
     return satsukiTcpClient.getStatus();
   });
+
+  ipcMain.handle('satsuki-request-game-state', async () => {
+    return satsukiTcpClient.requestGameState();
+  });
   
   ipcMain.handle('db-add-user', async (event, userData) => {
     try {

@@ -129,12 +129,19 @@ export interface SatsukiMessagePayload {
   data: any | null;
 }
 
+export interface SatsukiGameStatePayload {
+  scene: string | null;
+  state: unknown;
+}
+
 export interface SatsukiStatus {
   connected: boolean;
   host?: string;
   port?: number;
   clientId?: string | null;
   clientType?: string | null;
+  gameState?: unknown;
+  currentScene?: string | null;
 }
 
 export interface SatsukiAPI {
@@ -143,9 +150,11 @@ export interface SatsukiAPI {
   sendRaw: (obj: unknown) => Promise<{ success: boolean; message: string }>;
   disconnect: () => Promise<{ success: boolean; message: string }>;
   getStatus: () => Promise<SatsukiStatus>;
+  requestGameState: () => Promise<{ success: boolean; message: string }>;
   onMessage: (callback: (payload: SatsukiMessagePayload) => void) => void;
   onStatus: (callback: (status: SatsukiStatus) => void) => void;
   onError: (callback: (error: string) => void) => void;
+  onGameState: (callback: (payload: SatsukiGameStatePayload) => void) => void;
   removeAllListeners: () => void;
 }
 

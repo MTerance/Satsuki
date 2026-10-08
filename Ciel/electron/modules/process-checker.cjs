@@ -165,12 +165,12 @@ class ProcessChecker {
       }
 
       if (this.isWindows && basicCheck.processInfo?.pid) {
-        // Obtenir des informations supplémentaires avec wmic
-        const wmicCommand = `wmic process where "ProcessId=${basicCheck.processInfo.pid}" get Name,ProcessId,PageFileUsage,WorkingSetSize,CreationDate /format:csv`;
+        // wmic est déprécié/supprimé sur Windows 11 récent → PowerShell Get-CimInstance
+        const psCommand = `powershell -NoProfile -Command "Get-CimInstance Win32_Process -Filter \\"ProcessId=${basicCheck.processInfo.pid}\\" | Select-Object Name,ProcessId,PageFileUsage,WorkingSetSize,CreationDate | ConvertTo-Json"`;
         
         try {
-          const { stdout } = await execAsync(wmicCommand);
-          const detailedInfo = this._parseWmicOutput(stdout);
+          const { stdout } = await execAsync(psCommand);
+          const detailedInfo = this._parsePowerShellOutput(stdout);
           
           return {
             running: true,
@@ -180,9 +180,9 @@ class ProcessChecker {
             },
             error: null
           };
-        } catch (wmicError) {
-          // Si wmic échoue, retourner les infos de base
-          console.warn('Impossible d\'obtenir les infos détaillées via wmic:', wmicError.message);
+        } catch (psError) {
+          // Si PowerShell échoue, retourner les infos de base
+          console.warn('Impossible d\'obtenir les infos détaillées via PowerShell:', psError.message);
           return basicCheck;
         }
       }
@@ -200,28 +200,30 @@ class ProcessChecker {
   }
 
   /**
-   * Parse la sortie de wmic
+   * Parse la sortie JSON de PowerShell Get-CimInstance
    * @private
    */
-  _parseWmicOutput(stdout) {
+  _parsePowerShellOutput(stdout) {
     try {
-      const lines = stdout.split('\n').filter(line => line.trim() && !line.startsWith('Node'));
+      const data = JSON.parse(stdout.trim());
+      if (!data) return {};
       
-      if (lines.length >= 2) {
-        const dataLine = lines[1].split(',');
-        
-        return {
-          creationDate: dataLine[1]?.trim(),
-          name: dataLine[2]?.trim(),
-          pageFileUsage: dataLine[3]?.trim(),
-          processId: parseInt(dataLine[4]?.trim()) || null,
-          workingSetSize: dataLine[5]?.trim()
-        };
+      // CreationDate arrive au format JSON .NET "/Date(1696...)/" → conversion ISO
+      let creationDate = null;
+      if (typeof data.CreationDate === 'string') {
+        const match = data.CreationDate.match(/\/Date\((-?\d+)\)\//);
+        creationDate = match ? new Date(parseInt(match[1], 10)).toISOString() : data.CreationDate;
       }
       
-      return {};
+      return {
+        creationDate,
+        name: data.Name || null,
+        pageFileUsage: data.PageFileUsage != null ? String(data.PageFileUsage) : null,
+        processId: data.ProcessId ?? null,
+        workingSetSize: data.WorkingSetSize != null ? String(data.WorkingSetSize) : null
+      };
     } catch (error) {
-      console.error('Erreur lors du parsing wmic:', error);
+      console.error('Erreur lors du parsing PowerShell:', error);
       return {};
     }
   }

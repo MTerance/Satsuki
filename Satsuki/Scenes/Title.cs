@@ -29,7 +29,8 @@ namespace Satsuki.Scenes
 
 			CreateUI();
 			GD.Print("Title: Ecran titre initialise");
-		}
+            GD.Print($"LOG : Scene {GetSceneName()} initialisee a " + DateTime.Now.ToString("o"));
+        }
 
 		private void CreateUI()
 		{

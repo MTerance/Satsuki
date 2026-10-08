@@ -1,4 +1,4 @@
-﻿using Godot;
+using Godot;
 using Satsuki.Utils;
 using Satsuki.Networks;
 using System;
@@ -67,18 +67,31 @@ public class Network : SingletonBase<Network>, INetwork, IDisposable
 
 		try
 		{
+			// Vérifier si le port est déjà utilisé
+			var listener = new TcpListener(IPAddress.Loopback, 3002);
+			try
+			{
+				listener.Start();
+				listener.Stop();
+			}
+			catch (SocketException ex)
+			{
+				Console.WriteLine($"❌ Port 3002 déjà occupé ou inaccessible: {ex.Message}");
+				return false;
+			}
+
 			_server = new TcpListener(IPAddress.Parse("127.0.0.1"), 3002);
 			_server.Start();
 			_isRunning = true;
-			
-			Console.WriteLine("✅ Server has started on {0}:{1}, Waiting for connections…", "127.0.0.1", 80);
+
+			Console.WriteLine($"✅ Server has started on 127.0.0.1:3002, Waiting for connections…");
 
 			// Demarre le systeme de reception des messages
 			MessageReceiver.GetInstance.Start();
 
 			// Demarre l'ecoute des nouvelles connexions en arriere-plan
 			_serverListeningTask = Task.Run(AcceptClientsLoop, _cancellationTokenSource.Token);
-			
+
 			return true;
 		}
 		catch (Exception ex)

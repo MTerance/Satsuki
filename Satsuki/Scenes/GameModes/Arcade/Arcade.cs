@@ -59,6 +59,7 @@ namespace Satsuki.Scenes
 			// Load the StageInfo and SpawnPointData from the GameRecord
 			BuildGame(_currentGameRecord);
 			base._Ready();
+			GD.Print($"LOG : Scene {GetSceneName()} initialisee a " + DateTime.Now.ToString("o"));
 		}
 
 		public override void _ExitTree()
@@ -125,7 +126,7 @@ namespace Satsuki.Scenes
 
 		public string GetSceneName()
 		{
-			throw new NotImplementedException();
+			return "ARCADE";
 		}
 	}
 }

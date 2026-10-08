@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -6,12 +6,12 @@ using System.Text;
 namespace Satsuki.Utils
 {
     /// <summary>
-    /// Classe utilitaire pour le cryptage et décryptage AES des messages réseau
+    /// Classe utilitaire pour le cryptage et dÃ©cryptage AES des messages rÃ©seau
     /// </summary>
     public static class MessageCrypto
     {
-        // Clé AES de 256 bits (32 bytes) - En production, utilisez une clé générée de manière sécurisée
-        private static readonly byte[] DefaultKey = Encoding.UTF8.GetBytes("SatsukiGameServer2024Key1234567890"); // 32 bytes
+        // ClÃ© AES de 256 bits (32 bytes) - En production, utilisez une clÃ© gÃ©nÃ©rÃ©e de maniÃ¨re sÃ©curisÃ©e
+        private static readonly byte[] DefaultKey = SHA256.HashData(Encoding.UTF8.GetBytes("SatsukiGameServer2024Key1234567890"));
         
         // IV (Initialization Vector) de 128 bits (16 bytes)
         private static readonly byte[] DefaultIV = Encoding.UTF8.GetBytes("SatsukiInitVect1"); // 16 bytes
@@ -19,10 +19,10 @@ namespace Satsuki.Utils
         /// <summary>
         /// Crypte un message en utilisant AES-256-CBC
         /// </summary>
-        /// <param name="plainText">Texte en clair à crypter</param>
-        /// <param name="key">Clé de cryptage (optionnel, utilise la clé par défaut si null)</param>
-        /// <param name="iv">Vecteur d'initialisation (optionnel, utilise l'IV par défaut si null)</param>
-        /// <returns>Message crypté encodé en Base64</returns>
+        /// <param name="plainText">Texte en clair Ã  crypter</param>
+        /// <param name="key">ClÃ© de cryptage (optionnel, utilise la clÃ© par dÃ©faut si null)</param>
+        /// <param name="iv">Vecteur d'initialisation (optionnel, utilise l'IV par dÃ©faut si null)</param>
+        /// <returns>Message cryptÃ© encodÃ© en Base64</returns>
         public static string Encrypt(string plainText, byte[] key = null, byte[] iv = null)
         {
             if (string.IsNullOrEmpty(plainText))
@@ -59,12 +59,12 @@ namespace Satsuki.Utils
         }
 
         /// <summary>
-        /// Décrypte un message crypté en AES-256-CBC
+        /// DÃ©crypte un message cryptÃ© en AES-256-CBC
         /// </summary>
-        /// <param name="encryptedText">Texte crypté encodé en Base64</param>
-        /// <param name="key">Clé de décryptage (optionnel, utilise la clé par défaut si null)</param>
-        /// <param name="iv">Vecteur d'initialisation (optionnel, utilise l'IV par défaut si null)</param>
-        /// <returns>Message décrypté en texte clair</returns>
+        /// <param name="encryptedText">Texte cryptÃ© encodÃ© en Base64</param>
+        /// <param name="key">ClÃ© de dÃ©cryptage (optionnel, utilise la clÃ© par dÃ©faut si null)</param>
+        /// <param name="iv">Vecteur d'initialisation (optionnel, utilise l'IV par dÃ©faut si null)</param>
+        /// <returns>Message dÃ©cryptÃ© en texte clair</returns>
         public static string Decrypt(string encryptedText, byte[] key = null, byte[] iv = null)
         {
             if (string.IsNullOrEmpty(encryptedText))
@@ -92,15 +92,15 @@ namespace Satsuki.Utils
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Erreur lors du décryptage: {ex.Message}");
-                return encryptedText; // Retourne le texte crypté en cas d'erreur
+                Console.WriteLine($"Erreur lors du dÃ©cryptage: {ex.Message}");
+                return encryptedText; // Retourne le texte cryptÃ© en cas d'erreur
             }
         }
 
         /// <summary>
-        /// Génère une nouvelle clé AES-256 aléatoire
+        /// GÃ©nÃ¨re une nouvelle clÃ© AES-256 alÃ©atoire
         /// </summary>
-        /// <returns>Clé de 32 bytes</returns>
+        /// <returns>ClÃ© de 32 bytes</returns>
         public static byte[] GenerateRandomKey()
         {
             using var aes = Aes.Create();
@@ -109,7 +109,7 @@ namespace Satsuki.Utils
         }
 
         /// <summary>
-        /// Génère un nouveau vecteur d'initialisation aléatoire
+        /// GÃ©nÃ¨re un nouveau vecteur d'initialisation alÃ©atoire
         /// </summary>
         /// <returns>IV de 16 bytes</returns>
         public static byte[] GenerateRandomIV()
@@ -120,9 +120,9 @@ namespace Satsuki.Utils
         }
 
         /// <summary>
-        /// Convertit une clé/IV en string pour affichage ou stockage
+        /// Convertit une clÃ©/IV en string pour affichage ou stockage
         /// </summary>
-        /// <param name="bytes">Bytes à convertir</param>
+        /// <param name="bytes">Bytes Ã  convertir</param>
         /// <returns>String en Base64</returns>
         public static string BytesToBase64(byte[] bytes)
         {
@@ -140,10 +140,10 @@ namespace Satsuki.Utils
         }
 
         /// <summary>
-        /// Vérifie si une string est un message crypté valide (Base64)
+        /// VÃ©rifie si une string est un message cryptÃ© valide (Base64)
         /// </summary>
-        /// <param name="text">Texte à vérifier</param>
-        /// <returns>True si le texte semble être crypté</returns>
+        /// <param name="text">Texte Ã  vÃ©rifier</param>
+        /// <returns>True si le texte semble Ãªtre cryptÃ©</returns>
         public static bool IsEncrypted(string text)
         {
             if (string.IsNullOrEmpty(text))
@@ -161,10 +161,10 @@ namespace Satsuki.Utils
         }
 
         /// <summary>
-        /// Crypte un message avec une nouvelle clé aléatoire
+        /// Crypte un message avec une nouvelle clÃ© alÃ©atoire
         /// </summary>
-        /// <param name="plainText">Texte à crypter</param>
-        /// <returns>Tuple contenant le message crypté et les clés utilisées</returns>
+        /// <param name="plainText">Texte Ã  crypter</param>
+        /// <returns>Tuple contenant le message cryptÃ© et les clÃ©s utilisÃ©es</returns>
         public static (string encryptedMessage, byte[] key, byte[] iv) EncryptWithRandomKey(string plainText)
         {
             var key = GenerateRandomKey();
@@ -174,31 +174,31 @@ namespace Satsuki.Utils
         }
 
         /// <summary>
-        /// Teste le système de cryptage avec un message de test
+        /// Teste le systÃ¨me de cryptage avec un message de test
         /// </summary>
-        /// <returns>True si le test réussit</returns>
+        /// <returns>True si le test rÃ©ussit</returns>
         public static bool TestEncryption()
         {
             try
             {
-                string testMessage = "Message de test pour vérifier le cryptage";
+                string testMessage = "Message de test pour vÃ©rifier le cryptage";
                 Console.WriteLine($"?? Test de cryptage - Message original: {testMessage}");
 
-                // Test avec clés par défaut
+                // Test avec clÃ©s par dÃ©faut
                 string encrypted = Encrypt(testMessage);
-                Console.WriteLine($"?? Message crypté: {encrypted}");
+                Console.WriteLine($"?? Message cryptÃ©: {encrypted}");
 
                 string decrypted = Decrypt(encrypted);
-                Console.WriteLine($"?? Message décrypté: {decrypted}");
+                Console.WriteLine($"?? Message dÃ©cryptÃ©: {decrypted}");
 
                 bool success = testMessage == decrypted;
-                Console.WriteLine($"? Test de cryptage: {(success ? "RÉUSSI" : "ÉCHEC")}");
+                Console.WriteLine($"? Test de cryptage: {(success ? "RÃ‰USSI" : "Ã‰CHEC")}");
 
-                // Test avec clés aléatoires
+                // Test avec clÃ©s alÃ©atoires
                 var (encryptedRandom, key, iv) = EncryptWithRandomKey(testMessage);
                 string decryptedRandom = Decrypt(encryptedRandom, key, iv);
                 bool successRandom = testMessage == decryptedRandom;
-                Console.WriteLine($"?? Test cryptage clés aléatoires: {(successRandom ? "RÉUSSI" : "ÉCHEC")}");
+                Console.WriteLine($"?? Test cryptage clÃ©s alÃ©atoires: {(successRandom ? "RÃ‰USSI" : "Ã‰CHEC")}");
 
                 return success && successRandom;
             }
@@ -210,19 +210,19 @@ namespace Satsuki.Utils
         }
 
         /// <summary>
-        /// Obtient les informations sur les clés par défaut
+        /// Obtient les informations sur les clÃ©s par dÃ©faut
         /// </summary>
-        /// <returns>Informations sur les clés</returns>
+        /// <returns>Informations sur les clÃ©s</returns>
         public static (string keyBase64, string ivBase64) GetDefaultKeyInfo()
         {
             return (BytesToBase64(DefaultKey), BytesToBase64(DefaultIV));
         }
 
         /// <summary>
-        /// Nettoie les clés de la mémoire pour la sécurité
+        /// Nettoie les clÃ©s de la mÃ©moire pour la sÃ©curitÃ©
         /// </summary>
-        /// <param name="key">Clé à nettoyer</param>
-        /// <param name="iv">IV à nettoyer</param>
+        /// <param name="key">ClÃ© Ã  nettoyer</param>
+        /// <param name="iv">IV Ã  nettoyer</param>
         public static void ClearKeys(byte[] key, byte[] iv)
         {
             if (key != null)

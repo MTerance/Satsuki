@@ -1,9 +1,11 @@
 using Godot;
+using Satsuki.Interfaces;
 using Satsuki.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
-public partial class Lobby : Node3D
+public partial class Lobby : Node3D, IScene
 {
 	private string _lobbyPathScene;
 	private CameraPlacement _cameraPlacement;
@@ -35,7 +37,8 @@ public partial class Lobby : Node3D
 		{
 			_serverManager.SceneOrderReceived += OnSceneOrderReceived;
 		}
-	}
+        GD.Print($"LOG : Scene {GetSceneName()} initialisee a " + DateTime.Now.ToString("o"));
+    }
 
 	public override void _ExitTree()
 	{
@@ -61,5 +64,28 @@ public partial class Lobby : Node3D
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
 	{
+	}
+
+	public string GetSceneName()
+	{
+		return "Lobby";
+	}
+
+	public object GetSceneState()
+	{
+		return new
+		{
+			SceneInfo = new
+			{
+				SceneName = "Lobby",
+				SceneType = "Lobby",
+				Timestamp = DateTime.UtcNow
+			},
+			Spots = Spots.Select(spot => new
+			{
+				Position = spot.Position,
+				PlayerSpot = spot.PlayerSpot.ToString()
+			}).ToList()
+		};
 	}
 }

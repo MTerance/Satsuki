@@ -340,23 +340,24 @@ namespace Satsuki.Networks
         private void OnMessageReceived(string clientId, string messageContent)
         {
             GD.Print($"Message reçu de {clientId}: {messageContent}");
-            // Crée le message avec préfixe client
-            var message = new Message($"[{clientId}] {messageContent}");
-            
+
+            Message message;
+
             // Détecte automatiquement si le message est crypté et le marque comme tel
             if (MessageCrypto.IsEncrypted(messageContent))
             {
-                // Remplace le contenu par le message crypté original (sans préfixe client)
-                message = new Message(messageContent, true);
-                // Puis ajoute le préfixe client après décryptage
                 string decryptedContent = MessageCrypto.Decrypt(messageContent, _encryptionKey, _encryptionIV);
-                message = new Message($"[{clientId}] {decryptedContent}");
+                message = new Message(decryptedContent, true, clientId);
                 Console.WriteLine($"?? Message crypté reçu de {clientId}");
             }
-            
+            else
+            {
+                message = new Message(messageContent, clientId);
+            }
+
             _messageQueue.Enqueue(message);
             _messageAvailableSemaphore.Release();
-            
+
             Console.WriteLine($"?? Message #{message.SequenceNumber} reçu de {clientId}");
         }
 
@@ -438,6 +439,7 @@ namespace Satsuki.Networks
         private readonly Action<string> _onDisconnected;
         private Task _listeningTask;
         private bool _isListening;
+        private readonly StringBuilder _messageBuffer;
 
         public ClientConnection(string clientId, TcpClient tcpClient, Action<string, string> onMessageReceived, Action<string> onDisconnected)
         {
@@ -447,6 +449,7 @@ namespace Satsuki.Networks
             _onMessageReceived = onMessageReceived;
             _onDisconnected = onDisconnected;
             _isListening = false;
+            _messageBuffer = new StringBuilder();
         }
 
         /// <summary>
@@ -506,7 +509,7 @@ namespace Satsuki.Networks
         private async Task ListenForMessages(CancellationToken cancellationToken)
         {
             byte[] buffer = new byte[4096];
-            
+
             try
             {
                 while (_isListening && !cancellationToken.IsCancellationRequested && _tcpClient.Connected)
@@ -514,20 +517,30 @@ namespace Satsuki.Networks
                     if (_stream.CanRead)
                     {
                         int bytesRead = await _stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
-                        
+
                         if (bytesRead > 0)
                         {
-                            string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                            
-                            // Traite les messages multiples séparés par des retours à la ligne
-                            string[] messages = message.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-                            foreach (string msg in messages)
+                            string chunk = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                            _messageBuffer.Append(chunk);
+
+                            // Extrait les messages complets terminés par \n
+                            string bufferContent = _messageBuffer.ToString();
+                            int newlineIndex;
+
+                            while ((newlineIndex = bufferContent.IndexOf('\n')) >= 0)
                             {
-                                if (!string.IsNullOrWhiteSpace(msg))
+                                string completeMessage = bufferContent.Substring(0, newlineIndex).Trim('\r');
+                                bufferContent = bufferContent.Substring(newlineIndex + 1);
+
+                                if (!string.IsNullOrWhiteSpace(completeMessage))
                                 {
-                                    _onMessageReceived?.Invoke(_clientId, msg.Trim());
+                                    _onMessageReceived?.Invoke(_clientId, completeMessage);
                                 }
                             }
+
+                            // Met à jour le buffer avec le reste (message incomplet)
+                            _messageBuffer.Clear();
+                            _messageBuffer.Append(bufferContent);
                         }
                         else
                         {

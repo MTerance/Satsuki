@@ -59,15 +59,18 @@ contextBridge.exposeInMainWorld('satsuki', {
     sendRaw: (obj) => ipcRenderer.invoke('satsuki-send-raw', obj),
     disconnect: () => ipcRenderer.invoke('satsuki-disconnect'),
     getStatus: () => ipcRenderer.invoke('satsuki-status'),
+    requestGameState: () => ipcRenderer.invoke('satsuki-request-game-state'),
 
     // Event listeners
     onMessage: (callback) => ipcRenderer.on('satsuki-message', (event, payload) => callback(payload)),
     onStatus: (callback) => ipcRenderer.on('satsuki-status', (event, status) => callback(status)),
     onError: (callback) => ipcRenderer.on('satsuki-error', (event, error) => callback(error)),
+    onGameState: (callback) => ipcRenderer.on('satsuki-game-state', (event, payload) => callback(payload)),
 
     removeAllListeners: () => {
         ipcRenderer.removeAllListeners('satsuki-message');
         ipcRenderer.removeAllListeners('satsuki-status');
         ipcRenderer.removeAllListeners('satsuki-error');
+        ipcRenderer.removeAllListeners('satsuki-game-state');
     }
 });

@@ -27,6 +27,12 @@ class ClientService {
         this.status = ref('disconnected'); // disconnected | connecting | connected | error
         this.clientId = ref(null);
         this.clientType = ref(null);
+        // État de jeu courant (cf. GAME_STATE: du serveur, CurrentScene = nom de classe C# :
+        // 'Credits' | 'Title' | 'MainMenu' | 'Lobby' | 'Arcade' | 'None')
+        this.gameState = ref(null);
+        this.currentScene = computed(() =>
+            this.gameState.value?.CurrentStateScene?.CurrentScene ?? null
+        );
         this._listenersBound = false;
         this._messageHandlers = new Map(); // order -> Set<callback>
     }
@@ -50,6 +56,13 @@ class ClientService {
         window.satsuki.onError((err) => {
             console.error('[ClientService] Erreur Satsuki:', err);
             this.status.value = 'error';
+        });
+
+        window.satsuki.onGameState((payload) => {
+            console.log('[ClientService] État de jeu reçu — scène:', payload?.scene);
+            this.gameState.value = payload?.state ?? null;
+            // Notifie aussi les handlers enregistrés sur l'ordre 'GameStateUpdate'
+            this._routeMessage({ data: { order: 'GameStateUpdate', scene: payload?.scene, state: payload?.state } });
         });
 
         window.satsuki.onMessage((payload) => this._routeMessage(payload));
@@ -85,7 +98,12 @@ class ClientService {
             clientType: opts.clientType || ClientType.BACKEND,
             password: opts.password
         });
-        if (!res.success) this.status.value = 'error';
+        if (!res.success) {
+            // Revenir à 'disconnected' si le serveur n'écoute pas (ECONNREFUSED),
+            // pour permettre une nouvelle tentative sans état d'erreur bloquant.
+            const refused = typeof res.message === 'string' && res.message.includes('ECONNREFUSED');
+            this.status.value = refused ? 'disconnected' : 'error';
+        }
         return res;
     }
 
@@ -137,7 +155,24 @@ class ClientService {
 
     async getStatus() {
         if (!this.available) return { connected: false };
-        return window.satsuki.getStatus();
+        // Lie les listeners IPC dès la première interrogation pour ne pas perdre
+        // les événements (GAME_STATE, status) émis avant le premier connect().
+        this._bindIpcListeners();
+        const status = await window.satsuki.getStatus();
+        // Synchronise l'état de jeu si le main en a déjà reçu un
+        if (status?.gameState) this.gameState.value = status.gameState;
+        return status;
+    }
+
+    /**
+     * Redemande l'état de jeu courant au serveur (ordre Scene 'GetGameState').
+     * Utile car le serveur n'envoie GAME_STATE: qu'au premier client connecté.
+     */
+    async requestGameState() {
+        if (!this.available || !this.isConnected.value) {
+            return { success: false, message: 'non connecté' };
+        }
+        return window.satsuki.requestGameState();
     }
 }
 

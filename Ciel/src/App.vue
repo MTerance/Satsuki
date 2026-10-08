@@ -1,13 +1,12 @@
 <script setup lang="ts">
-import SatsukiLauncher from './views/SatsukiLauncher.vue'
 import MainStatusNavBar from './components/MainStatusNavBar.vue'
-import MainGameMenu from './components/gameMenu/MainGameMenu.vue'
 </script>
 
 <template>
-  <!-- Barre de statut Socket.IO en haut -->
+  <!-- Barre de statut en haut -->
   <MainStatusNavBar />
-  <SatsukiLauncher />
+  <!-- Contenu routé : MainView (layout) + ses routes imbriquées -->
+  <router-view />
 </template>
 
 <style scoped>

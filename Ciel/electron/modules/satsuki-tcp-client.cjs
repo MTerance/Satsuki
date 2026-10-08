@@ -16,17 +16,23 @@ const crypto = require('crypto');
 
 // Clés par défaut (cf. Satsuki/Utils/MessageCryptoSystem.cs).
 // La chaîne source fait 34 caractères, ce qui est invalide pour AES-256 (32 bytes).
-// On normalise à 32 bytes (troncature) pour rester compatible si .NET tronque,
-// et le client reste tolérant aux messages en clair.
-function normalizeKey(input, length) {
-  const buf = Buffer.from(input, 'utf8');
-  if (buf.length === length) return buf;
-  if (buf.length > length) return buf.subarray(0, length);
-  return Buffer.concat([buf, Buffer.alloc(length - buf.length, 0)]);
-}
+// Côté serveur (MessageCryptoSystem.cs), Encoding.UTF8.GetBytes() direct avec 34 bytes
+// lève une CryptographicException, attrapée silencieusement → Encrypt/Decrypt renvoient
+// le texte inchangé. En l'état, le serveur envoie donc EN CLAIR et ne peut pas décrypter.
+//
+// Stratégie client :
+//  - Réception : tolérer clair ET crypté (détection looksEncrypted + tentative decrypt)
+//  - Émission : SHA-256 de la chaîne = 32 bytes déterministes, à aligner avec un serveur
+//    corrigé (MessageCrypto doit alors utiliser SHA256 de la même chaîne).
+//  - Mode adaptatif : si le serveur envoie en clair (bug actuel), on lui renvoie en clair
+//    pour que ProcessMessage puisse désérialiser ; sinon on crypte.
+const KEY_SOURCE = 'SatsukiGameServer2024Key1234567890';
+const IV_SOURCE = 'SatsukiInitVect1';
 
-const DEFAULT_KEY = normalizeKey('SatsukiGameServer2024Key1234567890', 32); // AES-256
-const DEFAULT_IV = normalizeKey('SatsukiInitVect1', 16); // 16 bytes
+// Clé 32 bytes via SHA-256 (déterministe, toute longueur d'entrée)
+const DEFAULT_KEY = crypto.createHash('sha256').update(KEY_SOURCE, 'utf8').digest();
+// IV 16 bytes : la chaîne source fait exactement 16 caractères
+const DEFAULT_IV = Buffer.from(IV_SOURCE, 'utf8');
 
 const BACKEND_PASSWORD = '***Satsuk1***'; // cf. Satsuki/Systems/ServerManager.cs
 
@@ -66,6 +72,11 @@ class SatsukiTcpClient {
     this.buffer = ''; // accumulateur pour délimiter les messages par '\n'
     this.host = '127.0.0.1';
     this.port = 3002;
+    // Dernier état de jeu reçu via GAME_STATE: (cf. ServerManager.SendGameStateToClient)
+    this.gameState = null;
+    // Mode adaptatif : le serveur actuel (clé invalide) envoie en clair — on s'aligne.
+    // Dès qu'un message serveur crypté est détecté, on repasse en crypté.
+    this.serverEncrypts = false;
   }
 
   setMainWindow(win) {
@@ -146,10 +157,16 @@ class SatsukiTcpClient {
     });
   }
 
-  // Réception : accumulation + split par ligne, décryptage si nécessaire
+  // Réception : accumulation + split par ligne, décryptage si nécessaire.
+  // Le serveur n'ajoute PAS toujours '\n' (handshake crypté envoyé sans terminateur) :
+  // on traite donc aussi le buffer résiduel s'il forme un message Base64/JSON complet.
   _onData(data) {
     this.buffer += data.toString('utf8');
+    this._flushBuffer();
+  }
 
+  _flushBuffer() {
+    // 1) Traiter toutes les lignes terminées par '\n'
     let idx;
     while ((idx = this.buffer.indexOf('\n')) !== -1) {
       const rawLine = this.buffer.slice(0, idx).replace(/\r$/, '');
@@ -158,19 +175,52 @@ class SatsukiTcpClient {
         this._handleLine(rawLine.trim());
       }
     }
+
+    // 2) Buffer résiduel SANS '\n' : si c'est un message Base64 AES complet
+    //    (longueur décodée multiple de 16) ou du JSON complet, le traiter tout de suite.
+    const rest = this.buffer.trim();
+    if (rest.length > 0 && (looksEncrypted(rest) || this._isCompleteJson(rest))) {
+      this.buffer = '';
+      this._handleLine(rest);
+    }
+  }
+
+  // Détecte un objet JSON complet (accolades équilibrées, fin sur '}')
+  _isCompleteJson(text) {
+    if (!text.startsWith('{') || !text.endsWith('}')) return false;
+    let depth = 0, inString = false, escape = false;
+    for (const ch of text) {
+      if (escape) { escape = false; continue; }
+      if (ch === '\\') { escape = true; continue; }
+      if (ch === '"') { inString = !inString; continue; }
+      if (inString) continue;
+      if (ch === '{') depth++;
+      else if (ch === '}') { depth--; if (depth < 0) return false; }
+    }
+    return depth === 0;
   }
 
   _handleLine(line) {
     let message = line;
 
-    // Le serveur préfixe parfois par "[clientId] " dans ses logs, mais envoie le JSON pur.
     // Tente un décryptage si la ligne ressemble à du Base64 AES.
     if (looksEncrypted(line)) {
       try {
         message = decrypt(line);
+        // Le serveur crypte réellement → aligner nos envois
+        if (!this.serverEncrypts) {
+          this.serverEncrypts = true;
+          console.log('[SatsukiTCP] Serveur en mode crypté détecté');
+        }
       } catch {
         message = line; // garde le brut si échec
       }
+    }
+
+    // Message d'état de jeu : "GAME_STATE:{json}" (cf. ServerManager.SendGameStateToClient)
+    if (message.startsWith('GAME_STATE:')) {
+      this._handleGameState(message.slice('GAME_STATE:'.length));
+      return;
     }
 
     let parsed = null;
@@ -178,6 +228,13 @@ class SatsukiTcpClient {
       parsed = JSON.parse(message);
     } catch {
       // pas du JSON : on relaie en texte brut
+    }
+
+    // État de jeu en JSON direct (réponse à GetGameState, sans préfixe GAME_STATE:)
+    // Détecté via la présence de CurrentStateScene.CurrentScene (PascalCase).
+    if (parsed && parsed.CurrentStateScene && parsed.CurrentStateScene.CurrentScene !== undefined) {
+      this._storeGameState(parsed);
+      return;
     }
 
     // Handshake : le serveur demande le type de client
@@ -200,6 +257,42 @@ class SatsukiTcpClient {
     this._notify('satsuki-message', { raw: message, data: parsed });
   }
 
+  // Parse et stocke l'état de jeu reçu via "GAME_STATE:{json}", puis le relaie au renderer
+  _handleGameState(json) {
+    let state = null;
+    try {
+      state = JSON.parse(json);
+    } catch (err) {
+      console.warn('[SatsukiTCP] GAME_STATE invalide:', err.message);
+      return;
+    }
+    this._storeGameState(state);
+  }
+
+  // Stocke un état de jeu (objet déjà parsé) et le relaie au renderer
+  _storeGameState(state) {
+    this.gameState = state;
+    const scene = state?.CurrentStateScene?.CurrentScene ?? null;
+    console.log(`[SatsukiTCP] État de jeu reçu — scène: ${scene ?? 'inconnue'}`);
+
+    this._notify('satsuki-game-state', { scene, state });
+    // Relaie aussi comme message standard avec un order exploitable par clientService.onOrder
+    this._notify('satsuki-message', {
+      raw: JSON.stringify(state),
+      data: { order: 'GameStateUpdate', scene, state }
+    });
+  }
+
+  // Demande l'état courant au serveur (ordre Scene, traité par MainGameScene)
+  requestGameState() {
+    return this.sendOrder({
+      ClientId: this.clientId || 'ciel-client',
+      Target: 'Scene',
+      Order: 'GetGameState',
+      JsonData: '{}'
+    });
+  }
+
   // Répond au handshake RequestClientType
   _sendClientType() {
     const payload = {
@@ -212,14 +305,16 @@ class SatsukiTcpClient {
     this._sendJson(payload);
   }
 
-  // Sérialise et envoie un objet JSON (crypté), terminé par '\n'
+  // Sérialise et envoie un objet JSON, terminé par '\n'.
+  // Crypté uniquement si le serveur crypte ses propres envois (mode adaptatif) :
+  // le serveur Satsuki actuel ne peut pas décrypter (clé invalide) → envoi en clair.
   _sendJson(obj) {
     if (!this.connected || !this.socket) {
       return { success: false, message: 'Non connecté au serveur Satsuki' };
     }
     try {
       const json = JSON.stringify(obj);
-      const payload = encrypt(json) + '\n';
+      const payload = (this.serverEncrypts ? encrypt(json) : json) + '\n';
       this.socket.write(payload, 'utf8');
       return { success: true, message: 'Message envoyé' };
     } catch (err) {
@@ -265,7 +360,9 @@ class SatsukiTcpClient {
       host: this.host,
       port: this.port,
       clientId: this.clientId,
-      clientType: this.clientType
+      clientType: this.clientType,
+      gameState: this.gameState,
+      currentScene: this.gameState?.CurrentStateScene?.CurrentScene ?? null
     };
   }
 }
