@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dqiprnxysn8ki"
-path.s3tc="res://.godot/imported/logo-Epitanime.png-1a816271891472eee27225d8ee0e6b14.s3tc.ctex"
+uid="uid://doc0whdgpyqu7"
+path.s3tc="res://.godot/imported/Capture d\'écran 2026-08-11 160743.png-aed5dbe9ecfbf0fdb88a6e86856e5166.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://Assets/Img/Credits/logo-Epitanime.png"
-dest_files=["res://.godot/imported/logo-Epitanime.png-1a816271891472eee27225d8ee0e6b14.s3tc.ctex"]
+source_file="res://Assets/Img/Capture d'écran 2026-08-11 160743.png"
+dest_files=["res://.godot/imported/Capture d\\'écran 2026-08-11 160743.png-aed5dbe9ecfbf0fdb88a6e86856e5166.s3tc.ctex"]
 
 [params]
 

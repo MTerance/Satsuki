@@ -37,7 +37,7 @@ auto_width = true
 auto_height = true
 scroll_hint_mode = 1
 tile_scroll_hint = true
-item_count = 12
+item_count = 16
 item_0/text = "restaurant"
 item_1/text = "TestStreet"
 item_2/text = "TestSStreet"
@@ -50,6 +50,10 @@ item_8/text = "restaurant"
 item_9/text = "TestStreet"
 item_10/text = "TestSStreet"
 item_11/text = "TestStreet2"
+item_12/text = "restaurant"
+item_13/text = "TestStreet"
+item_14/text = "TestSStreet"
+item_15/text = "TestStreet2"
 
 [node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/VBoxContainer" unique_id=945539946]
 layout_mode = 2
