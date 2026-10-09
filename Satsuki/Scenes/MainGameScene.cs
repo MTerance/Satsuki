@@ -74,13 +74,9 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 				DisplayServer.WindowSetCurrentScreen(numScreen);
 
 			var y = args.FirstOrDefault(x => x.Contains("--fullscreen"));
-			var fscreen = x.Split(" ")[1];
-			DisplayServer.WindowSetMode(DisplayServer.WindowMode.Fullscreen);
+			if (y.Length != 0)
+				DisplayServer.WindowSetMode(DisplayServer.WindowMode.Fullscreen);
 		}
-
-
-
-
 
 		_serverManager = GetNodeOrNull<ServerManager>("/root/ServerManager");
 		if (_serverManager == null)
