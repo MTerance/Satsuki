@@ -91,18 +91,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
+import type { Player } from "@/models/player";
+import type { PlayerForm } from "@/models/playerForm";
 
-interface Player {
-  id: number;
-  name: string;
-  color: string;
-  gender: 'male' | 'female';
-}
-
-interface PlayerForm {
-  name: string;
-  gender: 'male' | 'female' | '';
-}
 
 const playerColors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#FFB347', '#98D8C8'];
 

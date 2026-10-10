@@ -103,6 +103,12 @@ const closeQuizzSelectionModal = () => {
 
 };
 
+ const IsQuizzSelected = (): boolean => {
+    return summaryQuizz.value !== null;
+};
+
+
+
 const getAvailableGames = async () => {
     try {
         if (searchText.value.length < 3) {
