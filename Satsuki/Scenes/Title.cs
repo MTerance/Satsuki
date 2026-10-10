@@ -29,8 +29,8 @@ namespace Satsuki.Scenes
 
 			CreateUI();
 			GD.Print("Title: Ecran titre initialise");
-            GD.Print($"LOG : Scene {GetSceneName()} initialisee a " + DateTime.Now.ToString("o"));
-        }
+			GD.Print($"LOG : Scene {GetSceneName()} initialisee a " + DateTime.Now.ToString("o"));
+		}
 
 		private void CreateUI()
 		{
@@ -139,9 +139,9 @@ namespace Satsuki.Scenes
 			};
 		}
 
-        public string GetSceneName()
-        {
+		public string GetSceneName()
+		{
 			return "TITLE";
-        }
-    }
+		}
+	}
 }

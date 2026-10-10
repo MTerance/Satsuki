@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Satsuki.Manager
 {
@@ -118,7 +119,13 @@ namespace Satsuki.Manager
 
 		public void AddImageSplash(string imagePath, float duration = 3.0f)
 		{
-			var texture = GD.Load<Texture2D>(imagePath);
+			if (!ResourceLoader.Exists(imagePath))
+			{
+				GD.PrintErr($"Impossible de trouver l'image: {imagePath}");
+				return;
+			}
+			GD.Print($"Chargement de l'image: {imagePath}");
+            var texture = GD.Load<Texture2D>(imagePath);
 			if (texture == null)
 			{
 				GD.PrintErr($"Impossible de charger l'image: {imagePath}");
@@ -417,16 +424,21 @@ namespace Satsuki.Manager
 
 		public void AddCreditImagesFromFolder(float duration = 3.0f)
 		{
-			string folderPath = "res://Assets/Img/Credits";
-			
+	//		string folderPath = "res://Assets/Img/Credits";
+    //        string folderPath = "C:\\Users\\Utilisateur\\source\\repos\\MTerance\\Satsuki\\Satsuki\\out\\Assets\\Img\\Credits";
+			string folderPath = Directory.GetCurrentDirectory() + "\\Assets\\Img\\Credits";
+            /*
 			if (!DirAccess.DirExistsAbsolute(folderPath))
 			{
 				GD.PrintErr($"Dossier introuvable: {folderPath}");
 				GD.Print("Tentative avec res://Img/Credits...");
 				folderPath = "res://Img/Credits";
 			}
-			
-			var dir = DirAccess.Open(folderPath);
+			*/
+
+            ;
+
+            var dir = DirAccess.Open(folderPath);
 			if (dir == null)
 			{
 				GD.PrintErr($"Impossible d'ouvrir le dossier: {folderPath}");

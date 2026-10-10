@@ -8,8 +8,8 @@ using System.Reflection;
 namespace Satsuki.Manager
 {
 	/// <summary>
-	/// Gestionnaire centralisÈ pour le chargement et dÈchargement des locations
-	/// GËre les scËnes Godot qui sont des LocationModel
+	/// Gestionnaire centralis√© pour le chargement et d√©chargement des locations
+	/// G√®re les sc√®nes Godot qui sont des LocationModel
 	/// </summary>
 	public partial class LocationManager : Node
 	{
@@ -27,7 +27,7 @@ namespace Satsuki.Manager
 
 		#region Properties
 		/// <summary>
-		/// Location actuellement chargÈe
+		/// Location actuellement charg√©e
 		/// </summary>
 		public ILocation CurrentLocation => _currentLocation;
 
@@ -37,24 +37,24 @@ namespace Satsuki.Manager
 		public Node CurrentLocationNode => _currentLocationNode;
 
 		/// <summary>
-		/// Indique si une location est chargÈe
+		/// Indique si une location est charg√©e
 		/// </summary>
 		public bool HasLocation => _currentLocation != null;
 		#endregion
 
 		#region Events
 		/// <summary>
-		/// …vÈnement dÈclenchÈ quand une location est chargÈe
+		/// √âv√©nement d√©clench√© quand une location est charg√©e
 		/// </summary>
 		public event Action<ILocation> LocationLoaded;
 
 		/// <summary>
-		/// …vÈnement dÈclenchÈ quand une location est dÈchargÈe
+		/// √âv√©nement d√©clench√© quand une location est d√©charg√©e
 		/// </summary>
 		public event Action<ILocation> LocationUnloaded;
 
 		/// <summary>
-		/// …vÈnement dÈclenchÈ quand le chargement d'une location Èchoue
+		/// √âv√©nement d√©clench√© quand le chargement d'une location √©choue
 		/// </summary>
 		public event Action<string, string> LocationLoadFailed;
 		#endregion
@@ -64,7 +64,7 @@ namespace Satsuki.Manager
 		{
 			if (_instance != null && _instance != this)
 			{
-				GD.PrintErr("?? LocationManager: Instance dÈj‡ existante, suppression de ce doublon");
+				GD.PrintErr("?? LocationManager: Instance d√©j√† existante, suppression de ce doublon");
 				QueueFree();
 				return;
 			}
@@ -75,12 +75,12 @@ namespace Satsuki.Manager
 			// Enregistrer automatiquement les types de locations disponibles
 			RegisterAvailableLocationTypes();
 
-			GD.Print("? LocationManager: InitialisÈ avec succËs");
+			GD.Print("? LocationManager: Initialis√© avec succ√®s");
 		}
 
 		public override void _ExitTree()
 		{
-			// DÈcharger la location courante
+			// D√©charger la location courante
 			UnloadCurrentLocation();
 
 			// Nettoyer le cache
@@ -92,7 +92,7 @@ namespace Satsuki.Manager
 				_instance = null;
 			}
 
-			GD.Print("?? LocationManager: Nettoyage terminÈ");
+			GD.Print("?? LocationManager: Nettoyage termin√©");
 		}
 		#endregion
 
@@ -120,7 +120,7 @@ namespace Satsuki.Manager
 				}
 			}
 
-			GD.Print($"? LocationManager: {locationTypes.Count} types de locations enregistrÈs");
+			GD.Print($"? LocationManager: {locationTypes.Count} types de locations enregistr√©s");
 		}
 
 		/// <summary>
@@ -130,22 +130,22 @@ namespace Satsuki.Manager
 		{
 			if (!typeof(ILocation).IsAssignableFrom(locationType))
 			{
-				GD.PrintErr($"? LocationManager: {locationType.Name} n'implÈmente pas ILocation");
+				GD.PrintErr($"? LocationManager: {locationType.Name} n'impl√©mente pas ILocation");
 				return;
 			}
 
 			if (!locationType.IsSubclassOf(typeof(Node)))
 			{
-				GD.PrintErr($"? LocationManager: {locationType.Name} n'hÈrite pas de Node");
+				GD.PrintErr($"? LocationManager: {locationType.Name} n'h√©rite pas de Node");
 				return;
 			}
 
 			_registeredLocationTypes[name] = locationType;
-			GD.Print($"? LocationManager: Type '{name}' enregistrÈ");
+			GD.Print($"? LocationManager: Type '{name}' enregistr√©");
 		}
 
 		/// <summary>
-		/// Obtient la liste des types de locations enregistrÈs
+		/// Obtient la liste des types de locations enregistr√©s
 		/// </summary>
 		public string[] GetRegisteredLocationTypes()
 		{
@@ -156,33 +156,33 @@ namespace Satsuki.Manager
 
 		#region Location Loading - By Scene Path
 		/// <summary>
-		/// Charge une location depuis un chemin de scËne Godot (.tscn)
+		/// Charge une location depuis un chemin de sc√®ne Godot (.tscn)
 		/// </summary>
 		/// <param name="scenePath">Chemin vers le fichier .tscn</param>
-		/// <param name="useCache">Utiliser le cache de scËnes</param>
+		/// <param name="useCache">Utiliser le cache de sc√®nes</param>
 		public bool LoadLocationFromScene(string scenePath, bool useCache = true)
 		{
 			try
 			{
 				GD.Print($"??? LocationManager: Chargement location depuis '{scenePath}'...");
 
-				// DÈcharger la location courante
+				// D√©charger la location courante
 				UnloadCurrentLocation();
 
-				// Charger la scËne
+				// Charger la sc√®ne
 				PackedScene scene = null;
 
 				if (useCache && _cachedScenes.ContainsKey(scenePath))
 				{
 					scene = _cachedScenes[scenePath];
-					GD.Print("  ?? ScËne trouvÈe dans le cache");
+					GD.Print("  ?? Sc√®ne trouv√©e dans le cache");
 				}
 				else
 				{
 					scene = GD.Load<PackedScene>(scenePath);
 					if (scene == null)
 					{
-						GD.PrintErr($"? LocationManager: Impossible de charger la scËne '{scenePath}'");
+						GD.PrintErr($"? LocationManager: Impossible de charger la sc√®ne '{scenePath}'");
 						LocationLoadFailed?.Invoke(scenePath, "Scene not found");
 						return false;
 					}
@@ -190,39 +190,39 @@ namespace Satsuki.Manager
 					if (useCache)
 					{
 						_cachedScenes[scenePath] = scene;
-						GD.Print("  ?? ScËne mise en cache");
+						GD.Print("  ?? Sc√®ne mise en cache");
 					}
 				}
 
-				// Instancier la scËne
+				// Instancier la sc√®ne
 				var instance = scene.Instantiate();
 				if (instance == null)
 				{
-					GD.PrintErr($"? LocationManager: Impossible d'instancier la scËne '{scenePath}'");
+					GD.PrintErr($"? LocationManager: Impossible d'instancier la sc√®ne '{scenePath}'");
 					LocationLoadFailed?.Invoke(scenePath, "Failed to instantiate");
 					return false;
 				}
 
-				// VÈrifier que c'est bien une ILocation
+				// V√©rifier que c'est bien une ILocation
 				if (instance is not ILocation location)
 				{
-					GD.PrintErr($"? LocationManager: La scËne '{scenePath}' n'implÈmente pas ILocation");
+					GD.PrintErr($"? LocationManager: La sc√®ne '{scenePath}' n'impl√©mente pas ILocation");
 					instance.QueueFree();
 					LocationLoadFailed?.Invoke(scenePath, "Not an ILocation");
 					return false;
 				}
 
-				// Ajouter ‡ l'arbre de scËne
+				// Ajouter √† l'arbre de sc√®ne
 				AddChild(instance);
 
-				// Stocker les rÈfÈrences
+				// Stocker les r√©f√©rences
 				_currentLocationNode = instance;
 				_currentLocation = location;
 
-				// Connecter aux ÈvÈnements de la location
+				// Connecter aux √©v√©nements de la location
 				ConnectLocationEvents(location);
 
-				// Initialiser et charger si nÈcessaire
+				// Initialiser et charger si n√©cessaire
 				if (!location.IsLoaded)
 				{
 					location.Initialize();
@@ -232,7 +232,7 @@ namespace Satsuki.Manager
 				// Activer la location
 				location.ActivateLocation();
 
-				GD.Print($"? LocationManager: Location '{location.LocationName}' chargÈe avec succËs");
+				GD.Print($"? LocationManager: Location '{location.LocationName}' charg√©e avec succ√®s");
 				LocationLoaded?.Invoke(location);
 
 				return true;
@@ -248,7 +248,7 @@ namespace Satsuki.Manager
 
 		#region Location Loading - By Type
 		/// <summary>
-		/// Charge une location par son type (crÈation d'instance programmatique)
+		/// Charge une location par son type (cr√©ation d'instance programmatique)
 		/// </summary>
 		public bool LoadLocationByType(Type locationType)
 		{
@@ -258,40 +258,40 @@ namespace Satsuki.Manager
 
 				if (!typeof(ILocation).IsAssignableFrom(locationType))
 				{
-					GD.PrintErr($"? LocationManager: {locationType.Name} n'implÈmente pas ILocation");
+					GD.PrintErr($"? LocationManager: {locationType.Name} n'impl√©mente pas ILocation");
 					LocationLoadFailed?.Invoke(locationType.Name, "Not an ILocation");
 					return false;
 				}
 
 				if (!locationType.IsSubclassOf(typeof(Node)))
 				{
-					GD.PrintErr($"? LocationManager: {locationType.Name} n'hÈrite pas de Node");
+					GD.PrintErr($"? LocationManager: {locationType.Name} n'h√©rite pas de Node");
 					LocationLoadFailed?.Invoke(locationType.Name, "Not a Node");
 					return false;
 				}
 
-				// DÈcharger la location courante
+				// D√©charger la location courante
 				UnloadCurrentLocation();
 
-				// CrÈer une instance
+				// Cr√©er une instance
 				var instance = Activator.CreateInstance(locationType) as Node;
 				if (instance == null)
 				{
-					GD.PrintErr($"? LocationManager: Impossible de crÈer une instance de '{locationType.Name}'");
+					GD.PrintErr($"? LocationManager: Impossible de cr√©er une instance de '{locationType.Name}'");
 					LocationLoadFailed?.Invoke(locationType.Name, "Failed to instantiate");
 					return false;
 				}
 
 				var location = instance as ILocation;
 
-				// Ajouter ‡ l'arbre de scËne
+				// Ajouter √† l'arbre de sc√®ne
 				AddChild(instance);
 
-				// Stocker les rÈfÈrences
+				// Stocker les r√©f√©rences
 				_currentLocationNode = instance;
 				_currentLocation = location;
 
-				// Connecter aux ÈvÈnements
+				// Connecter aux √©v√©nements
 				ConnectLocationEvents(location);
 
 				// Initialiser et charger
@@ -304,7 +304,7 @@ namespace Satsuki.Manager
 				// Activer
 				location.ActivateLocation();
 
-				GD.Print($"? LocationManager: Location '{location.LocationName}' chargÈe avec succËs");
+				GD.Print($"? LocationManager: Location '{location.LocationName}' charg√©e avec succ√®s");
 				LocationLoaded?.Invoke(location);
 
 				return true;
@@ -341,7 +341,7 @@ namespace Satsuki.Manager
 				return LoadLocationByType(type);
 			}
 
-			GD.PrintErr($"? LocationManager: Type de location '{typeName}' non trouvÈ");
+			GD.PrintErr($"? LocationManager: Type de location '{typeName}' non trouv√©");
 			LocationLoadFailed?.Invoke(typeName, "Type not found");
 			return false;
 		}
@@ -349,7 +349,7 @@ namespace Satsuki.Manager
 
 		#region Location Unloading
 		/// <summary>
-		/// DÈcharge la location courante
+		/// D√©charge la location courante
 		/// </summary>
 		public void UnloadCurrentLocation()
 		{
@@ -358,12 +358,12 @@ namespace Satsuki.Manager
 				return;
 			}
 
-			GD.Print($"??? LocationManager: DÈchargement de '{_currentLocation.LocationName}'...");
+			GD.Print($"??? LocationManager: D√©chargement de '{_currentLocation.LocationName}'...");
 
-			// DÈconnecter les ÈvÈnements
+			// D√©connecter les √©v√©nements
 			DisconnectLocationEvents(_currentLocation);
 
-			// DÈsactiver et dÈcharger
+			// D√©sactiver et d√©charger
 			_currentLocation.DeactivateLocation();
 			_currentLocation.UnloadLocation();
 
@@ -375,17 +375,17 @@ namespace Satsuki.Manager
 			RemoveChild(_currentLocationNode);
 			_currentLocationNode.QueueFree();
 
-			// Nettoyer les rÈfÈrences
+			// Nettoyer les r√©f√©rences
 			_currentLocationNode = null;
 			_currentLocation = null;
 
-			GD.Print("? LocationManager: Location dÈchargÈe");
+			GD.Print("? LocationManager: Location d√©charg√©e");
 		}
 		#endregion
 
 		#region Event Management
 		/// <summary>
-		/// Connecte les ÈvÈnements d'une location
+		/// Connecte les √©v√©nements d'une location
 		/// </summary>
 		private void ConnectLocationEvents(ILocation location)
 		{
@@ -397,7 +397,7 @@ namespace Satsuki.Manager
 		}
 
 		/// <summary>
-		/// DÈconnecte les ÈvÈnements d'une location
+		/// D√©connecte les √©v√©nements d'une location
 		/// </summary>
 		private void DisconnectLocationEvents(ILocation location)
 		{
@@ -410,12 +410,12 @@ namespace Satsuki.Manager
 
 		private void OnLocationLoadedEvent(ILocation location)
 		{
-			GD.Print($"?? LocationManager: Location '{location.LocationName}' chargÈe");
+			GD.Print($"?? LocationManager: Location '{location.LocationName}' charg√©e");
 		}
 
 		private void OnLocationUnloadedEvent(ILocation location)
 		{
-			GD.Print($"?? LocationManager: Location '{location.LocationName}' dÈchargÈe");
+			GD.Print($"?? LocationManager: Location '{location.LocationName}' d√©charg√©e");
 		}
 
 		private void OnPlayerEnteredLocation(ILocation location, string playerId)
@@ -436,13 +436,13 @@ namespace Satsuki.Manager
 
 		#region Cache Management
 		/// <summary>
-		/// PrÈcharge une scËne dans le cache
+		/// Pr√©charge une sc√®ne dans le cache
 		/// </summary>
 		public bool PreloadScene(string scenePath)
 		{
 			if (_cachedScenes.ContainsKey(scenePath))
 			{
-				GD.Print($"?? LocationManager: ScËne '{scenePath}' dÈj‡ en cache");
+				GD.Print($"?? LocationManager: Sc√®ne '{scenePath}' d√©j√† en cache");
 				return true;
 			}
 
@@ -452,29 +452,29 @@ namespace Satsuki.Manager
 				if (scene != null)
 				{
 					_cachedScenes[scenePath] = scene;
-					GD.Print($"?? LocationManager: ScËne '{scenePath}' mise en cache");
+					GD.Print($"?? LocationManager: Sc√®ne '{scenePath}' mise en cache");
 					return true;
 				}
 			}
 			catch (Exception ex)
 			{
-				GD.PrintErr($"? LocationManager: Erreur lors du prÈchargement de '{scenePath}': {ex.Message}");
+				GD.PrintErr($"? LocationManager: Erreur lors du pr√©chargement de '{scenePath}': {ex.Message}");
 			}
 
 			return false;
 		}
 
 		/// <summary>
-		/// Vide le cache de scËnes
+		/// Vide le cache de sc√®nes
 		/// </summary>
 		public void ClearCache()
 		{
 			_cachedScenes.Clear();
-			GD.Print("?? LocationManager: Cache vidÈ");
+			GD.Print("?? LocationManager: Cache vid√©");
 		}
 
 		/// <summary>
-		/// Obtient le nombre de scËnes en cache
+		/// Obtient le nombre de sc√®nes en cache
 		/// </summary>
 		public int GetCachedSceneCount()
 		{
@@ -524,7 +524,7 @@ namespace Satsuki.Manager
 
 		#region Location Info
 		/// <summary>
-		/// Obtient les informations complËtes sur la location courante
+		/// Obtient les informations compl√®tes sur la location courante
 		/// </summary>
 		public object GetCurrentLocationInfo()
 		{
