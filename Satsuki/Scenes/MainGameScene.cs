@@ -213,9 +213,11 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 			UnloadCurrentScene();
 			var lobby = GD.Load<PackedScene>("res://Scenes/Lobby.tscn").Instantiate() as Lobby;
 			AddChild(lobby);
-			_currentScene = lobby;
+			_currentScene = lobby as Node;
 			GD.Print("Lobby charge");
 			BroadcastSceneChange("Lobby");
+			GD.Print(((Lobby)_currentScene).GetSceneState());
+
 			//CallDeferred(nameof(ActivateLobbyCamera));
 		}
 		catch (Exception ex)

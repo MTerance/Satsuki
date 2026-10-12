@@ -29,7 +29,7 @@ namespace Satsuki.Manager
                 {
                     using (var command = connection.CreateCommand())
                     {
-                        command.CommandText = "SELECT Key, Value FROM GameInfo";
+                        command.CommandText = "SELECT Key, Value FROM GameInfos";
                         using (var reader = command.ExecuteReader())
                         {
                             while (reader.Read())

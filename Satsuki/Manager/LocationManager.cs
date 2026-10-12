@@ -24,7 +24,5 @@ namespace Satsuki.Manager
 			// Initialisation du gestionnaire de localisation
 		}
 
-		//public
-
 	}
 }
