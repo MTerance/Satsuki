@@ -1,15 +1,40 @@
 using Godot;
 using Satsuki.Interfaces;
+using Satsuki.Manager;
 using Satsuki.Models;
+using Satsuki.Repositories.Loaders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Nodes;
 
 public partial class Lobby : Node3D, IScene
 {
-	private string _lobbyPathScene;
+    private Satsuki.Systems.ServerManager _serverManager;
+    private string _lobbyPathScene;
 	private CameraPlacement _cameraPlacement;
 	private List<Spot> Spots = new List<Spot>();
+
+	private void Init()
+    {
+        GetLobbyResource();
+    }
+
+    private void GetLobbyResource()
+	{
+		var lobbyInfo = GameInfoManager.Instance.GetGameInfo("Lobby");
+
+		if (lobbyInfo != null && lobbyInfo.ContainsKey("IdStage"))
+		{
+            var idStage = ((int)lobbyInfo["IdStage"]);
+            LocationLoader locationLoader = new LocationLoader();
+            var stageResource = locationLoader.LoadStageRsc(idStage);
+			LoadLobby(stageResource);
+        }
+		else
+			GD.PrintErr("Lobby: Impossible de récupérer les informations du lobby.");
+    }
+
 
 	private void LoadLobby(StageResource stageResource)
 	{
@@ -26,8 +51,6 @@ public partial class Lobby : Node3D, IScene
 			Spots.Add(spot);
 		}
 	}
-
-	private Satsuki.Systems.ServerManager _serverManager;
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()

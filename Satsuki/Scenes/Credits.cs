@@ -42,7 +42,7 @@ public partial class Credits : Node, IScene
 
 		GD.Print("Credits: SplashScreenManager configure et demarre");
 		GD.Print($"LOG : Scene {GetSceneName()} initialisee a " + DateTime.Now.ToString("o"));
-    }
+	}
 	
 	public object GetSceneState()
 	{
@@ -191,8 +191,8 @@ public partial class Credits : Node, IScene
 		GD.Print("Credits: Nettoyage termine");
 	}
 
-    public string GetSceneName()
-    {
-        return "CREDITS";
-    }
+	public string GetSceneName()
+	{
+		return "CREDITS";
+	}
 }

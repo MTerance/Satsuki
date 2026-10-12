@@ -34,10 +34,24 @@ namespace Satsuki.Scenes
 
 		private void CreateUI()
 		{
+			/*
 			var canvasLayer = new CanvasLayer();
 			AddChild(canvasLayer);
 
-			var logoTexture = GD.Load<Texture2D>("res://Assets/Img/overlay_logo_small_placeholder.png");
+			var bgTexture = GD.Load<Texture2D>("res://Assets/Img/bg.png");
+			if (bgTexture != null)
+			{
+				var bgRect = new TextureRect
+				{
+					Texture = bgTexture,
+					ExpandMode = TextureRect.ExpandModeEnum.KeepSize,
+					StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered
+				};
+				canvasLayer.AddChild(bgRect);
+				bgRect.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.Center);
+			}
+
+				var logoTexture = GD.Load<Texture2D>("res://Assets/Img/2b6c2646-dfab-4d54-88c9-ba401cfbdba4.png");
 			if (logoTexture != null)
 			{
 				_logoRect = new TextureRect
@@ -53,7 +67,7 @@ namespace Satsuki.Scenes
 			{
 				GD.PrintErr("Title: Logo introuvable a res://Assets/Img/overlay_logo_small_placeholder.png");
 			}
-
+			*/
 			GD.Print("Title: UI creee avec succes");
 		}
 

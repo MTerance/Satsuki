@@ -424,20 +424,7 @@ namespace Satsuki.Manager
 
 		public void AddCreditImagesFromFolder(float duration = 3.0f)
 		{
-	//		string folderPath = "res://Assets/Img/Credits";
-    //        string folderPath = "C:\\Users\\Utilisateur\\source\\repos\\MTerance\\Satsuki\\Satsuki\\out\\Assets\\Img\\Credits";
 			string folderPath = Directory.GetCurrentDirectory() + "\\Assets\\Img\\Credits";
-            /*
-			if (!DirAccess.DirExistsAbsolute(folderPath))
-			{
-				GD.PrintErr($"Dossier introuvable: {folderPath}");
-				GD.Print("Tentative avec res://Img/Credits...");
-				folderPath = "res://Img/Credits";
-			}
-			*/
-
-            ;
-
             var dir = DirAccess.Open(folderPath);
 			if (dir == null)
 			{

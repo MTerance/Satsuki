@@ -30,7 +30,6 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 
 	#region Private Fields
 	private ServerManager _serverManager;
-	private LocationManager _locationManager;
 	private GameModeLoader _gameModeLoader;
 	private bool _hasLoadedCredits = false;
 	private bool _debugMode = true;
@@ -44,8 +43,7 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 	#endregion
 
 	#region Public Properties
-	public ILocation CurrentLocation => 
-		_locationManager?.CurrentLocation;
+
 	public IScene CurrentScene => 
 		_currentScene as IScene;
 	public ServerManager Server => 
@@ -86,12 +84,6 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 
 		_gameModeLoader = new GameModeLoader();
 
-		_locationManager = new LocationManager();
-		AddChild(_locationManager);
-
-		_locationManager.LocationLoaded += OnLocationLoaded;
-		_locationManager.LocationLoadFailed += OnLocationLoadFailed;
-
 		if (_serverManager != null)
 		{
 			_serverManager.ServerStarted += OnServerStarted;
@@ -113,12 +105,6 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 	public override void _ExitTree()
 	{
 		UnloadCurrentScene();
-
-		if (_locationManager != null)
-		{
-			_locationManager.LocationLoaded -= OnLocationLoaded;
-			_locationManager.LocationLoadFailed -= OnLocationLoadFailed;
-		}
 
 		if (_serverManager != null)
 		{
@@ -179,57 +165,17 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 		try
 		{
 			GD.Print("MainGameScene: Chargement Title...");
-
 			UnloadCurrentScene();
-
-			var title = new Title();
+			var title = GD.Load<PackedScene>("res://Scenes/Title.tscn").Instantiate() as Title;
 			AddChild(title);
 			_currentScene = title;
-
 			title.StartGameRequested += OnStartGameRequested;
-
 			GD.Print("Title charge");
-
 			BroadcastSceneChange("Title");
-
-			CallDeferred(nameof(ActivateTitleCamera));
 		}
 		catch (Exception ex)
 		{
 			GD.PrintErr($"Erreur chargement Title: {ex.Message}");
-		}
-	}
-	
-	private void ActivateTitleCamera()
-	{
-		try
-		{
-			const string restaurantPath = "res://Scenes/Locations/Restaurant.tscn";
-			
-			bool success = _locationManager.LoadLocationFromScene(restaurantPath, useCache: true);
-			
-			if (success && _locationManager.CurrentLocation != null)
-			{
-				GD.Print("Restaurant charge pour Title");
-				
-				bool cameraSet = _locationManager.CurrentLocation.SetActiveCamera(CameraType.Title);
-				if (cameraSet)
-				{
-					GD.Print("Camera Title_Camera3D activee avec succes");
-				}
-				else
-				{
-					GD.PrintErr("Echec activation Camera Title_Camera3D");
-				}
-			}
-			else
-			{
-				GD.PrintErr("Echec chargement Restaurant pour Title");
-			}
-		}
-		catch (Exception ex)
-		{
-			GD.PrintErr($"Erreur activation camera Title: {ex.Message}");
 		}
 	}
 
@@ -251,7 +197,7 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 			
 			GD.Print("MainMenu charge");
 			
-			CallDeferred(nameof(ActivateLobbyCamera));
+			//CallDeferred(nameof(ActivateLobbyCamera));
 		}
 		catch (Exception ex)
 		{
@@ -259,52 +205,18 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 		}
 	}
 	
-	private void ActivateLobbyCamera()
-	{
-		try
-		{
-			if (_locationManager?.CurrentLocation != null)
-			{
-				GD.Print("MainGameScene: Activation camera Lobby pour MainMenu...");
-				
-				bool cameraSet = _locationManager.CurrentLocation.SetActiveCamera(CameraType.Lobby);
-				if (cameraSet)
-				{
-					GD.Print("Camera Lobby_Camera3D activee avec succes");
-				}
-				else
-				{
-					GD.PrintErr("Echec activation Camera Lobby_Camera3D");
-				}
-			}
-			else
-			{
-				GD.PrintErr("Location non chargee, impossible d'activer la camera Lobby");
-			}
-		}
-		catch (Exception ex)
-		{
-			GD.PrintErr($"Erreur activation camera Lobby: {ex.Message}");
-		}
-	}
-
 	public void LoadLobby()
 	{
 		try
 		{
 			GD.Print("MainGameScene: Chargement Lobby...");
-
 			UnloadCurrentScene();
-
-			var lobby = new Lobby();
+			var lobby = GD.Load<PackedScene>("res://Scenes/Lobby.tscn").Instantiate() as Lobby;
 			AddChild(lobby);
 			_currentScene = lobby;
-
 			GD.Print("Lobby charge");
-
 			BroadcastSceneChange("Lobby");
-
-			CallDeferred(nameof(ActivateLobbyCamera));
+			//CallDeferred(nameof(ActivateLobbyCamera));
 		}
 		catch (Exception ex)
 		{
