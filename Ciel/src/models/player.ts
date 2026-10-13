@@ -1,5 +1,5 @@
 export interface Player {
-    id: number;
+    id: string;
     name: string;
     color: string;
     gender: 'male' | 'female';

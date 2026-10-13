@@ -15,7 +15,7 @@ const onPlayerAdded = (player: Player): void => {
 
 };
 
-const onPlayerRemoved = (id: number): void => {
+const onPlayerRemoved = (id: string): void => {
 
 };
 

@@ -6,6 +6,7 @@ using Satsuki.Repositories.Loaders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 
 public partial class Lobby : Node3D, IScene
@@ -13,7 +14,20 @@ public partial class Lobby : Node3D, IScene
     private Satsuki.Systems.ServerManager _serverManager;
     private string _lobbyPathScene;
     private CameraPlacement _cameraPlacement;
-    private List<Spot> Spots = new List<Spot>();
+    private List<Spot> _spots = new List<Spot>();
+
+
+    public class PlayerProfile
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+        public string Gender { get; set; }
+        public int IdSpot { get; set; }
+        public string Color { get; set; }
+    }
+
+
+    private List<PlayerProfile> _players = new List<PlayerProfile>();
     private Node lobbyLocation { get; set; }
     private Camera3D _camera;
 
@@ -56,18 +70,17 @@ public partial class Lobby : Node3D, IScene
     private void LoadLobby(StageResource stageResource)
     {
         _cameraPlacement = stageResource.LobbyInfo.CameraPlacement;
-
         var lobbyResource = stageResource.LobbyInfo;
-
         foreach (var spawn in lobbyResource.SpawnPoints)
         {
             var spot = new Spot
             {
+                Id = spawn.Index,
                 Position = spawn.Position,
                 PlayerSpot = PlayerTypeSpot.Vacant,
                 SpawnPoint = spawn
             };
-            Spots.Add(spot);
+            _spots.Add(spot);
         }
     }
 
@@ -120,7 +133,8 @@ public partial class Lobby : Node3D, IScene
         switch (order)
         {
             case "AddPlayer":
-                AddPlayer();
+                var playerProfile = JsonSerializer.Deserialize<PlayerProfile>(messageJson);
+                AddPlayer(playerProfile);
                 break;
             case "UpdatePlayer":
                 UpdatePlayer();
@@ -174,7 +188,7 @@ public partial class Lobby : Node3D, IScene
                 SceneType = "Lobby",
                 Timestamp = DateTime.UtcNow
             },
-            Spots = Spots.Select(spot => new
+            Spots = _spots.Select(spot => new
             {
                 Position = spot.Position,
                 PlayerSpot = spot.PlayerSpot.ToString()
@@ -182,9 +196,22 @@ public partial class Lobby : Node3D, IScene
         };
     }
 
-    private void AddPlayer()
+    private void AddPlayer(PlayerProfile player)
     {
+        if (!_spots.Exists(x => x.PlayerSpot == PlayerTypeSpot.Vacant))
+        {
+            GD.PrintErr("Lobby: Impossible d'ajouter un joueur, tous les spots sont occupés.");
+            return;
+        }
 
+        var spot = _spots.First(x => x.PlayerSpot == PlayerTypeSpot.Vacant);
+        var character = new PlayerLoader().LoadPlayerMesh();
+        character.Position = spot.Position;
+        character.Name = $"Player_{player.Id}";
+        lobbyLocation.AddChild(character);
+        spot.PlayerSpot = PlayerTypeSpot.Occupied;
+        GD.Print($"Lobby: Player added to spot {spot.Id}. Spot is now occupied.");
+        GD.Print($"Lobby : nb of available spots {_spots.Count(x => x.PlayerSpot == PlayerTypeSpot.Vacant)}");
     }
 
     private void UpdatePlayer()
@@ -194,7 +221,12 @@ public partial class Lobby : Node3D, IScene
 
     private void RetirePlayer()
     {
-
+        var nodePlayer = lobbyLocation.GetNodeOrNull<Node3D>("Player_1");
+        if (nodePlayer != null)
+        {
+            lobbyLocation.RemoveChild(nodePlayer);
+            GD.Print("Lobby: Player_1 removed from the lobby.");
+        }
     }
 
     private void SetQuizzGame()

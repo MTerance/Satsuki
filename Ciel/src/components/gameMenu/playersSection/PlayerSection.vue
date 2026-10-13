@@ -105,7 +105,7 @@ let playerIdCounter = 1;
 // Emit events upward instead of handling socket logic here
 const emit = defineEmits<{
   (e: 'player-added', payload: Player): void;
-  (e: 'player-removed', id: number): void;
+  (e: 'player-removed', id: string): void;
 }>();
 
 const openPlayerModal = () => {
@@ -122,7 +122,13 @@ const submitPlayer = () => {
   if (!newPlayerForm.value.name.trim() || !newPlayerForm.value.gender) return;
   if (players.value.length >= playerColors.length) { alert(`Maximum ${playerColors.length} joueurs autorisés`); return; }
 
-  const newPlayer: Player = { id: playerIdCounter++, name: newPlayerForm.value.name.trim(), color: playerColors[players.value.length], gender: newPlayerForm.value.gender as 'male' | 'female' };
+  const newPlayer: Player = 
+  {
+     id: crypto.randomUUID(),
+      name: newPlayerForm.value.name.trim(),
+       color: playerColors[players.value.length],
+        gender: newPlayerForm.value.gender as 'male' | 'female'
+  };
   players.value.push(newPlayer);
   // Notify parent that a player was added
   emit('player-added', newPlayer);
@@ -130,9 +136,21 @@ const submitPlayer = () => {
 };
 
 const addPlayer = () => {
-  if (players.value.length >= playerColors.length) { alert(`Maximum ${playerColors.length} joueurs autorisés`); return; }
-  const newPlayer: Player = { id: playerIdCounter++, name: `Joueur ${players.value.length + 1}`, color: playerColors[players.value.length], gender: 'male' };
+  if (players.value.length >= playerColors.length) 
+  { 
+    alert(`Maximum ${playerColors.length} joueurs autorisés`);
+    return;
+  }
+  const newPlayer: Player = 
+  { 
+    id: crypto.randomUUID(),
+    name: `Joueur ${players.value.length + 1}`,
+    color: playerColors[players.value.length],
+    gender: 'male' 
+  };
   players.value.push(newPlayer);
+  // Notify parent that a player was added
+  emit('player-added', newPlayer);
 };
 
 const removePlayer = (index: number) => {
