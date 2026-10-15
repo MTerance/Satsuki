@@ -205,7 +205,6 @@ public partial class Lobby : Node3D, IScene
             GD.PrintErr("Lobby: Impossible d'ajouter un joueur, tous les spots sont occupés.");
             return;
         }
-
         var spot = _spots.First(x => x.PlayerSpot == PlayerTypeSpot.Vacant);
         var character = new PlayerLoader().LoadPlayerMesh();
         character.Position = spot.Position;

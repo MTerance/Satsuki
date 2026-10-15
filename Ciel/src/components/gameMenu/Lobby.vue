@@ -10,23 +10,24 @@
 import QuizzSelector from './quizzSection/quizzSelector.vue';
 import PlayerSection from './playersSection/PlayerSection.vue';
 import type { Player } from '@/models/player';
+import clientservice, { OrderTarget } from '@/services/clientService';
 
-const onPlayerAdded = (player: Player): void => {
-
+const onPlayerAdded = async (player: Player): Promise<void> => {
+   await clientservice.sendOrder('AddPlayer', player,OrderTarget.SCENE);
 };
 
-const onPlayerUpdated = (player: Player): void => {
-
+const onPlayerUpdated = async (player: Player): Promise<void> => {
+    await clientservice.sendOrder('UpdatePlayer', player, OrderTarget.SCENE);
 };
 
 const onQuizzSelected = (quizzId: string): void => {
 
+
 };
     
-const onPlayerRemoved = (id: string): void => {
-
+const onPlayerRemoved = async (id: string): Promise<void> => {
+    await clientservice.sendOrder('RetirePlayer', id, OrderTarget.SCENE);
 };
-
 
 const IsGameCompleted = (): boolean => {
 
