@@ -133,14 +133,16 @@ public partial class Lobby : Node3D, IScene
         switch (order)
         {
             case "AddPlayer":
-                var playerProfile = JsonSerializer.Deserialize<PlayerProfile>(messageJson);
-                AddPlayer(playerProfile);
+                var newProfile = JsonSerializer.Deserialize<PlayerProfile>(messageJson);
+                AddPlayer(newProfile);
                 break;
             case "UpdatePlayer":
-                UpdatePlayer();
+                var updatedProfile = JsonSerializer.Deserialize<PlayerProfile>(messageJson);
+                UpdatePlayer(updatedProfile);    
                 break;
             case "RetirePlayer":
-                RetirePlayer();
+                var retiredProfile = JsonSerializer.Deserialize<PlayerProfile>(messageJson);
+                RetirePlayer(retiredProfile.Id);
                 break;
             case "SetQuizzGame":
                 SetQuizzGame();
@@ -212,21 +214,52 @@ public partial class Lobby : Node3D, IScene
         spot.PlayerSpot = PlayerTypeSpot.Occupied;
         GD.Print($"Lobby: Player added to spot {spot.Id}. Spot is now occupied.");
         GD.Print($"Lobby : nb of available spots {_spots.Count(x => x.PlayerSpot == PlayerTypeSpot.Vacant)}");
-        _serverManager.BroadcastMessageToAllClients("PlayerAdded", JsonSerializer.Serialize(player));
+        _players.Add(player);
+        var message = JsonSerializer.Serialize(new
+        {
+            Order = "PlayerAdded",
+            Player = JsonSerializer.Serialize(player)
+        });
+        _ = _serverManager.BroadcastMessageToAllClients(message);
     }
 
     private void UpdatePlayer(PlayerProfile player)
     {
+        var oldPlayer = _players.FirstOrDefault(p => p.Id == player.Id);
+        if (oldPlayer != null)
+        {
+            oldPlayer.Name = player.Name;
+            oldPlayer.Gender = player.Gender;
+            oldPlayer.Color = player.Color;
+            GD.Print($"Lobby: Player {player.Id} updated.");
+        }
+        else
+        {
+            GD.PrintErr($"Lobby: Player {player.Id} not found for update.");
+        }
+        _ = _serverManager.BroadcastMessageToAllClients(JsonSerializer.Serialize(new
+        {
+            Order = "PlayerUpdated",
+            Player = JsonSerializer.Serialize(player)
+        }));
 
     }
 
-    private void RetirePlayer()
+    private void RetirePlayer(Guid idPlayer)
     {
-        var nodePlayer = lobbyLocation.GetNodeOrNull<Node3D>("Player_1");
+        var nodePlayer = lobbyLocation.GetNodeOrNull<Node3D>($"Player_{idPlayer}");
         if (nodePlayer != null)
         {
+            var idSpot = _players.FirstOrDefault(p => p.Id == idPlayer).IdSpot; // Mark the spot as vacant
+            _spots.FirstOrDefault(s => s.Id == idSpot).PlayerSpot = PlayerTypeSpot.Vacant;
+            _players.RemoveAll(p => p.Id == idPlayer);
             lobbyLocation.RemoveChild(nodePlayer);
-            GD.Print("Lobby: Player_1 removed from the lobby.");
+            GD.Print($"Lobby: Player_{idPlayer} removed from the lobby.");
+            _ = _serverManager.BroadcastMessageToAllClients(JsonSerializer.Serialize(new
+            {
+                Order = "PlayerRetired",
+                PlayerId = idPlayer
+            }));
         }
     }
 

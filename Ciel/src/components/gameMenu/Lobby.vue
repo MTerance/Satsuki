@@ -1,5 +1,5 @@
 <template>
-<PlayerSection  @player-added="onPlayerAdded" @player-removed="onPlayerRemoved"></PlayerSection>
+<PlayerSection  @player-added="onPlayerAdded" @player-removed="onPlayerRemoved" @player-updated="onPlayerUpdated"></PlayerSection>
 <QuizzSelector></QuizzSelector>
 
 <button active="Is">Start Game</button>
@@ -15,6 +15,14 @@ const onPlayerAdded = (player: Player): void => {
 
 };
 
+const onPlayerUpdated = (player: Player): void => {
+
+};
+
+const onQuizzSelected = (quizzId: string): void => {
+
+};
+    
 const onPlayerRemoved = (id: string): void => {
 
 };

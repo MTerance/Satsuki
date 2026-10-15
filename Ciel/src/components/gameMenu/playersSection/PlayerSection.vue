@@ -106,11 +106,12 @@ let playerIdCounter = 1;
 const emit = defineEmits<{
   (e: 'player-added', payload: Player): void;
   (e: 'player-removed', id: string): void;
+  (e: 'player-updated', payload: Player): void;
 }>();
 
-const openPlayerModal = () => {
+const openPlayerModal = (player?: Player) => {
   isPlayerModalOpen.value = true;
-  newPlayerForm.value = { name: '', gender: '' };
+  newPlayerForm.value = player ? { name: player.name, gender: player.gender } : { name: '', gender: '' };
 };
 
 const closePlayerModal = () => {
@@ -129,9 +130,16 @@ const submitPlayer = () => {
        color: playerColors[players.value.length],
         gender: newPlayerForm.value.gender as 'male' | 'female'
   };
-  players.value.push(newPlayer);
-  // Notify parent that a player was added
-  emit('player-added', newPlayer);
+  
+  const existingPlayerIndex = players.value.findIndex(player => player.id === newPlayer.id);
+  if (existingPlayerIndex !== -1) {
+    players.value[existingPlayerIndex] = newPlayer;
+    emit('player-updated', newPlayer);
+  } else {
+    players.value.push(newPlayer);
+    // Notify parent that a player was added
+    emit('player-added', newPlayer);
+  }
   closePlayerModal();
 };
 
