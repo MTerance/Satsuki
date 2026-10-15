@@ -212,9 +212,10 @@ public partial class Lobby : Node3D, IScene
         spot.PlayerSpot = PlayerTypeSpot.Occupied;
         GD.Print($"Lobby: Player added to spot {spot.Id}. Spot is now occupied.");
         GD.Print($"Lobby : nb of available spots {_spots.Count(x => x.PlayerSpot == PlayerTypeSpot.Vacant)}");
+        _serverManager.BroadcastMessageToAllClients("PlayerAdded", JsonSerializer.Serialize(player));
     }
 
-    private void UpdatePlayer()
+    private void UpdatePlayer(PlayerProfile player)
     {
 
     }
