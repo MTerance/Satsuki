@@ -1,13 +1,13 @@
 <template>
     <div>
         <h1>Title</h1>
-        <button class="btn-base btn-secondary">Go to Lobby</button>
+        <button class="btn-base btn-secondary" @click="GoToLobby">Go to Lobby</button>
     </div>
 </template>
 
 <script setup lang="ts">
     import {onMounted, onUnmounted} from 'vue'; 
-    import clientService from '@/services/clientService';
+    import clientService, { OrderTarget } from '@/services/clientService';
 
 
     onMounted(() => {
@@ -19,7 +19,7 @@
     });
 
     const GoToLobby = async () => {
-        await clientService.sendOrder('GoToScene', 'Lobby');
+        await clientService.sendOrder('GoToScene', 'Lobby', OrderTarget.SYSTEM);
     };
 
 </script>

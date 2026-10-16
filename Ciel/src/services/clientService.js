@@ -69,10 +69,12 @@ class ClientService {
     }
 
     // Route un message entrant vers les handlers enregistrés selon son "order"
+    // (le serveur envoie tantôt 'order', tantôt 'Order' en PascalCase, ex: SceneChanged)
     _routeMessage(payload) {
         const data = payload?.data;
-        if (data && typeof data === 'object' && data.order) {
-            const set = this._messageHandlers.get(data.order);
+        const order = data && typeof data === 'object' ? (data.order ?? data.Order) : null;
+        if (order) {
+            const set = this._messageHandlers.get(order);
             if (set) for (const cb of set) cb(data);
         }
         // Handler générique (tous messages)

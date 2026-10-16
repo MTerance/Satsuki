@@ -92,8 +92,8 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 			_serverManager.ClientConnected += OnClientConnected;
 			_serverManager.ClientTypeReceived += OnClientTypeReceived;
 			_serverManager.SystemOrderReceived += OnSystemOrderReceived;
-			_serverManager.SceneOrderReceived += OnSceneOrderReceived;
-			_serverManager.QuizzOrderReceived += OnQuizzOrderReceived;
+			//_serverManager.SceneOrderReceived += OnSceneOrderReceived;
+			//_serverManager.QuizzOrderReceived += OnQuizzOrderReceived;
 			_serverManager.SetMainGameScene(this);
 		}
 
@@ -114,8 +114,8 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 			_serverManager.ClientConnected -= OnClientConnected;
 			_serverManager.ClientTypeReceived -= OnClientTypeReceived;
 			_serverManager.SystemOrderReceived -= OnSystemOrderReceived;
-			_serverManager.SceneOrderReceived -= OnSceneOrderReceived;
-			_serverManager.QuizzOrderReceived -= OnQuizzOrderReceived;
+			//_serverManager.SceneOrderReceived -= OnSceneOrderReceived;
+			//_serverManager.QuizzOrderReceived -= OnQuizzOrderReceived;
 		}
 
 		GD.Print("MainGameScene: Nettoyage termine");
@@ -269,9 +269,15 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 		{
 			var state = GetSceneState();
 			var stateJson = JsonSerializer.Serialize(state);
-			var message = $"SCENE_CHANGED:{sceneName}:{stateJson}";
-
+			var message =   JsonSerializer.Serialize(
+				new
+				{
+					Order = "SceneChanged",
+					NewScene = sceneName,
+					SceneState = stateJson
+				});
 			_ = _serverManager.BroadcastMessageToAllClients(message);
+			GD.Print(message);
 			GD.Print($"MainGameScene: Broadcast changement de scène '{sceneName}'");
 		}
 		catch (Exception ex)
@@ -412,10 +418,39 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 			{
 				GD.Print($"MainGameScene: Ordre systeme '{orderRequest.Order}'");
 			}
+			switch (orderRequest.Order)
+			{
+				case "GoToScene":
+					GD.Print($"MainGameScene: Ordre systeme GoToScene recu, scene cible: {orderRequest.JsonData}");
+					GoToScene(orderRequest.JsonData);
+					break;
+				default:
+					GD.Print($"MainGameScene: Ordre systeme inconnu '{orderRequest.Order}'");
+					break;
+			}
 		}
 		catch (Exception ex)
 		{
 			GD.PrintErr($"MainGameScene: Erreur parsing ordre systeme: {ex.Message}");
+		}
+	}
+
+	private void GoToScene(string sceneName)
+	{
+		switch (sceneName)
+		{
+			case "Credits":
+				LoadCredits();
+				break;
+			case "Title":
+				LoadTitle();
+				break;
+			case "Lobby":
+				LoadLobby();
+				break;
+			default:
+				GD.PrintErr($"MainGameScene: Scene inconnue '{sceneName}'");
+				break;
 		}
 	}
 

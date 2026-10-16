@@ -3,7 +3,7 @@
     <div class="card players-section">
       <div class="card-header">
         <h3 class="card-title">Joueurs</h3>
-        <button class="btn-base btn-primary add-player-button" @click="openPlayerModal">
+        <button class="btn-base btn-primary add-player-button" @click="openPlayerModal(undefined)">
           + Add Player
         </button>
       </div>

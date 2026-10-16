@@ -14,17 +14,6 @@ public partial class GameMenuContainer : VBoxContainer
 
 	public override void _Ready()
 	{
-		/*
-		string controlPath = "res://addons/decor_manager/Scenes/player_zone_placement_container.tscn";
-		if (!ResourceLoader.Exists(controlPath))
-		{
-			GD.PrintErr($"Resource not found: {controlPath}");
-			return;
-		}
-		PackedScene controlScene = ResourceLoader.Load<PackedScene>(controlPath);
-		Control control = controlScene.Instantiate<Control>();
-		AddChild(control);
-		*/
 		_cameraPlacementPanel = FindChild("CameraPlacementContainer", true, false) as CameraPlacementTemplate;
 		if (_cameraPlacementPanel == null)
 			GD.PrintErr("CameraPlacementContainer node not found.");

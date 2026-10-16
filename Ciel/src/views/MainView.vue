@@ -17,6 +17,7 @@ const isReady = ref(false);
 
 let stopConnectionWatch: (() => void) | null = null;
 let stopSceneWatch: (() => void) | null = null;
+let stopSceneChanged: (() => void) | null = null;
 
 // Correspondance scène serveur (nom de classe C#) → route enfant
 const SCENE_ROUTES: Record<string, string> = {
@@ -114,6 +115,14 @@ onMounted(async () => {
     goToScene(scene);
   });
 
+  // S'abonner à l'ordre entrant 'SceneChanged' émis par le serveur
+  stopSceneChanged = clientService.onOrder('SceneChanged', (data: any) => {
+    console.log('[MainView] Données de l\'ordre SceneChanged:', data);
+    const scene = data.NewScene;
+    console.log(`[MainView] Ordre entrant SceneChanged reçu — scène: ${scene ?? 'aucune'}`);
+    goToScene(scene);
+  });
+
   await evaluateAndRoute();
   isReady.value = true;
 });
@@ -121,6 +130,7 @@ onMounted(async () => {
 onUnmounted(() => {
   stopConnectionWatch?.();
   stopSceneWatch?.();
+  stopSceneChanged?.();
 });
 </script>
 

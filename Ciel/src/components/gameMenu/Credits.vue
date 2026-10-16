@@ -1,16 +1,15 @@
 <template>
     <div>
         <h1>Credits</h1>
-        <p>Game developed by MTerance.</p>
-
-        <button class="btn-base btn-secondary">Go to Title</button>
+  
+        <button class="btn-base btn-secondary" @click="GoToTitle">Go to Title</button>
     </div>
 </template>
 
 <script setup lang="ts">
 
     import {onMounted, onUnmounted} from 'vue';
-    import clientService from '@/services/clientService';
+    import clientService, { OrderTarget } from '@/services/clientService';
 
 
     onMounted(() => {
@@ -24,7 +23,7 @@
 
     const GoToTitle = async () => {
       //clientService.  // Logic to navigate to the Title page
-      await clientService.sendOrder('GoToScene', 'Title');
+      await clientService.sendOrder('GoToScene', 'Title',OrderTarget.SYSTEM);
     };
 
 </script>
