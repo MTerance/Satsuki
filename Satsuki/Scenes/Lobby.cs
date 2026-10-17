@@ -232,7 +232,6 @@ public partial class Lobby : Node3D, IScene
         (character as Character)?.SetAnimation(CharacterAnimation.Idle);
 		GD.Print($"Lobby: Adding player {player.Id} to spot {spot.Id} at position {spot.Position}.");
 		lobbyLocation.AddChild(character);
-
 		GD.Print($"Lobby: Player {player.Id} added to the scene at position {character.Position.X},{character.Position.Y},{character.Position.Z}.");
 		spot.PlayerSpot = PlayerTypeSpot.Occupied;
 		GD.Print($"Lobby: Player added to spot {spot.Id}. Spot is now occupied.");

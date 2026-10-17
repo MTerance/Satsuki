@@ -35,7 +35,6 @@ public partial class Character : Node3D
 				break;
 			case CharacterAnimation.Sit:
 				animationPlayer.Play("Sitting Idle/mixamo_com");
-
 				break;
 			default:
 				throw new ArgumentOutOfRangeException(nameof(animation), animation, null);

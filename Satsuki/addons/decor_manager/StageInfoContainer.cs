@@ -84,7 +84,6 @@ public partial class StageInfoContainer : Control
 		}
 		var scene = GD.Load<PackedScene>(path);
 		return scene;
-		//var currentScene = EditorInterface.Singleton.GetEditedSceneRoot();
 	}
 
 	private string GetStageNameFromPath(string path)
@@ -106,7 +105,6 @@ public partial class StageInfoContainer : Control
 			SceneManager.Instance.LoadMainStage(scene);
 			// EmitSignal(SignalName.LoadStageAssetRequested,scene);   // Do something with the loaded scene
 		}
-
 	}
 
 	private void OnStageFileSelected(string path)
