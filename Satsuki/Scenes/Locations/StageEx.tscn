@@ -27,6 +27,9 @@ albedo_texture = ExtResource("5_xdtd5")
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8kvo6"]
 albedo_texture = ExtResource("7_bhomg")
 
+[sub_resource type="ViewportTexture" id="ViewportTexture_4d8j6"]
+viewport_path = NodePath("MainScreen/SubViewport")
+
 [node name="StageEx" type="Node3D" unique_id=585424871]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 81.62498, 0, 0)
 script = ExtResource("1_107ab")
@@ -120,3 +123,10 @@ mesh = ExtResource("8_nt2qc")
 transform = Transform3D(0.061410654, 0, 0.07892232, 0, 0.1, 0, -0.07892232, 0, 0.061410654, 128.81667, -2.43295, 21.783157)
 material_override = SubResource("StandardMaterial3D_8kvo6")
 mesh = ExtResource("8_nt2qc")
+
+[node name="MainScreen" type="Sprite3D" parent="." unique_id=213862883]
+transform = Transform3D(-4.5619235, 0, -3.98816e-07, 0, 4.5619235, 0, 3.98816e-07, 0, -4.5619235, 81.34443, 19.818335, 24.489685)
+texture = SubResource("ViewportTexture_4d8j6")
+
+[node name="SubViewport" type="SubViewport" parent="MainScreen" unique_id=756751468]
+size = Vector2i(1080, 512)

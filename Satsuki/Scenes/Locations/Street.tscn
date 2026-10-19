@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://biday0722gpr7"]
 
+[ext_resource type="PackedScene" uid="uid://dhu1rpynv24a5" path="res://Scenes/Examples/LobbyMenuScreen.tscn" id="1_68sye"]
 [ext_resource type="PackedScene" uid="uid://272iop7et8h5" path="res://Assets/TestStage/modern_nyc_dwellings.glb" id="1_mmwpp"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_akpc8"]
@@ -14,10 +15,31 @@ background_mode = 2
 sky = SubResource("Sky_kpar4")
 tonemap_mode = 2
 
+[sub_resource type="ViewportTexture" id="ViewportTexture_ssidi"]
+viewport_path = NodePath("LobbyScreenMesh/SubViewport")
+
 [node name="Node2D" type="Node3D" unique_id=163861979]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=226637733]
 environment = SubResource("Environment_2inu2")
+
+[node name="LobbyScreenMesh" type="Sprite3D" parent="." unique_id=783613477]
+transform = Transform3D(0.37797892, 0, 0, 0, 0.37797892, 0, 0, 0, 0.37797892, -0.29670382, 9.994323, -38.554737)
+pixel_size = 0.1
+texture = SubResource("ViewportTexture_ssidi")
+
+[node name="SubViewport" type="SubViewport" parent="LobbyScreenMesh" unique_id=1718736640]
+transparent_bg = true
+handle_input_locally = false
+scaling_3d_mode = 5
+canvas_item_default_texture_filter = 3
+size = Vector2i(1446, 339)
+render_target_update_mode = 4
+
+[node name="Node2D" type="Node2D" parent="LobbyScreenMesh/SubViewport" unique_id=123875936]
+
+[node name="LobbyScreen" parent="LobbyScreenMesh/SubViewport" unique_id=1394966607 instance=ExtResource("1_68sye")]
+clip_children = 1
 
 [node name="Sketchfab_Scene" parent="." unique_id=1790918613 instance=ExtResource("1_mmwpp")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32.1618, -17.3995, -59.0409)
@@ -28,6 +50,3 @@ light_energy = 1.5
 light_indirect_energy = 2.234
 light_volumetric_fog_energy = 1.564
 light_angular_distance = 18.56
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=782367061]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7322359, 0)

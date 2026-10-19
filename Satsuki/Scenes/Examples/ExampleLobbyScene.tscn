@@ -2,24 +2,29 @@
 
 [ext_resource type="PackedScene" uid="uid://dhu1rpynv24a5" path="res://Scenes/Examples/LobbyMenuScreen.tscn" id="2_6057n"]
 
-[sub_resource type="ViewportTexture" id="ViewportTexture_6057n"]
-viewport_path = NodePath("Sprite3D/SubViewportContainer/SubViewport")
+[sub_resource type="ViewportTexture" id="ViewportTexture_0n6y8"]
+viewport_path = NodePath("LobbyScreenMesh/SubViewportContainer/SubViewport")
 
 [node name="ExampleLobbyScene" type="Node3D" unique_id=740103462]
 
-[node name="Sprite3D" type="Sprite3D" parent="." unique_id=430207410]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.736661, 0)
-texture = SubResource("ViewportTexture_6057n")
+[node name="LobbyScreenMesh" type="Sprite3D" parent="." unique_id=430207410]
+transform = Transform3D(0.16958982, 0, 0, 0, 0.16958982, 0, 0, 0, 0.16958982, 0, 5.7102556, 1.6344144)
+pixel_size = 0.1
+texture = SubResource("ViewportTexture_0n6y8")
 
-[node name="SubViewportContainer" type="SubViewportContainer" parent="Sprite3D" unique_id=604113937]
-offset_right = 1156.0
-offset_bottom = 654.0
+[node name="SubViewportContainer" type="SubViewportContainer" parent="LobbyScreenMesh" unique_id=56186395]
+offset_right = 40.0
+offset_bottom = 40.0
 
-[node name="SubViewport" type="SubViewport" parent="Sprite3D/SubViewportContainer" unique_id=112019347]
+[node name="SubViewport" type="SubViewport" parent="LobbyScreenMesh/SubViewportContainer" unique_id=112019347]
+transparent_bg = true
 handle_input_locally = false
-size = Vector2i(2550, 1330)
+scaling_3d_mode = 5
+canvas_item_default_texture_filter = 3
+size = Vector2i(1446, 339)
 render_target_update_mode = 4
 
-[node name="Node2D" type="Node2D" parent="Sprite3D/SubViewportContainer/SubViewport" unique_id=1211505608]
+[node name="Node2D" type="Node2D" parent="LobbyScreenMesh/SubViewportContainer/SubViewport" unique_id=1211505608]
 
-[node name="LobbyScreen" parent="Sprite3D/SubViewportContainer/SubViewport" unique_id=1394966607 instance=ExtResource("2_6057n")]
+[node name="LobbyScreen" parent="LobbyScreenMesh/SubViewportContainer/SubViewport" unique_id=1394966607 instance=ExtResource("2_6057n")]
+clip_children = 1

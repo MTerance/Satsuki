@@ -229,7 +229,7 @@ public partial class Lobby : Node3D, IScene
 		character.Position = spot.Position;
 		character.Name = $"Player_{player.Id}";
 		GD.Print($"Lobby: Player {player.Id} mesh loaded and positioned at {character.Position.X},{character.Position.Y},{character.Position.Z}.");
-        (character as Character)?.SetAnimation(CharacterAnimation.Idle);
+		(character as Character)?.SetAnimation(CharacterAnimation.Idle);
 		GD.Print($"Lobby: Adding player {player.Id} to spot {spot.Id} at position {spot.Position}.");
 		lobbyLocation.AddChild(character);
 		GD.Print($"Lobby: Player {player.Id} added to the scene at position {character.Position.X},{character.Position.Y},{character.Position.Z}.");
