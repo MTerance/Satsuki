@@ -109,10 +109,60 @@ export interface ScreenManagerAPI {
   getBestDisplay: (preferences?: DisplayPreferences) => Promise<DisplayInfo>;
 }
 
+// Satsuki TCP API (serveur Godot)
+export interface SatsukiConnectOptions {
+  host?: string;
+  port?: number;
+  clientType?: 'BACKEND' | 'PLAYER' | 'OTHER';
+  password?: string;
+}
+
+export interface SatsukiOrderRequest {
+  ClientId?: string;
+  Target: 'System' | 'Scene' | 'Quizz' | string;
+  Order: string;
+  JsonData?: unknown;
+}
+
+export interface SatsukiMessagePayload {
+  raw: string;
+  data: any | null;
+}
+
+export interface SatsukiGameStatePayload {
+  scene: string | null;
+  state: unknown;
+}
+
+export interface SatsukiStatus {
+  connected: boolean;
+  host?: string;
+  port?: number;
+  clientId?: string | null;
+  clientType?: string | null;
+  gameState?: unknown;
+  currentScene?: string | null;
+}
+
+export interface SatsukiAPI {
+  connect: (opts?: SatsukiConnectOptions) => Promise<{ success: boolean; message: string }>;
+  sendOrder: (orderRequest: SatsukiOrderRequest) => Promise<{ success: boolean; message: string }>;
+  sendRaw: (obj: unknown) => Promise<{ success: boolean; message: string }>;
+  disconnect: () => Promise<{ success: boolean; message: string }>;
+  getStatus: () => Promise<SatsukiStatus>;
+  requestGameState: () => Promise<{ success: boolean; message: string }>;
+  onMessage: (callback: (payload: SatsukiMessagePayload) => void) => void;
+  onStatus: (callback: (status: SatsukiStatus) => void) => void;
+  onError: (callback: (error: string) => void) => void;
+  onGameState: (callback: (payload: SatsukiGameStatePayload) => void) => void;
+  removeAllListeners: () => void;
+}
+
 // Extend Window interface to include our APIs
 declare global {
   interface Window {
     websocket: WebSocketAPI;
+    satsuki: SatsukiAPI;
     database: {
       addUser: (userData: { name: string; email: string }) => Promise<any>;
       getUsers: () => Promise<any[]>;

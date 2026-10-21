@@ -53,16 +53,22 @@ namespace Satsuki.addons.decor_manager
             currentSceneRoot.Name = "DecorManagerSetup";
             currentSceneRoot.Position = Vector3.Zero;
             // ----------------
-
+            
             var packedScene = new PackedScene();
             packedScene.Pack(currentSceneRoot);
             var tempScenePath = "res://addons/decor_manager/DecorManager.tscn";
             ResourceSaver.Save(packedScene, tempScenePath);
             EditorInterface.Singleton.OpenSceneFromPath(tempScenePath);
+            
 
             // ----------------
 
-            _currentSceneRoot = EditorInterface.Singleton.GetEditedSceneRoot() as Node3D;
+             _currentSceneRoot = EditorInterface.Singleton.GetEditedSceneRoot() as Node3D;
+            //_currentSceneRoot = currentSceneRoot;
+            if (_currentSceneRoot == null)
+            {
+                GD.PrintErr("Failed to set up the root scene node. The current scene root is null.");
+            }
         }
 
         public void AddNodeToScene(Node3D node)
@@ -87,24 +93,6 @@ namespace Satsuki.addons.decor_manager
             else
                 _currentSceneRoot.RemoveChild(node);
             node.QueueFree();
-            /*
-
-            if (_currentSceneRoot == null 
-                || _loadedScene == null)
-            {
-                GD.PrintErr("Current scene root is not set. Call SetupRootSceneNode() first.");
-                return;
-            }
-            if (node.GetParent() == _loadedScene)
-            {
-                _loadedScene.RemoveChild(node);
-                node.QueueFree();
-            }
-            else
-            {
-                GD.PrintErr("Node is not a child of the loaded scene.");
-            }
-            */
         }
 
         public void LoadMainStage(PackedScene scene)

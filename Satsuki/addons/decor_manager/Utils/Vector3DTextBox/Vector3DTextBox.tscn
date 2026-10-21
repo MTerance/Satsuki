@@ -1,0 +1,30 @@
+[gd_scene format=3 uid="uid://bp136d28cqn4u"]
+
+[ext_resource type="Script" uid="uid://q06c2w1hyqt5" path="res://addons/decor_manager/Utils/Vector3DTextBox/Vector3dTextBox.cs" id="1_3jshi"]
+[ext_resource type="PackedScene" uid="uid://b8r03mtekbchm" path="res://addons/decor_manager/Utils/TextBox/TextBox.tscn" id="1_mfsby"]
+
+[node name="Control" type="HBoxContainer" unique_id=950821846]
+custom_minimum_size = Vector2(0, 15)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -753.0
+offset_bottom = -617.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_3jshi")
+
+[node name="Label" type="Label" parent="." unique_id=703853211]
+layout_mode = 2
+text = "Label"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PositionX" parent="." unique_id=1388432599 instance=ExtResource("1_mfsby")]
+layout_mode = 2
+
+[node name="PositionY" parent="." unique_id=1227424399 instance=ExtResource("1_mfsby")]
+layout_mode = 2
+
+[node name="PositionZ" parent="." unique_id=638765955 instance=ExtResource("1_mfsby")]
+layout_mode = 2

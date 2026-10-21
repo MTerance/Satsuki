@@ -24,7 +24,8 @@ namespace Satsuki.Scenes
 			_sceneStartTime = DateTime.UtcNow;
 			GD.Print("MainMenu: Initialisation du menu principal...");
 			GD.Print("MainMenu: Menu initialise");
-		}
+            GD.Print($"LOG : Scene {GetSceneName()} initialisee a " + DateTime.Now.ToString("o"));
+        }
 
 		private string FormatElapsedTime(double seconds)
 		{
@@ -63,5 +64,10 @@ namespace Satsuki.Scenes
 				}
 			};
 		}
-	}
+
+        public string GetSceneName()
+        {
+			return "MAINMENU";  
+		}
+    }
 }

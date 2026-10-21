@@ -37,7 +37,7 @@ public partial class StageListContainer : Control
 
 		_listIndexStage = new List<int>();
 		_stageInfoList.ItemSelected += OnStageInfoListItemSelected;
-		GeStageList();
+		GetStageList();
 	}
 
 	private void _loadButton_Pressed()
@@ -56,9 +56,11 @@ public partial class StageListContainer : Control
 	{
 	}
 
-	private void GeStageList()
+	private void GetStageList()
 	{
-		StageResourceBuilder.GetStages().ForEach(stage =>
+		_listIndexStage.Clear();
+		_stageInfoList.Clear();
+        StageResourceBuilder.GetStages().ForEach(stage =>
 		{
 			_listIndexStage.Add(stage.Item1);
 			_stageInfoList.AddItem(stage.Item2,null,true);

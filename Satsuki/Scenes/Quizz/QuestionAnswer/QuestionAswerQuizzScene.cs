@@ -1,54 +1,14 @@
 using Godot;
 using Godot.Collections;
 using Satsuki.Interfaces.Quizz;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Net.Http.Json;
+using Satsuki.Models.Resources;
+using Satsuki.Scenes.Quizz.QuestionAnswer.Models;
 using System.Text.Json;
 
 
-public class MediaModel
-{
-	public enum MediaType
-	{
-		Image,
-		Audio,
-		Video
-	}
-	public MediaType Type { get; set; }
-	public string Path { get; set; } // Path to media file
-	public MediaModel(MediaType type, string path)
-	{
-		Type = type;
-		Path = path;
-	}
-}
-
-public class QuestionAnswerQuizzModel : IQuizzModel
-{
-	public enum ShowStateMedia
-	{
-		BeforeQuestion,
-		BeforeAnswer,
-		DuringQuestion,
-		DuringAnswer,
-		AfterAnswer
-	}
-
-	public string Question { get; set; }
-	public string Answer { get; set; }
-	public System.Collections.Generic.Dictionary<ShowStateMedia, MediaModel> Medias { get; set; } // Path to media file (image, audio, video)
-	public QuestionAnswerQuizzModel(string question, string answer, System.Collections.Generic.Dictionary<ShowStateMedia, MediaModel> medias = null)
-	{
-		Question = question;
-		Answer = answer;
-		Medias = medias ?? new System.Collections.Generic.Dictionary<ShowStateMedia, MediaModel>();
-	}
-}
-
 public partial class QuestionAswerQuizzScene : Control, IQuizz
 {
+	private const string QuizzTypeName = "QuestionAnswerQuizz";
 	private Label questionLabel;
 	private Label answerLabel;
 	private GameState currentState;
@@ -80,6 +40,23 @@ public partial class QuestionAswerQuizzScene : Control, IQuizz
 		}
 	}
 
+    public string GetQuizzTypeName()
+    {
+        return QuizzTypeName;
+    }
+
+    public void SetQuizzContent(IQuizzModel model)
+	{
+		if (model is QuestionAnswerQuizzModel questionAnswerModel)
+		{
+			currentQuizz = questionAnswerModel;
+		}
+		else
+		{
+			GD.PrintErr("Invalid quizz model type");
+		}
+	}
+
 	public string GetQuizzState()
 	{
 		var quizzState = new Dictionary
@@ -95,8 +72,8 @@ public partial class QuestionAswerQuizzScene : Control, IQuizz
 	{
 		var medias = new System.Collections.Generic.Dictionary<QuestionAnswerQuizzModel.ShowStateMedia, MediaModel>
 		{
-			{ QuestionAnswerQuizzModel.ShowStateMedia.DuringQuestion, new MediaModel(MediaModel.MediaType.Image, "res://Assets/Img/drapeau-france-2.png") },
-			{ QuestionAnswerQuizzModel.ShowStateMedia.DuringAnswer, new MediaModel(MediaModel.MediaType.Image, "res://Assets/Img/La_Tour_Eiffel.webp") }
+			{ QuestionAnswerQuizzModel.ShowStateMedia.DuringQuestion, new MediaModel("res://Assets/Img/drapeau-france-2.png", MediaModel.MediaType.Image) },
+			{ QuestionAnswerQuizzModel.ShowStateMedia.DuringAnswer, new MediaModel("res://Assets/Img/La_Tour_Eiffel.webp", MediaModel.MediaType.Image) }
 		};
 		currentQuizz = new QuestionAnswerQuizzModel("What is the capital of France?", "The capital of France is Paris.", medias);
 	}
@@ -206,6 +183,8 @@ public partial class QuestionAswerQuizzScene : Control, IQuizz
 	}
 
 	// Called when the node enters the scene tree for the first time.
+	private Satsuki.Systems.ServerManager _serverManager;
+
 	public override void _Ready()
 	{
 		GD.Print("QuestionAswerQuizzScene ready");
@@ -218,6 +197,13 @@ public partial class QuestionAswerQuizzScene : Control, IQuizz
 			GD.PrintErr("Labels not found!");
 			return;
 		}
+
+		_serverManager = GetNodeOrNull<Satsuki.Systems.ServerManager>("/root/ServerManager");
+		if (_serverManager != null)
+		{
+			_serverManager.QuizzOrderReceived += OnQuizzOrderReceived;
+		}
+
 		// pour les besoins de dev de QuestionAnswerQuizzScene
 		/*----------------------------------------------------------------------------------------------------------*/
 		GD.Print("TEST_SetNewQuizz ready");
@@ -225,6 +211,27 @@ public partial class QuestionAswerQuizzScene : Control, IQuizz
 		/*----------------------------------------------------------------------------------------------------------*/
 		StartGame();
 
+	}
+
+	public override void _ExitTree()
+	{
+		if (_serverManager != null)
+		{
+			_serverManager.QuizzOrderReceived -= OnQuizzOrderReceived;
+		}
+		base._ExitTree();
+	}
+
+	private void OnQuizzOrderReceived(string orderRequestJson)
+	{
+		if (Satsuki.Utils.ServerUtils.TryDeserializeOrderRequest(orderRequestJson, out var orderRequest))
+		{
+			GD.Print($"QuestionAswerQuizzScene: Ordre quizz reçu '{orderRequest.Order}'");
+		}
+		else
+		{
+			GD.PrintErr($"QuestionAswerQuizzScene: Impossible de désérialiser l'ordre quizz: {orderRequestJson}");
+		}
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.

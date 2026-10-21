@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://dhu1rpynv24a5"]
+
+[ext_resource type="Texture2D" uid="uid://b0fbehpyhr3eb" path="res://Assets/Img/QuizzPlateau.png" id="1_0n6y8"]
+[ext_resource type="Texture2D" uid="uid://dk27byf61i54v" path="res://Assets/Img/2b6c2646-dfab-4d54-88c9-ba401cfbdba4.png" id="1_thj4d"]
+[ext_resource type="Texture2D" uid="uid://dbgjfge3u71b8" path="res://Assets/Img/BackgroundLobbyScreen.png" id="3_q545u"]
+
+[node name="LobbyScreen" type="Node2D" unique_id=1394966607]
+
+[node name="QuizzPlateau" type="Sprite2D" parent="." unique_id=926560399]
+position = Vector2(723.73425, 173.73428)
+texture = ExtResource("1_0n6y8")
+
+[node name="BackgroundLobbyScreen" type="Sprite2D" parent="." unique_id=1007542444]
+position = Vector2(729, 247)
+scale = Vector2(0.6698895, 0.6698895)
+texture = ExtResource("3_q545u")
+
+[node name="2b6c2646Dfab4d5488c9Ba401Cfbdba4" type="Sprite2D" parent="." unique_id=2017656919]
+position = Vector2(141, 113)
+rotation = -0.15676044
+scale = Vector2(0.19343913, 0.19343913)
+texture = ExtResource("1_thj4d")

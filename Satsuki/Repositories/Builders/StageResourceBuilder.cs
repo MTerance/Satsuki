@@ -8,11 +8,6 @@ using System.Threading.Tasks;
 
 namespace Satsuki.Repositories.Builders
 {
-/*
-#if TOOLS
-    [Tool]
-#endif
-*/
     public class StageResourceBuilder
     {
         public List<Tuple<int, string>> GetStages()

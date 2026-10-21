@@ -20,31 +20,39 @@ namespace Satsuki
 
         public DateTime Timestamp { get; set; }
         public int SequenceNumber { get; private set; }
-        
+
         /// <summary>
-        /// Indique si le message est actuellement crypté
+        /// ID du client qui a envoyÃ© le message
+        /// </summary>
+        public string ClientId { get; set; }
+
+        /// <summary>
+        /// Indique si le message est actuellement cryptÃ©
         /// </summary>
         public bool IsEncrypted => _isEncrypted;
-        
+
         private static int _sequenceCounter = 0;
 
-        public Message(string content)
+        public Message(string content, string clientId = null)
         {
             _content = content;
             _isEncrypted = false;
+            ClientId = clientId;
             Timestamp = DateTime.Now;
             SequenceNumber = System.Threading.Interlocked.Increment(ref _sequenceCounter);
         }
 
         /// <summary>
-        /// Constructeur pour créer un message avec un statut de cryptage spécifique
+        /// Constructeur pour crÃ©er un message avec un statut de cryptage spÃ©cifique
         /// </summary>
         /// <param name="content">Contenu du message</param>
-        /// <param name="isEncrypted">Indique si le contenu est déjà crypté</param>
-        internal Message(string content, bool isEncrypted)
+        /// <param name="isEncrypted">Indique si le contenu est dÃ©jÃ  cryptÃ©</param>
+        /// <param name="clientId">ID du client</param>
+        internal Message(string content, bool isEncrypted, string clientId = null)
         {
             _content = content;
             _isEncrypted = isEncrypted;
+            ClientId = clientId;
             Timestamp = DateTime.Now;
             SequenceNumber = System.Threading.Interlocked.Increment(ref _sequenceCounter);
         }
@@ -52,14 +60,14 @@ namespace Satsuki
         /// <summary>
         /// Crypte le contenu du message
         /// </summary>
-        /// <param name="key">Clé de cryptage (optionnel)</param>
+        /// <param name="key">ClÃ© de cryptage (optionnel)</param>
         /// <param name="iv">Vecteur d'initialisation (optionnel)</param>
-        /// <returns>True si le cryptage a réussi</returns>
+        /// <returns>True si le cryptage a rÃ©ussi</returns>
         public bool Encrypt(byte[] key = null, byte[] iv = null)
         {
             if (_isEncrypted)
             {
-                Console.WriteLine("?? Message déjà crypté");
+                Console.WriteLine("?? Message dÃ©jÃ  cryptÃ©");
                 return false;
             }
 
@@ -70,7 +78,7 @@ namespace Satsuki
                 {
                     _content = encrypted;
                     _isEncrypted = true;
-                    Console.WriteLine($"?? Message #{SequenceNumber} crypté");
+                    Console.WriteLine($"?? Message #{SequenceNumber} cryptÃ©");
                     return true;
                 }
                 return false;
@@ -83,16 +91,16 @@ namespace Satsuki
         }
 
         /// <summary>
-        /// Décrypte le contenu du message
+        /// DÃ©crypte le contenu du message
         /// </summary>
-        /// <param name="key">Clé de décryptage (optionnel)</param>
+        /// <param name="key">ClÃ© de cryptage (optionnel)</param>
         /// <param name="iv">Vecteur d'initialisation (optionnel)</param>
-        /// <returns>True si le décryptage a réussi</returns>
+        /// <returns>True si le dÃ©cryptage a rÃ©ussi</returns>
         public bool Decrypt(byte[] key = null, byte[] iv = null)
         {
             if (!_isEncrypted)
             {
-                Console.WriteLine("?? Message non crypté");
+                Console.WriteLine("?? Message dÃ©jÃ  en clair");
                 return false;
             }
 
@@ -103,75 +111,46 @@ namespace Satsuki
                 {
                     _content = decrypted;
                     _isEncrypted = false;
-                    Console.WriteLine($"?? Message #{SequenceNumber} décrypté");
+                    Console.WriteLine($"?? Message #{SequenceNumber} dÃ©cryptÃ©");
                     return true;
                 }
                 return false;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"? Erreur lors du décryptage du message #{SequenceNumber}: {ex.Message}");
+                Console.WriteLine($"? Erreur lors du dÃ©cryptage du message #{SequenceNumber}: {ex.Message}");
                 return false;
             }
         }
 
         /// <summary>
-        /// Obtient le contenu décrypté sans modifier l'état du message
+        /// Obtient le contenu, en le dÃ©cryptant si nÃ©cessaire
         /// </summary>
-        /// <param name="key">Clé de décryptage (optionnel)</param>
-        /// <param name="iv">Vecteur d'initialisation (optionnel)</param>
-        /// <returns>Contenu décrypté ou contenu original si non crypté</returns>
-        public string GetDecryptedContent(byte[] key = null, byte[] iv = null)
-        {
-            if (!_isEncrypted)
-                return _content;
-
-            try
-            {
-                return MessageCrypto.Decrypt(_content, key, iv);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"? Erreur lors du décryptage: {ex.Message}");
-                return _content; // Retourne le contenu crypté en cas d'erreur
-            }
-        }
-
-        /// <summary>
-        /// Crée une copie cryptée du message sans modifier l'original
-        /// </summary>
-        /// <param name="key">Clé de cryptage (optionnel)</param>
-        /// <param name="iv">Vecteur d'initialisation (optionnel)</param>
-        /// <returns>Nouveau message crypté</returns>
-        public Message CreateEncryptedCopy(byte[] key = null, byte[] iv = null)
+        public string GetContent(byte[] key = null, byte[] iv = null)
         {
             if (_isEncrypted)
-                return new Message(_content, true) { Timestamp = this.Timestamp };
-
-            string encryptedContent = MessageCrypto.Encrypt(_content, key, iv);
-            return new Message(encryptedContent, true) { Timestamp = this.Timestamp };
+            {
+                Decrypt(key, iv);
+            }
+            return _content;
         }
 
         /// <summary>
-        /// Crée une copie décryptée du message sans modifier l'original
+        /// VÃ©rifie si le contenu semble cryptÃ© (format Base64 valide)
         /// </summary>
-        /// <param name="key">Clé de décryptage (optionnel)</param>
-        /// <param name="iv">Vecteur d'initialisation (optionnel)</param>
-        /// <returns>Nouveau message décrypté</returns>
-        public Message CreateDecryptedCopy(byte[] key = null, byte[] iv = null)
+        public bool IsContentEncrypted()
         {
-            if (!_isEncrypted)
-                return new Message(_content, false) { Timestamp = this.Timestamp };
-
-            string decryptedContent = MessageCrypto.Decrypt(_content, key, iv);
-            return new Message(decryptedContent, false) { Timestamp = this.Timestamp };
+            return MessageCrypto.IsEncrypted(_content);
         }
 
+        /// <summary>
+        /// Retourne une reprÃ©sentation string du message
+        /// </summary>
         public override string ToString()
         {
-            string status = _isEncrypted ? "[??CRYPTÉ]" : "[??CLAIR]";
-            string content = _isEncrypted ? "***CONTENU_CRYPTÉ***" : _content;
-            return $"{status} [{Timestamp:HH:mm:ss.fff}] #{SequenceNumber}: {content}";
+            string encStatus = _isEncrypted ? "[CRYPTÃ‰]" : "[CLAIR]";
+            string clientInfo = !string.IsNullOrEmpty(ClientId) ? $"[{ClientId}] " : "";
+            return $"#{SequenceNumber} {encStatus} {clientInfo}{Timestamp:HH:mm:ss.fff}: {(_content?.Length > 50 ? _content.Substring(0, 50) + "..." : _content)}";
         }
     }
 }

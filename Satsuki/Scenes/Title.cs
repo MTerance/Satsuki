@@ -1,5 +1,6 @@
 using Godot;
 using Satsuki.Interfaces;
+using Satsuki.Interfaces.Models;
 using System;
 
 namespace Satsuki.Scenes
@@ -8,6 +9,7 @@ namespace Satsuki.Scenes
 	{
 		private DateTime _sceneStartTime;
 		private TextureRect _logoRect;
+		private Satsuki.Systems.ServerManager _serverManager;
 
 		#region Signals
 		[Signal]
@@ -18,16 +20,38 @@ namespace Satsuki.Scenes
 		{
 			_sceneStartTime = DateTime.UtcNow;
 			GD.Print("Title: Initialisation de l'ecran titre...");
+
+			_serverManager = GetNodeOrNull<Satsuki.Systems.ServerManager>("/root/ServerManager");
+			if (_serverManager != null)
+			{
+				_serverManager.SceneOrderReceived += OnSceneOrderReceived;
+			}
+
 			CreateUI();
 			GD.Print("Title: Ecran titre initialise");
+			GD.Print($"LOG : Scene {GetSceneName()} initialisee a " + DateTime.Now.ToString("o"));
 		}
 
 		private void CreateUI()
 		{
+			/*
 			var canvasLayer = new CanvasLayer();
 			AddChild(canvasLayer);
 
-			var logoTexture = GD.Load<Texture2D>("res://Assets/Img/overlay_logo_small_placeholder.png");
+			var bgTexture = GD.Load<Texture2D>("res://Assets/Img/bg.png");
+			if (bgTexture != null)
+			{
+				var bgRect = new TextureRect
+				{
+					Texture = bgTexture,
+					ExpandMode = TextureRect.ExpandModeEnum.KeepSize,
+					StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered
+				};
+				canvasLayer.AddChild(bgRect);
+				bgRect.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.Center);
+			}
+
+				var logoTexture = GD.Load<Texture2D>("res://Assets/Img/2b6c2646-dfab-4d54-88c9-ba401cfbdba4.png");
 			if (logoTexture != null)
 			{
 				_logoRect = new TextureRect
@@ -43,7 +67,7 @@ namespace Satsuki.Scenes
 			{
 				GD.PrintErr("Title: Logo introuvable a res://Assets/Img/overlay_logo_small_placeholder.png");
 			}
-
+			*/
 			GD.Print("Title: UI creee avec succes");
 		}
 
@@ -88,7 +112,23 @@ namespace Satsuki.Scenes
 
 		public override void _ExitTree()
 		{
+			if (_serverManager != null)
+			{
+				_serverManager.SceneOrderReceived -= OnSceneOrderReceived;
+			}
 			GD.Print("Title: Nettoyage de la scene titre");
+		}
+
+		private void OnSceneOrderReceived(string orderRequestJson)
+		{
+			if (Satsuki.Utils.ServerUtils.TryDeserializeOrderRequest(orderRequestJson, out var orderRequest))
+			{
+				GD.Print($"Title: Ordre scène reçu '{orderRequest.Order}'");
+			}
+			else
+			{
+				GD.PrintErr($"Title: Impossible de désérialiser l'ordre scène: {orderRequestJson}");
+			}
 		}
 
 		public object GetSceneState()
@@ -111,6 +151,11 @@ namespace Satsuki.Scenes
 					Timestamp = DateTime.UtcNow
 				}
 			};
+		}
+
+		public string GetSceneName()
+		{
+			return "TITLE";
 		}
 	}
 }

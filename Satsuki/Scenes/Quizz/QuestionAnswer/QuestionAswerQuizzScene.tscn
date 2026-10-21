@@ -1,9 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://br7jfj63p0fjp"]
+[gd_scene format=3 uid="uid://br7jfj63p0fjp"]
 
 [ext_resource type="Script" uid="uid://7eq8rcr3li6j" path="res://Scenes/Quizz/QuestionAnswer/QuestionAswerQuizzScene.cs" id="1_8fesu"]
 [ext_resource type="Texture2D" uid="uid://bv2m7dvr67olb" path="res://Assets/Img/coffee shop.png" id="2_0qeg4"]
 
-[node name="QuestionAswerQuizzScene" type="Control"]
+[node name="QuestionAswerQuizzScene" type="Control" unique_id=488769396]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -16,14 +16,14 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_8fesu")
 
-[node name="TextureRect" type="TextureRect" parent="."]
+[node name="TextureRect" type="TextureRect" parent="." unique_id=84091372]
 layout_mode = 0
 offset_right = 800.0
 offset_bottom = 600.0
 texture = ExtResource("2_0qeg4")
 expand_mode = 5
 
-[node name="QuizzVBoxContainer" type="VBoxContainer" parent="."]
+[node name="QuizzVBoxContainer" type="VBoxContainer" parent="." unique_id=331487100]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -37,28 +37,28 @@ offset_bottom = 25.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="MarginContainerVisualMedia" type="MarginContainer" parent="QuizzVBoxContainer"]
+[node name="MarginContainerVisualMedia" type="MarginContainer" parent="QuizzVBoxContainer" unique_id=971647116]
 layout_mode = 2
 size_flags_vertical = 0
 
-[node name="mediaDisplay" type="TextureRect" parent="QuizzVBoxContainer/MarginContainerVisualMedia"]
+[node name="mediaDisplay" type="TextureRect" parent="QuizzVBoxContainer/MarginContainerVisualMedia" unique_id=1050967726]
 texture_repeat = 1
 layout_mode = 2
 expand_mode = 5
 
-[node name="QuestionMarginContainer" type="MarginContainer" parent="QuizzVBoxContainer"]
+[node name="QuestionMarginContainer" type="MarginContainer" parent="QuizzVBoxContainer" unique_id=1563839414]
 layout_mode = 2
 
-[node name="QuestionLabel" type="Label" parent="QuizzVBoxContainer/QuestionMarginContainer"]
+[node name="QuestionLabel" type="Label" parent="QuizzVBoxContainer/QuestionMarginContainer" unique_id=238587390]
 layout_mode = 2
 text = "QUESTION_LABEL"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="AnswerMarginContainer" type="MarginContainer" parent="QuizzVBoxContainer"]
+[node name="AnswerMarginContainer" type="MarginContainer" parent="QuizzVBoxContainer" unique_id=119610706]
 layout_mode = 2
 
-[node name="AnswerLabel" type="Label" parent="QuizzVBoxContainer/AnswerMarginContainer"]
+[node name="AnswerLabel" type="Label" parent="QuizzVBoxContainer/AnswerMarginContainer" unique_id=695261295]
 layout_mode = 2
 text = "ANSWER_LABEL"
 horizontal_alignment = 1

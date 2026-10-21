@@ -364,20 +364,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import PlayerSection from './playersSection/PlayerSection.vue';
-
-// Interface pour un joueur
-interface Player {
-    id: number;
-    name: string;
-    color: string;
-    gender: 'male' | 'female';
-}
-
-// Interface pour le formulaire
-interface PlayerForm {
-    name: string;
-    gender: 'male' | 'female' | '';
-}
+import type { PlayerForm } from '@/models/playerForm.ts';
+import type { Player } from '@/models/player.ts';
 
 // Interface pour un quiz
 interface Quiz {
@@ -520,7 +508,7 @@ const sendPlayerAdded = (player: Player): void => {
     }
 };
 
-const sendPlayerRemoved = (playerId: number): void => {
+const sendPlayerRemoved = (playerId: string): void => {
     if (isSocketConnected) {
         const removeData = {
             id: playerId,
@@ -542,7 +530,7 @@ const onPlayerAdded = (player: Player): void => {
     sendPlayerAdded(player);
 };
 
-const onPlayerRemoved = (playerId: number): void => {
+const onPlayerRemoved = (playerId: string): void => {
     // Remove locally if present
     const idx = players.value.findIndex(p => p.id === playerId);
     if (idx !== -1) {
@@ -608,7 +596,7 @@ const submitPlayer = (): void => {
     }
 
     const newPlayer: Player = {
-        id: playerIdCounter++,
+        id: crypto.randomUUID(),
         name: newPlayerForm.value.name.trim(),
         color: playerColors[players.value.length],
         gender: newPlayerForm.value.gender as 'male' | 'female'
@@ -629,7 +617,7 @@ const addPlayer = (): void => {
     }
 
     const newPlayer: Player = {
-        id: playerIdCounter++,
+        id: crypto.randomUUID(),
         name: `Joueur ${players.value.length + 1}`,
         color: playerColors[players.value.length],
         gender: 'male' // Par défaut

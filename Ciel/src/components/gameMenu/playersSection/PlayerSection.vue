@@ -3,7 +3,7 @@
     <div class="card players-section">
       <div class="card-header">
         <h3 class="card-title">Joueurs</h3>
-        <button class="btn-base btn-primary add-player-button" @click="openPlayerModal">
+        <button class="btn-base btn-primary add-player-button" @click="openPlayerModal(undefined)">
           + Add Player
         </button>
       </div>
@@ -91,18 +91,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
+import type { Player } from "@/models/player";
+import type { PlayerForm } from "@/models/playerForm";
 
-interface Player {
-  id: number;
-  name: string;
-  color: string;
-  gender: 'male' | 'female';
-}
-
-interface PlayerForm {
-  name: string;
-  gender: 'male' | 'female' | '';
-}
 
 const playerColors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#FFB347', '#98D8C8'];
 
@@ -114,12 +105,13 @@ let playerIdCounter = 1;
 // Emit events upward instead of handling socket logic here
 const emit = defineEmits<{
   (e: 'player-added', payload: Player): void;
-  (e: 'player-removed', id: number): void;
+  (e: 'player-removed', id: string): void;
+  (e: 'player-updated', payload: Player): void;
 }>();
 
-const openPlayerModal = () => {
+const openPlayerModal = (player?: Player) => {
   isPlayerModalOpen.value = true;
-  newPlayerForm.value = { name: '', gender: '' };
+  newPlayerForm.value = player ? { name: player.name, gender: player.gender } : { name: '', gender: '' };
 };
 
 const closePlayerModal = () => {
@@ -131,17 +123,42 @@ const submitPlayer = () => {
   if (!newPlayerForm.value.name.trim() || !newPlayerForm.value.gender) return;
   if (players.value.length >= playerColors.length) { alert(`Maximum ${playerColors.length} joueurs autorisés`); return; }
 
-  const newPlayer: Player = { id: playerIdCounter++, name: newPlayerForm.value.name.trim(), color: playerColors[players.value.length], gender: newPlayerForm.value.gender as 'male' | 'female' };
-  players.value.push(newPlayer);
-  // Notify parent that a player was added
-  emit('player-added', newPlayer);
+  const newPlayer: Player = 
+  {
+     id: crypto.randomUUID(),
+      name: newPlayerForm.value.name.trim(),
+       color: playerColors[players.value.length],
+        gender: newPlayerForm.value.gender as 'male' | 'female'
+  };
+  
+  const existingPlayerIndex = players.value.findIndex(player => player.id === newPlayer.id);
+  if (existingPlayerIndex !== -1) {
+    players.value[existingPlayerIndex] = newPlayer;
+    emit('player-updated', newPlayer);
+  } else {
+    players.value.push(newPlayer);
+    // Notify parent that a player was added
+    emit('player-added', newPlayer);
+  }
   closePlayerModal();
 };
 
 const addPlayer = () => {
-  if (players.value.length >= playerColors.length) { alert(`Maximum ${playerColors.length} joueurs autorisés`); return; }
-  const newPlayer: Player = { id: playerIdCounter++, name: `Joueur ${players.value.length + 1}`, color: playerColors[players.value.length], gender: 'male' };
+  if (players.value.length >= playerColors.length) 
+  { 
+    alert(`Maximum ${playerColors.length} joueurs autorisés`);
+    return;
+  }
+  const newPlayer: Player = 
+  { 
+    id: crypto.randomUUID(),
+    name: `Joueur ${players.value.length + 1}`,
+    color: playerColors[players.value.length],
+    gender: 'male' 
+  };
   players.value.push(newPlayer);
+  // Notify parent that a player was added
+  emit('player-added', newPlayer);
 };
 
 const removePlayer = (index: number) => {

@@ -4,11 +4,13 @@ const databaseClient = require('./database-client.cjs');
 const websocketHelpers = require('./websocket-helpers.cjs');
 const processChecker = require('./process-checker.cjs');
 const screenManager = require('./screen-manager.cjs');
+const satsukiTcpClient = require('./satsuki-tcp-client.cjs');
 
 module.exports = {
   websocketClient,
   databaseClient,
   websocketHelpers,
   processChecker,
-  screenManager
+  screenManager,
+  satsukiTcpClient
 };

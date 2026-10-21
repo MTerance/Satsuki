@@ -1,5 +1,8 @@
 using Godot;
 using Satsuki.Interfaces.Quizz;
+using Satsuki.Models.Resources;
+using Satsuki.Scenes.Quizz.QCM.Models;
+using Satsuki.Scenes.Quizz.QuestionAnswer.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,56 +12,12 @@ using System.Threading.Tasks;
 
 namespace Satsuki.Scenes.Quizz.QCM
 {
-	public class AnswerQcmQuizzModel
-	{
-		public int Id { get; set; }
-		public string Answer { get; set; }
-		public Tuple<int, int, int> Color { get; set; }
-	}
 
-	public class MediaModel
-    {
-        public enum MediaType
-        {
-            Image,
-            Audio,
-            Video
-        }
-        public string Path { get; set; }
-        public MediaType Type { get; set; }
-        public MediaModel(string path, MediaType type)
-        {
-            Path = path;
-            Type = type;
-        }
-    }
-    public class QCMQuizzModel : IQuizzModel
-	{
-		public enum ShowStateMedia
-		{
-			BeforeQuestion,
-			BeforeAnswer,
-			DuringQuestion,
-			DuringAnswer,
-			AfterAnswer
-		}
-
-		public string Question { get; set; }
-		public List<AnswerQcmQuizzModel> Answers { get; set; }
-		public int RightAnswerId { get; set; } // Id of the right answer
-		public Dictionary<ShowStateMedia, MediaModel> Medias { get; set; } // Path to media file (image, audio, video)
-
-		public QCMQuizzModel(string question, List<AnswerQcmQuizzModel> answers, int rightAnswerId, Dictionary<ShowStateMedia, MediaModel> medias = null)
-		{
-			Question = question;
-			Answers = answers;
-			RightAnswerId = rightAnswerId;
-			Medias = medias ?? new Dictionary<ShowStateMedia, MediaModel>();
-		}
-	}
+   
 
 	public partial class QCMQuizzScene : Control, IQuizz
 	{
+		private const string QuizzTypeName = "QCMQuizz";
 		private Label questionLabel;
 		private GameState currentState;
 		private TextureRect mediaDisplay;
@@ -67,12 +26,30 @@ namespace Satsuki.Scenes.Quizz.QCM
 		//
 
 		private Label ProposalAlpha;
-        private Label ProposalBeta;
-        private Label ProposalGamma;
-        private Label ProposalDelta;
-        //
+		private Label ProposalBeta;
+		private Label ProposalGamma;
+		private Label ProposalDelta;
+		//
 
-        public string GetQuizzState()
+
+		public string GetQuizzTypeName()
+		{
+			return QuizzTypeName;
+		}
+
+		public void SetQuizzContent(IQuizzModel model)
+		{
+			if (model is QCMQuizzModel qcmQuizzModel)
+			{
+				currentQuizz = qcmQuizzModel;
+			}
+			else
+			{
+				GD.PrintErr("Invalid quizz model type");
+			}
+		}
+
+		public string GetQuizzState()
 		{
 			throw new NotImplementedException();
 		}
@@ -115,7 +92,7 @@ namespace Satsuki.Scenes.Quizz.QCM
 		{
 			if (currentQuizz == null)
 			{
-				currentQuizz = JsonSerializer.Deserialize<QCMQuizzModel>(@"{""Id"":1,""Question"":""Quel est le nom du Gundam principalement pilot� par Kira Yamato au d�but de Mobile Suit Gundam SEED ?"",""Answers"":[{""Id"":1,""Answer"":""Aegis Gundam"",""Color"":{""Item1"":255,""Item2"":80,""Item3"":80}},{""Id"":2,""Answer"":""Strike Gundam"",""Color"":{""Item1"":80,""Item2"":200,""Item3"":120}},{""Id"":3,""Answer"":""Blitz Gundam"",""Color"":{""Item1"":80,""Item2"":120,""Item3"":255}},{""Id"":4,""Answer"":""Buster Gundam"",""Color"":{""Item1"":255,""Item2"":190,""Item3"":60}}],""RightAnswerId"":2,""Medias"":{""DuringQuestion"":{""Path"":""res://Assets/Img/strike_gundam.png"",""Type"":""Image""}}}");
+				currentQuizz = JsonSerializer.Deserialize<QCMQuizzModel>(@"{""Id"":1,""Question"":""Quel est le nom du Gundam principalement piloté par Kira Yamato au début de Mobile Suit Gundam SEED ?"",""Answers"":[{""Id"":1,""Answer"":""Aegis Gundam"",""Color"":{""Item1"":255,""Item2"":80,""Item3"":80}},{""Id"":2,""Answer"":""Strike Gundam"",""Color"":{""Item1"":80,""Item2"":200,""Item3"":120}},{""Id"":3,""Answer"":""Blitz Gundam"",""Color"":{""Item1"":80,""Item2"":120,""Item3"":255}},{""Id"":4,""Answer"":""Buster Gundam"",""Color"":{""Item1"":255,""Item2"":190,""Item3"":60}}],""RightAnswerId"":2,""Medias"":{""DuringQuestion"":{""Path"":""res://Assets/Img/strike_gundam.png"",""Type"":""Image""}}}");
 			}
 		}
 
@@ -135,17 +112,17 @@ namespace Satsuki.Scenes.Quizz.QCM
 			}
 			ProposalAlpha.Text = currentQuizz.Answers[0].Answer;
 			ProposalAlpha.Modulate = new Color(currentQuizz.Answers[0].Color.Item1 / 255f, currentQuizz.Answers[0].Color.Item2 / 255f, currentQuizz.Answers[0].Color.Item3 / 255f);
-            ProposalAlpha.Visible = true;
+			ProposalAlpha.Visible = true;
 			ProposalBeta.Visible = true;
-            ProposalBeta.Text = currentQuizz.Answers[1].Answer;
-            ProposalBeta.Modulate = new Color(currentQuizz.Answers[1].Color.Item1 / 255f, currentQuizz.Answers[1].Color.Item2 / 255f, currentQuizz.Answers[1].Color.Item3 / 255f);
-            ProposalGamma.Text = currentQuizz.Answers[2].Answer;
-            ProposalGamma.Visible = true;
-            ProposalGamma.Modulate = new Color(currentQuizz.Answers[2].Color.Item1 / 255f, currentQuizz.Answers[2].Color.Item2 / 255f, currentQuizz.Answers[2].Color.Item3 / 255f);
-            ProposalDelta.Text = currentQuizz.Answers[3].Answer;
-            ProposalDelta.Visible = true;
-            ProposalDelta.Modulate = new Color(currentQuizz.Answers[3].Color.Item1 / 255f, currentQuizz.Answers[3].Color.Item2 / 255f, currentQuizz.Answers[3].Color.Item3 / 255f);
-        }
+			ProposalBeta.Text = currentQuizz.Answers[1].Answer;
+			ProposalBeta.Modulate = new Color(currentQuizz.Answers[1].Color.Item1 / 255f, currentQuizz.Answers[1].Color.Item2 / 255f, currentQuizz.Answers[1].Color.Item3 / 255f);
+			ProposalGamma.Text = currentQuizz.Answers[2].Answer;
+			ProposalGamma.Visible = true;
+			ProposalGamma.Modulate = new Color(currentQuizz.Answers[2].Color.Item1 / 255f, currentQuizz.Answers[2].Color.Item2 / 255f, currentQuizz.Answers[2].Color.Item3 / 255f);
+			ProposalDelta.Text = currentQuizz.Answers[3].Answer;
+			ProposalDelta.Visible = true;
+			ProposalDelta.Modulate = new Color(currentQuizz.Answers[3].Color.Item1 / 255f, currentQuizz.Answers[3].Color.Item2 / 255f, currentQuizz.Answers[3].Color.Item3 / 255f);
+		}
 
 		private void ShowQuestion()
 		{
@@ -166,8 +143,7 @@ namespace Satsuki.Scenes.Quizz.QCM
 		private void WaitingWhilePlayersResponding()
 		{
 			GD.Print("Waiting for Players to Respond");
-        }
--
+		}
 
 		private void ShowRightAnswer()
 		{
@@ -189,17 +165,17 @@ namespace Satsuki.Scenes.Quizz.QCM
 		}
 
 		private void StartGame()
-        {
-            currentState = GameState.Beginning;
+		{
+			currentState = GameState.Beginning;
 			questionLabel.Visible = false;
 			ProposalAlpha.Visible = false;
 			ProposalBeta.Visible = false;
 			ProposalGamma.Visible = false;
 			ProposalDelta.Visible = false;
-            NextStateGame();
-        }
+			NextStateGame();
+		}
 
-        private void NextStateGame()
+		private void NextStateGame()
 		{
 			switch (currentState)
 			{
@@ -240,23 +216,50 @@ namespace Satsuki.Scenes.Quizz.QCM
 			}
 		}
 
+		private Satsuki.Systems.ServerManager _serverManager;
+
 		public override void _Ready()
 		{
 			questionLabel = GetNode<Label>("QuizzVBoxContainer/QuestionMarginContainer/QuestionLabel");
-            ProposalAlpha = GetNode<Label>("QuizzVBoxContainer/ProposalBoxContainerUp/ProposalAlpha");
-            ProposalBeta = GetNode<Label>("QuizzVBoxContainer/ProposalBoxContainerUp/ProposalBeta");
-            ProposalGamma = GetNode<Label>("QuizzVBoxContainer/ProposalBoxContainerDown/ProposalGamma");
-            ProposalDelta = GetNode<Label>("QuizzVBoxContainer/ProposalBoxContainerDown/ProposalDelta");
-            currentState = GameState.Beginning;
-            TEST_CreateQCMQuizz();
-            StartGame();
-        }
+			ProposalAlpha = GetNode<Label>("QuizzVBoxContainer/ProposalBoxContainerUp/ProposalAlpha");
+			ProposalBeta = GetNode<Label>("QuizzVBoxContainer/ProposalBoxContainerUp/ProposalBeta");
+			ProposalGamma = GetNode<Label>("QuizzVBoxContainer/ProposalBoxContainerDown/ProposalGamma");
+			ProposalDelta = GetNode<Label>("QuizzVBoxContainer/ProposalBoxContainerDown/ProposalDelta");
+
+			_serverManager = GetNodeOrNull<Satsuki.Systems.ServerManager>("/root/ServerManager");
+			if (_serverManager != null)
+			{
+				_serverManager.QuizzOrderReceived += OnQuizzOrderReceived;
+			}
+
+			currentState = GameState.Beginning;
+			TEST_CreateQCMQuizz();
+			StartGame();
+		}
+
+		public override void _ExitTree()
+		{
+			if (_serverManager != null)
+			{
+				_serverManager.QuizzOrderReceived -= OnQuizzOrderReceived;
+			}
+			base._ExitTree();
+		}
+
+		private void OnQuizzOrderReceived(string orderRequestJson)
+		{
+			if (Satsuki.Utils.ServerUtils.TryDeserializeOrderRequest(orderRequestJson, out var orderRequest))
+			{
+				GD.Print($"QCMQuizzScene: Ordre quizz reçu '{orderRequest.Order}'");
+			}
+			else
+			{
+				GD.PrintErr($"QCMQuizzScene: Impossible de désérialiser l'ordre quizz: {orderRequestJson}");
+			}
+		}
 
 		public override void _Process(double delta)
 		{
 		}
-
 	}
-
-
 }

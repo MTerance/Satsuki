@@ -5,17 +5,13 @@ using System;
 
 #if TOOLS
 [Tool]
-#endif
+
 public partial class StageInfoContainer : Control
 {
 	private Button _loadStageAssetButton;
 	private LineEdit _stageNameLineEdit;
 	private LineEdit _pathStageAssetLineEdit;
 
-	/*
-	[Signal]
-	public delegate void LoadStageAssetRequestedEventHandler(PackedScene scene);
-	*/
 	private string _stageAssetPath;
 	private string _stageName;
 
@@ -88,7 +84,6 @@ public partial class StageInfoContainer : Control
 		}
 		var scene = GD.Load<PackedScene>(path);
 		return scene;
-		//var currentScene = EditorInterface.Singleton.GetEditedSceneRoot();
 	}
 
 	private string GetStageNameFromPath(string path)
@@ -110,16 +105,11 @@ public partial class StageInfoContainer : Control
 			SceneManager.Instance.LoadMainStage(scene);
 			// EmitSignal(SignalName.LoadStageAssetRequested,scene);   // Do something with the loaded scene
 		}
-
 	}
 
 	private void OnStageFileSelected(string path)
 	{
 		SetStageInfo(path);
 	}
-
-
-
-
-
 }
+#endif

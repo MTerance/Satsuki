@@ -4,78 +4,120 @@ using Satsuki.Scenes;
 using Satsuki.Scenes.Locations;
 using Satsuki.Systems;
 using Satsuki.Manager;
+using Satsuki.Interfaces.Models;
+using Satsuki.Interfaces.GameMode;
 using System;
+using Satsuki.Scenes.GameModes;
+using Satsuki.Scenes.Abstract;
+using Satsuki.Models;
+using System.Text.Json;
+using System.Linq;
+using System.Runtime.InteropServices.Marshalling;
 
 /// <summary>
 /// Scene principale du jeu - Orchestrateur simplifie
 /// Gere Credits, Title et delegue locations au LocationManager
 /// </summary>
-public partial class MainGameScene : Node, IScene
+public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 {
+
+	#region Signals
+
+	[Signal]
+	delegate void GameModeRequestedEventHandler(string newGameMode);
+
+	#endregion
+
 	#region Private Fields
-	private GameServerHandler _gameServerHandler;
-	private LocationManager _locationManager;
+	private ServerManager _serverManager;
+	private GameModeLoader _gameModeLoader;
 	private bool _hasLoadedCredits = false;
 	private bool _debugMode = true;
-	
+
+	//**/
+	private IGameRecord _currentGameRecord;
+	//**/
+
+
 	private Node _currentScene;
 	#endregion
 
 	#region Public Properties
-	public ILocation CurrentLocation => 
-		_locationManager?.CurrentLocation;
+
 	public IScene CurrentScene => 
 		_currentScene as IScene;
-	public GameServerHandler ServerHandler => 
-		_gameServerHandler;
+	public ServerManager Server => 
+		_serverManager;
 	#endregion
 
 	#region Godot Lifecycle
 	public override void _Ready()
 	{
 		GD.Print("MainGameScene: Initialisation...");
-		
-		_gameServerHandler = new GameServerHandler();
-		AddChild(_gameServerHandler);
-		
-		_locationManager = new LocationManager();
-		AddChild(_locationManager);
-		
-		_locationManager.LocationLoaded += OnLocationLoaded;
-		_locationManager.LocationLoadFailed += OnLocationLoadFailed;
-		
-		_gameServerHandler.ServerStarted += OnServerStarted;
-		_gameServerHandler.ServerStopped += OnServerStopped;
-		_gameServerHandler.ServerError += OnServerError;
-		_gameServerHandler.ClientConnected += OnClientConnected;
-		_gameServerHandler.ClientDisconnected += OnClientDisconnected;
-		_gameServerHandler.MessageReceived += OnMessageReceived;
+
+		// Diagnostic AutoLoad
+		GD.Print("MainGameScene: Liste des nœuds sous /root :");
+		foreach (Node child in GetNode("/root").GetChildren())
+		{
+			GD.Print($"  - {child.Name} ({child.GetType().Name})");
+		}
+
+		var args = OS.GetCmdlineUserArgs().ToList();
+		if (args.Count > 0)
+		{
+			var x = args.FirstOrDefault(x => x.Contains("--screen"));
+			var optionScreen = x.Split(" ")[1];
+			var numScreen = 1;
+			if (int.TryParse(optionScreen, out numScreen))
+				DisplayServer.WindowSetCurrentScreen(numScreen);
+
+			var y = args.FirstOrDefault(x => x.Contains("--fullscreen"));
+			if (y.Length != 0)
+				DisplayServer.WindowSetMode(DisplayServer.WindowMode.Fullscreen);
+		}
+
+		_serverManager = GetNodeOrNull<ServerManager>("/root/ServerManager");
+		if (_serverManager == null)
+		{
+			GD.PrintErr("MainGameScene: ServerManager introuvable en AutoLoad");
+		}
+
+		_gameModeLoader = new GameModeLoader();
+
+		if (_serverManager != null)
+		{
+			_serverManager.ServerStarted += OnServerStarted;
+			_serverManager.ServerStopped += OnServerStopped;
+			_serverManager.ServerError += OnServerError;
+			_serverManager.ClientConnected += OnClientConnected;
+			_serverManager.ClientTypeReceived += OnClientTypeReceived;
+			_serverManager.SystemOrderReceived += OnSystemOrderReceived;
+			//_serverManager.SceneOrderReceived += OnSceneOrderReceived;
+			//_serverManager.QuizzOrderReceived += OnQuizzOrderReceived;
+			_serverManager.SetMainGameScene(this);
+		}
 
 		GD.Print("MainGameScene: Initialisee");
-		
+
 		CallDeferred(nameof(LoadCredits));
 	}
 
 	public override void _ExitTree()
 	{
 		UnloadCurrentScene();
-		
-		if (_locationManager != null)
+
+		if (_serverManager != null)
 		{
-			_locationManager.LocationLoaded -= OnLocationLoaded;
-			_locationManager.LocationLoadFailed -= OnLocationLoadFailed;
+			_serverManager.ServerStarted -= OnServerStarted;
+			_serverManager.ServerStopped -= OnServerStopped;
+			_serverManager.ServerError -= OnServerError;
+			_serverManager.ClientConnected -= OnClientConnected;
+			_serverManager.ClientTypeReceived -= OnClientTypeReceived;
+			_serverManager.SystemOrderReceived -= OnSystemOrderReceived;
+			//_serverManager.SceneOrderReceived -= OnSceneOrderReceived;
+			//_serverManager.QuizzOrderReceived -= OnQuizzOrderReceived;
 		}
 
-		if (_gameServerHandler != null)
-		{
-			_gameServerHandler.ServerStarted -= OnServerStarted;
-			_gameServerHandler.ServerStopped -= OnServerStopped;
-			_gameServerHandler.ServerError -= OnServerError;
-			_gameServerHandler.ClientConnected -= OnClientConnected;
-			_gameServerHandler.ClientDisconnected -= OnClientDisconnected;
-			_gameServerHandler.MessageReceived -= OnMessageReceived;
-		}
-		
 		GD.Print("MainGameScene: Nettoyage termine");
 	}
 	
@@ -95,19 +137,21 @@ public partial class MainGameScene : Node, IScene
 		try
 		{
 			GD.Print("MainGameScene: Chargement Credits...");
-			
+
 			UnloadCurrentScene();
-			
+
 			var credits = new Credits();
 			AddChild(credits);
 			_currentScene = credits;
-			
+
 			credits.CreditsCompleted += OnCreditsCompleted;
 			credits.LoadTitleSceneRequested += OnLoadTitleRequested;
 			credits.SetFadeSpeed(2.0f);
-			
+
 			_hasLoadedCredits = true;
 			GD.Print("Credits charge");
+
+			BroadcastSceneChange("Credits");
 		}
 		catch (Exception ex)
 		{
@@ -121,55 +165,17 @@ public partial class MainGameScene : Node, IScene
 		try
 		{
 			GD.Print("MainGameScene: Chargement Title...");
-			
 			UnloadCurrentScene();
-			
-			var title = new Title();
+			var title = GD.Load<PackedScene>("res://Scenes/Title.tscn").Instantiate() as Title;
 			AddChild(title);
 			_currentScene = title;
-			
 			title.StartGameRequested += OnStartGameRequested;
-			
 			GD.Print("Title charge");
-			
-			CallDeferred(nameof(ActivateTitleCamera));
+			BroadcastSceneChange("Title");
 		}
 		catch (Exception ex)
 		{
 			GD.PrintErr($"Erreur chargement Title: {ex.Message}");
-		}
-	}
-	
-	private void ActivateTitleCamera()
-	{
-		try
-		{
-			const string restaurantPath = "res://Scenes/Locations/Restaurant.tscn";
-			
-			bool success = _locationManager.LoadLocationFromScene(restaurantPath, useCache: true);
-			
-			if (success && _locationManager.CurrentLocation != null)
-			{
-				GD.Print("Restaurant charge pour Title");
-				
-				bool cameraSet = _locationManager.CurrentLocation.SetActiveCamera(CameraType.Title);
-				if (cameraSet)
-				{
-					GD.Print("Camera Title_Camera3D activee avec succes");
-				}
-				else
-				{
-					GD.PrintErr("Echec activation Camera Title_Camera3D");
-				}
-			}
-			else
-			{
-				GD.PrintErr("Echec chargement Restaurant pour Title");
-			}
-		}
-		catch (Exception ex)
-		{
-			GD.PrintErr($"Erreur activation camera Title: {ex.Message}");
 		}
 	}
 
@@ -191,7 +197,7 @@ public partial class MainGameScene : Node, IScene
 			
 			GD.Print("MainMenu charge");
 			
-			CallDeferred(nameof(ActivateLobbyCamera));
+			//CallDeferred(nameof(ActivateLobbyCamera));
 		}
 		catch (Exception ex)
 		{
@@ -199,55 +205,90 @@ public partial class MainGameScene : Node, IScene
 		}
 	}
 	
-	private void ActivateLobbyCamera()
-	{
-		try
-		{
-			if (_locationManager?.CurrentLocation != null)
-			{
-				GD.Print("MainGameScene: Activation camera Lobby pour MainMenu...");
-				
-				bool cameraSet = _locationManager.CurrentLocation.SetActiveCamera(CameraType.Lobby);
-				if (cameraSet)
-				{
-					GD.Print("Camera Lobby_Camera3D activee avec succes");
-				}
-				else
-				{
-					GD.PrintErr("Echec activation Camera Lobby_Camera3D");
-				}
-			}
-			else
-			{
-				GD.PrintErr("Location non chargee, impossible d'activer la camera Lobby");
-			}
-		}
-		catch (Exception ex)
-		{
-			GD.PrintErr($"Erreur activation camera Lobby: {ex.Message}");
-		}
-	}
-
 	public void LoadLobby()
 	{
 		try
 		{
 			GD.Print("MainGameScene: Chargement Lobby...");
-
 			UnloadCurrentScene();
-
-			var lobby = new Lobby();
+			var lobby = GD.Load<PackedScene>("res://Scenes/Lobby.tscn").Instantiate() as Lobby;
 			AddChild(lobby);
-			_currentScene = lobby;
-
+			_currentScene = lobby as Node;
 			GD.Print("Lobby charge");
+			BroadcastSceneChange("Lobby");
+			GD.Print(((Lobby)_currentScene).GetSceneState());
 
-			CallDeferred(nameof(ActivateLobbyCamera));
+			//CallDeferred(nameof(ActivateLobbyCamera));
 		}
 		catch (Exception ex)
 		{
 			GD.PrintErr($"Erreur chargement Lobby: {ex.Message}");
 		}
+	}
+
+
+	public void LoadGameMode(string gamemodeName)
+	{
+		try
+		{
+			GD.Print($"MainGameScene: Chargement GameMode '{gamemodeName}'...");
+			UnloadCurrentScene();
+			var gameModeScene = _gameModeLoader.LoadGameMode(gamemodeName);
+			if (gameModeScene != null)
+			{
+				AddChild(gameModeScene);
+				_currentScene = gameModeScene;
+				if (_currentScene is IGameMode gameMode)
+				{
+					this.GameModeRequested += OnGameModeRequested;
+				}
+				GD.Print($"GameMode '{gamemodeName}' charge");
+
+				BroadcastSceneChange(gamemodeName);
+			}
+			else
+			{
+				GD.PrintErr($"Echec chargement GameMode '{gamemodeName}'");
+			}
+		}
+		catch (Exception ex)
+		{
+			GD.PrintErr($"Erreur chargement GameMode '{gamemodeName}': {ex.Message}");
+		}
+	}
+
+	/// <summary>
+	/// Diffuse le changement de scène à tous les clients connectés.
+	/// </summary>
+	private void BroadcastSceneChange(string sceneName)
+	{
+		if (_serverManager == null)
+			return;
+
+		try
+		{
+			var state = GetSceneState();
+			var stateJson = JsonSerializer.Serialize(state);
+			var message =   JsonSerializer.Serialize(
+				new
+				{
+					Order = "SceneChanged",
+					NewScene = sceneName,
+					SceneState = stateJson
+				});
+			_ = _serverManager.BroadcastMessageToAllClients(message);
+			GD.Print(message);
+			GD.Print($"MainGameScene: Broadcast changement de scène '{sceneName}'");
+		}
+		catch (Exception ex)
+		{
+			GD.PrintErr($"MainGameScene: Erreur broadcast scène: {ex.Message}");
+		}
+	}
+
+	private void OnGameModeRequested(string newGameMode)
+	{
+		LoadGameMode(newGameMode);
 	}
 
 	private void UnloadCurrentScene()
@@ -362,6 +403,108 @@ public partial class MainGameScene : Node, IScene
 			GD.Print($"MainGameScene: Message de {clientId}: {content}");
 		}
 	}
+
+	private void OnClientTypeReceived(string clientId, string clientType)
+	{
+		GD.Print($"MainGameScene: Client {clientId} enregistre comme {clientType}");
+	}
+
+	private void OnSystemOrderReceived(string orderRequestJson)
+	{
+		try
+		{
+			var orderRequest = JsonSerializer.Deserialize<OrderRequest>(orderRequestJson);
+			if (_debugMode)
+			{
+				GD.Print($"MainGameScene: Ordre systeme '{orderRequest.Order}'");
+			}
+			switch (orderRequest.Order)
+			{
+				case "GoToScene":
+					GD.Print($"MainGameScene: Ordre systeme GoToScene recu, scene cible: {orderRequest.JsonData}");
+					GoToScene(orderRequest.JsonData);
+					break;
+				default:
+					GD.Print($"MainGameScene: Ordre systeme inconnu '{orderRequest.Order}'");
+					break;
+			}
+		}
+		catch (Exception ex)
+		{
+			GD.PrintErr($"MainGameScene: Erreur parsing ordre systeme: {ex.Message}");
+		}
+	}
+
+	private void GoToScene(string sceneName)
+	{
+		switch (sceneName)
+		{
+			case "Credits":
+				LoadCredits();
+				break;
+			case "Title":
+				LoadTitle();
+				break;
+			case "Lobby":
+				LoadLobby();
+				break;
+			default:
+				GD.PrintErr($"MainGameScene: Scene inconnue '{sceneName}'");
+				break;
+		}
+	}
+
+	private void OnSceneOrderReceived(string orderRequestJson)
+	{
+		try
+		{
+			var orderRequest = JsonSerializer.Deserialize<OrderRequest>(orderRequestJson);
+			if (_debugMode)
+			{
+				GD.Print($"MainGameScene: Ordre scene '{orderRequest.Order}'");
+			}
+
+			// Répondre à la demande d'état du jeu
+			if (orderRequest.Order == "GetGameState")
+			{
+				GD.Print("MainGameScene: Demande d'etat du jeu recue, envoi de l'etat...");
+				var state = GetSceneState();
+				var stateJson = JsonSerializer.Serialize(state);
+				_serverManager?.SendMessageToClient(orderRequest.ClientId, stateJson);
+				return;
+			}
+
+			// Transition Title -> Lobby via réseau
+			if (_currentScene is Title && orderRequest.Order == "StartGame")
+			{
+				GD.Print("MainGameScene: Ordre reseau StartGame recu, passage au Lobby");
+				LoadLobby();
+				return;
+			}
+
+			OnMessageReceived(orderRequest.ClientId, orderRequestJson);
+		}
+		catch (Exception ex)
+		{
+			GD.PrintErr($"MainGameScene: Erreur parsing ordre scene: {ex.Message}");
+		}
+	}
+
+	private void OnQuizzOrderReceived(string orderRequestJson)
+	{
+		try
+		{
+			var orderRequest = JsonSerializer.Deserialize<OrderRequest>(orderRequestJson);
+			if (_debugMode)
+			{
+				GD.Print($"MainGameScene: Ordre quizz '{orderRequest.Order}'");
+			}
+		}
+		catch (Exception ex)
+		{
+			GD.PrintErr($"MainGameScene: Erreur parsing ordre quizz: {ex.Message}");
+		}
+	}
 	#endregion
 
 	#region IScene Implementation
@@ -369,21 +512,27 @@ public partial class MainGameScene : Node, IScene
 	{
 		return new
 		{
-			MainGameScene = new
+			CurrentStateScene = new
 			{
-				SceneName = "MainGameScene",
-				HasLoadedCredits = _hasLoadedCredits,
+				Order = "CurrentGameScene",
 				CurrentScene = _currentScene?.GetType().Name ?? "None",
-				CurrentLocation = CurrentLocation?.LocationName ?? "None",
-				ConnectedClients = _gameServerHandler?.GetConnectedClientCount() ?? 0
+				Content = CurrentScene?.GetSceneState(),
 			},
-			UIScene = CurrentScene?.GetSceneState(),
-			Location = CurrentLocation?.GetLocationState(),
 			Timestamp = DateTime.UtcNow
 		};
 	}
 
 	public object GetGameSceneState() => GetSceneState();
+
+	public IGameRecord LoadCurrentGameRecord()
+	{
+		return _currentGameRecord;
+	}
+
+	public void SetGameRecord(IGameRecord gameRecord)
+	{
+		_currentGameRecord = gameRecord;
+	}
 	#endregion
 
 	#region Input Handling (Debug)
@@ -394,14 +543,13 @@ public partial class MainGameScene : Node, IScene
 		switch (keyEvent.Keycode)
 		{
 			case Key.F1:
-				_gameServerHandler?.BroadcastToAllClients("SERVER_BROADCAST:Test", encrypt: true);
+				_serverManager?.SendServerMessage("SERVER_BROADCAST:Test");
 				break;
 			case Key.F3:
-				_gameServerHandler?.ListConnectedClients();
+				_serverManager?.LogServerStatus();
 				break;
 			case Key.F4:
 				_debugMode = !_debugMode;
-				_gameServerHandler?.ToggleDebugMode();
 				GD.Print($"Mode debug: {(_debugMode ? "ON" : "OFF")}");
 				break;
 			case Key.F11:
@@ -412,6 +560,11 @@ public partial class MainGameScene : Node, IScene
 				LoadTitle();
 				break;
 		}
+	}
+
+	public string GetSceneName()
+	{
+		throw new NotImplementedException();
 	}
 	#endregion
 }

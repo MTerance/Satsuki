@@ -1,6 +1,25 @@
-[gd_scene load_steps=2 format=3 uid="uid://cf0u71gqeit25"]
+[gd_scene format=3 uid="uid://cf0u71gqeit25"]
 
 [ext_resource type="Script" uid="uid://bsxrg8bfuwgst" path="res://Scenes/Title.cs" id="1_title"]
+[ext_resource type="Texture2D" uid="uid://dwp0anpsd6gef" path="res://Assets/Img/bg.png" id="2_phf2g"]
+[ext_resource type="Texture2D" uid="uid://bpw26ita0plll" path="res://Assets/Img/logo.png" id="3_6khh7"]
 
-[node name="Title" type="Node"]
+[node name="Title" type="Node2D" unique_id=2003443958]
 script = ExtResource("1_title")
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=994451810]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Bg" type="Sprite2D" parent="CenterContainer" unique_id=506542524]
+position = Vector2(576, 321)
+scale = Vector2(0.7015155, 0.70775765)
+texture = ExtResource("2_phf2g")
+
+[node name="Logo" type="Sprite2D" parent="CenterContainer" unique_id=596757848]
+position = Vector2(575, 330)
+scale = Vector2(0.6204147, 0.6204147)
+texture = ExtResource("3_6khh7")

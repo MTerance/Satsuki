@@ -1,15 +1,19 @@
+using Godot;
+using Satsuki.Models;
+using Satsuki.Utils;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Satsuki.Utils;
 
 namespace Satsuki.Networks
 {
     public class MessageHandler : SingletonBase<MessageHandler>, IDisposable
     {
+
         private readonly ConcurrentQueue<Message> _messageQueue;
         private readonly SemaphoreSlim _messageAvailableSemaphore;
         private readonly CancellationTokenSource _cancellationTokenSource;
@@ -250,6 +254,19 @@ namespace Satsuki.Networks
         {
             return _messageQueue.Count;
         }
+
+        private void ProcessMessage(Message message)
+        {
+            // Décrypte le message si nécessaire
+            if (message.IsEncrypted)
+            {
+                message.Decrypt(_encryptionKey, _encryptionIV);
+            }
+            // Log du message reçu
+            Console.WriteLine($"Message reçu à {message.Timestamp}: {message.Content}");
+            var orderRequest = JsonSerializer.Deserialize<OrderRequest>(message.Content);
+        }
+
 
         /// <summary>
         /// Boucle principale de traitement des messages

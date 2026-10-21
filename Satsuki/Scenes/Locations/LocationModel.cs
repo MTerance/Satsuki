@@ -1,4 +1,4 @@
-﻿using Godot;
+using Godot;
 using Satsuki.Interfaces;
 using System;
 using System.Collections.Generic;

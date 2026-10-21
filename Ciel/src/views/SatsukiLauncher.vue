@@ -292,6 +292,7 @@
 <script>
 import { ref, reactive, onMounted, onUnmounted } from 'vue';
 import processService from '@/services/processService.js';
+import clientService from '@/services/clientService.js';
 
 export default {
   name: 'SatsukiLauncher',
@@ -471,12 +472,12 @@ export default {
       isConnecting.value = true;
       
       try {
-        // Simulate connection logic
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        // Connexion réelle au serveur Satsuki via le client TCP (clientService)
+        const result = await clientService.connect();
         
-        // Here you would implement the actual connection logic
-        // For now, we'll just show a success message
-        alert('Connexion à l\'instance Satsuki réussie !');
+        if (!result.success) {
+          throw new Error(result.message || 'Échec de la connexion au serveur Satsuki');
+        }
         
       } catch (err) {
         error.value = `Erreur de connexion: ${err.message}`;

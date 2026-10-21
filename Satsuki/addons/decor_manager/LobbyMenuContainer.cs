@@ -69,7 +69,7 @@ public partial class LobbyMenuContainer : VBoxContainer
 
 		return new LobbyInfo
 		{
-			SpawnPoints = spawnPointsArray,			
+			SpawnPoints = spawnPointsArray,
 			CameraPlacement = cameraPlacement,
 		};
 	}
@@ -165,7 +165,7 @@ public partial class LobbyMenuContainer : VBoxContainer
 		}
 	}
 
-	private void BuildSpawnPointControl(SpawnPointData spawnPoint,Control control)
+	private void BuildSpawnPointControl(SpawnPointData spawnPoint, Control control)
 	{
 		var playerSpawnTemplate = control as PlayerSpawnTemplate;
 		playerSpawnTemplate.InitPlayerSpawnTemplate(spawnPoint);
@@ -342,5 +342,5 @@ public partial class LobbyMenuContainer : VBoxContainer
 			GD.Print($"Spawn point {spawnPoint.Index} type changed to {type}");
 		}
 	}
-#endif
 }
+#endif
