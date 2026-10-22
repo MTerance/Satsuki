@@ -16,8 +16,7 @@ public partial class Lobby : Node3D, IScene
 	private CameraPlacement _cameraPlacement;
 	private List<Spot> _spots = new List<Spot>();
 
-
-	public class PlayerProfile
+    public class PlayerProfile
 	{
 		public Guid Id { get; set; }
 		public string Name { get; set; }
@@ -30,6 +29,18 @@ public partial class Lobby : Node3D, IScene
     {
         public string TagGameMode { get; set; }
 
+		public string LinkGameContent { get; set; }
+
+		public string GameName { get; set; }
+
+		public int GameLocation { get; set; }
+
+    }
+
+    public class GameInformation
+    {
+        GameProfile GameProfile { get; set; }
+        List<PlayerProfile> Players { get; set; }
     }
 
     private List<PlayerProfile> _players = new List<PlayerProfile>();
