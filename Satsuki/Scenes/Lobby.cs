@@ -26,8 +26,13 @@ public partial class Lobby : Node3D, IScene
 		public string Color { get; set; }
 	}
 
+    public class GameProfile
+    {
+        public string TagGameMode { get; set; }
 
-	private List<PlayerProfile> _players = new List<PlayerProfile>();
+    }
+
+    private List<PlayerProfile> _players = new List<PlayerProfile>();
 	private Node lobbyLocation { get; set; }
 	private Camera3D _camera;
 
