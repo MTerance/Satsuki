@@ -29,7 +29,9 @@ public partial class Lobby : Node3D, IScene
     {
         public string TagGameMode { get; set; }
 
-		public string LinkGameContent { get; set; }
+		public string TypeGameContent { get; set; }
+
+        public string LinkGameContent { get; set; }
 
 		public string GameName { get; set; }
 
