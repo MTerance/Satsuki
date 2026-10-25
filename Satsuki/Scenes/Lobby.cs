@@ -25,28 +25,34 @@ public partial class Lobby : Node3D, IScene
 		public string Color { get; set; }
 	}
 
+    public class GameInfo
+    {
+        public int Id { get; set; }
+		public string TypeGameMode { get; set; }
+		public string Name { get; set; }
+		public int DurationTime { get; set; }
+		public int Location { get; set; }
+    }
+
+
     public class GameProfile
     {
         public string TagGameMode { get; set; }
-
 		public string TypeGameContent { get; set; }
-
         public string LinkGameContent { get; set; }
-
-		public string GameName { get; set; }
-
-		public int GameLocation { get; set; }
-
+		public string Name { get; set; }
+		public int Location { get; set; }
     }
 
     public class GameInformation
     {
-        GameProfile GameProfile { get; set; }
-        List<PlayerProfile> Players { get; set; }
+        public GameProfile GameProfile { get; set; }
+        public List<PlayerProfile> Players { get; set; }
     }
 
     private List<PlayerProfile> _players = new List<PlayerProfile>();
-	private Node lobbyLocation { get; set; }
+	public GameProfile CurrentGameProfile { get; set; }
+    private Node lobbyLocation { get; set; }
 	private Camera3D _camera;
 
 	private void InitCameraPlacement()
@@ -163,7 +169,8 @@ public partial class Lobby : Node3D, IScene
 				RetirePlayer(retiredProfile.Id);
 				break;
 			case "SetQuizzGame":
-				SetQuizzGame();
+				var gameInfo = JsonSerializer.Deserialize<GameInfo>(messageJson);
+                SetQuizzGame(gameInfo);
 				break;
 			case "GoToGame":
 				GoToGame();
@@ -303,7 +310,7 @@ public partial class Lobby : Node3D, IScene
 		}
 	}
 
-	private void SetQuizzGame()
+	private void SetQuizzGame(GameInfo gameInfo)
 	{
 
 	}
