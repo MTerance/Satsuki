@@ -18,6 +18,8 @@ namespace Satsuki.Models
         [Export]
         public Godot.Vector3 PositionTargetCamera { get; set; }
         [Export]
+        public string SubViewPort { get; set; }
+        [Export]
         public CameraPlacement CameraPlacement { get; set; } = new CameraPlacement();
         [Export]
         public Godot.Collections.Array<SpawnPointData> SpawnPoints { get; set; }
@@ -28,6 +30,7 @@ namespace Satsuki.Models
             PositionCamera = Vector3.Zero;
             RotationCamera = Vector3.Zero;
             PositionTargetCamera = Vector3.Zero;
+            SubViewPort = string.Empty;
         }
     }
 
@@ -38,12 +41,14 @@ namespace Satsuki.Models
         public Tuple<float, float, float> PositionTargetCamera { get; set; }
         public CameraPlacementResource CameraPlacement { get; set; } = new CameraPlacementResource();
         public List<SpawnPointDataResource> SpawnPoints { get; set; }
+        public string SubViewPort { get; set; }
         public LobbyInfoResource()
         {
             SpawnPoints = new List<SpawnPointDataResource>();
             PositionCamera = Tuple.Create(0f, 0f, 0f);
             RotationCamera = Tuple.Create(0f, 0f, 0f);
             PositionTargetCamera = Tuple.Create(0f, 0f, 0f);
+            SubViewPort = string.Empty;
         }
     }
 }

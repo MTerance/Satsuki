@@ -1,3 +1,40 @@
 [gd_scene format=3 uid="uid://ce5j26w5521c"]
 
-[node name="DecorManagerSetup" type="Node3D" unique_id=684668187]
+[ext_resource type="Script" uid="uid://dd6ndvhrr2tbp" path="res://addons/decor_manager/Models/PlayerZone.cs" id="1_kqtep"]
+
+[node name="DecorManagerSetup" type="Node3D" unique_id=366587654]
+
+[node name="Camera_lobby_2065124994" type="Node3D" parent="." unique_id=2049240527]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0042533875, 15.546175, 0.343052)
+
+[node name="CameraTarget_lobby_170324035" type="Node3D" parent="." unique_id=1339226697]
+transform = Transform3D(-4.371139e-08, -1, 0, -4.371139e-08, 1.9106855e-15, 1, -1, 4.371139e-08, -4.371139e-08, 6, 0, -29.5)
+
+[node name="PlayerZone" type="Node3D" parent="." unique_id=767931487]
+script = ExtResource("1_kqtep")
+
+[node name="Camera__647134251" type="Node3D" parent="." unique_id=2041320425]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30.078123, 10.516285, -38.128746)
+
+[node name="CameraTarget_GameMainScene_171059799" type="Node3D" parent="." unique_id=81581930]
+transform = Transform3D(-4.371139e-08, -1, 0, -4.371139e-08, 1.9106855e-15, 1, -1, 4.371139e-08, -4.371139e-08, 0, 0, 0)
+
+[node name="gizmo_inter_SpawnPoint_1015728209" type="Node3D" parent="." unique_id=2116482205]
+
+[node name="gizmo_inter_SpawnPoint_1049904723" type="Node3D" parent="." unique_id=1929538636]
+
+[node name="gizmo_inter_SpawnPoint_1248015972" type="Node3D" parent="." unique_id=1444423711]
+
+[node name="gizmo_inter_SpawnPoint_1248015973" type="Node3D" parent="." unique_id=1965646316]
+
+[node name="gizmo_inter_SpawnPoint_1248015974" type="Node3D" parent="." unique_id=222361301]
+
+[node name="gizmo_inter_SpawnPoint_1248015975" type="Node3D" parent="." unique_id=730029280]
+
+[node name="gizmo_inter_SpawnPoint_1248015976" type="Node3D" parent="." unique_id=2011526626]
+
+[node name="gizmo_inter_SpawnPoint_1248015977" type="Node3D" parent="." unique_id=450388764]
+
+[node name="gizmo_inter_SpawnPoint_1248015978" type="Node3D" parent="." unique_id=1111215077]
+
+[node name="gizmo_inter_SpawnPoint_1248015979" type="Node3D" parent="." unique_id=1473490148]

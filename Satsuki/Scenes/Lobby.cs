@@ -16,7 +16,7 @@ public partial class Lobby : Node3D, IScene
 	private CameraPlacement _cameraPlacement;
 	private List<Spot> _spots = new List<Spot>();
 
-    public class PlayerProfile
+	public class PlayerProfile
 	{
 		public Guid Id { get; set; }
 		public string Name { get; set; }
@@ -25,52 +25,68 @@ public partial class Lobby : Node3D, IScene
 		public string Color { get; set; }
 	}
 
-    public class GameInfo
-    {
-        public int Id { get; set; }
+	public class GameInfo
+	{
+		public int Id { get; set; }
 		public string TypeGameMode { get; set; }
 		public string Name { get; set; }
 		public int DurationTime { get; set; }
 		public int Location { get; set; }
-    }
+	}
 
 
-    public class GameProfile
-    {
-        public string TagGameMode { get; set; }
+	public class GameProfile
+	{
+		public string TagGameMode { get; set; }
 		public string TypeGameContent { get; set; }
-        public string LinkGameContent { get; set; }
+		public string LinkGameContent { get; set; }
 		public string Name { get; set; }
 		public int Location { get; set; }
-    }
+	}
 
-    public class GameInformation
-    {
-        public GameProfile GameProfile { get; set; }
-        public List<PlayerProfile> Players { get; set; }
-    }
+	public class GameInformation
+	{
+		public GameProfile GameProfile { get; set; }
+		public List<PlayerProfile> Players { get; set; }
+	}
 
-    private List<PlayerProfile> _players = new List<PlayerProfile>();
+	private List<PlayerProfile> _players = new List<PlayerProfile>();
 	public GameProfile CurrentGameProfile { get; set; }
-    private Node lobbyLocation { get; set; }
+	private Node lobbyLocation { get; set; }
 	private Camera3D _camera;
+
+	private LobbyScreenContent _lobbyScreen;
 
 	private void InitCameraPlacement()
 	{
+		bool isNewCamera = false;
 		_camera = GetNodeOrNull<Camera3D>("Camera3D");
 		if (_camera == null)
 		{
+			isNewCamera = true;
 			_camera = new Camera3D();
-			_camera.Position = _cameraPlacement.Position;
-			// set target for camera to look at by getting cameraPlacement target value
-			AddChild(_camera);
 			GD.Print("Lobby: Camera3D created and added to the scene.");
 		}
 		else
-		{
-			_camera.Position = _cameraPlacement.Position;
 			GD.Print("Lobby: Camera3D found and position set.");
+		_camera = SetCameraLobby(_camera);
+			// set target for camera to look at by getting cameraPlacement target value
+
+		if (isNewCamera)
+		{
+			_camera.MakeCurrent();
+			AddChild(_camera);
+			GD.Print("Lobby: Camera3D set as current.");
 		}
+	}
+
+	private Camera3D SetCameraLobby(Camera3D camera)
+	{
+		camera.Position = _cameraPlacement.Position;
+		camera.LookAt(_cameraPlacement.Target, Vector3.Up);
+		GD.Print($"Lobby: Camera3D position set to {_cameraPlacement.Position.X},{_cameraPlacement.Position.Y},{_cameraPlacement.Position.Z} " +
+			$"and looking at {_cameraPlacement.Target.X},{_cameraPlacement.Target.Y},{_cameraPlacement.Target.Z}.");
+		return camera;
 	}
 
 	private void GetLobbyResource()
@@ -85,6 +101,10 @@ public partial class Lobby : Node3D, IScene
 			lobbyLocation = locationLoader.LoadStage(stageResource);
 			AddChild(lobbyLocation);
 			LoadLobby(stageResource);
+
+			//_lobbyScreen = 
+
+
 		}
 		else
 			GD.PrintErr("Lobby: Impossible de récupérer les informations du lobby.");
@@ -170,7 +190,7 @@ public partial class Lobby : Node3D, IScene
 				break;
 			case "SetQuizzGame":
 				var gameInfo = JsonSerializer.Deserialize<GameInfo>(messageJson);
-                SetQuizzGame(gameInfo);
+				SetQuizzGame(gameInfo);
 				break;
 			case "GoToGame":
 				GoToGame();
@@ -312,6 +332,8 @@ public partial class Lobby : Node3D, IScene
 
 	private void SetQuizzGame(GameInfo gameInfo)
 	{
+		var lobbyScreenInfo = LobbyScreenContentLoader.GetInstance().GetLobbyScreenContent(gameInfo.TypeGameMode);
+
 
 	}
 

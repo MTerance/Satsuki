@@ -25,6 +25,8 @@ namespace Satsuki.Tools.Converters
                 lobbyInfo.SpawnPoints.Add(SpawnPointDataConverter.ConvertTo(spawnPointResource));
             }
 
+            lobbyInfo.SubViewPort = resource.SubViewPort;
+
             return lobbyInfo;
         }
 
@@ -36,7 +38,8 @@ namespace Satsuki.Tools.Converters
                 RotationCamera = Tuple.Create(lobbyInfo.RotationCamera.X, lobbyInfo.RotationCamera.Y, lobbyInfo.RotationCamera.Z),
                 PositionTargetCamera = Tuple.Create(lobbyInfo.PositionTargetCamera.X, lobbyInfo.PositionTargetCamera.Y, lobbyInfo.PositionTargetCamera.Z),
                 CameraPlacement = CameraPlacementConverter.ConvertFrom(lobbyInfo.CameraPlacement),
-                SpawnPoints = lobbyInfo.SpawnPoints.Select(SpawnPointDataConverter.ConvertFrom).ToList()
+                SpawnPoints = lobbyInfo.SpawnPoints.Select(SpawnPointDataConverter.ConvertFrom).ToList(),
+                SubViewPort = lobbyInfo.SubViewPort
             };
             return resource;
         }
