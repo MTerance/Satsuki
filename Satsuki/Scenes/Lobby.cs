@@ -56,8 +56,9 @@ public partial class Lobby : Node3D, IScene
 	private Camera3D _camera;
 
 	private LobbyScreenContent _lobbyScreen;
+	private LobbyMenuScreen MenuScreen { get; set; }
 
-	private void InitCameraPlacement()
+    private void InitCameraPlacement()
 	{
 		bool isNewCamera = false;
 		_camera = GetNodeOrNull<Camera3D>("Camera3D");
@@ -332,10 +333,31 @@ public partial class Lobby : Node3D, IScene
 
 	private void SetQuizzGame(GameInfo gameInfo)
 	{
-		var lobbyScreenInfo = LobbyScreenContentLoader.GetInstance().GetLobbyScreenContent(gameInfo.TypeGameMode);
+		LobbyScreenContent lobbyScreenInfo = LobbyScreenContentLoader.GetInstance().GetLobbyScreenContent(gameInfo.TypeGameMode);
+		if (CurrentGameProfile != null)
+		{
+			CurrentGameProfile.TagGameMode = gameInfo.TypeGameMode;
+            CurrentGameProfile.TagGameMode = gameInfo.TypeGameMode;
+            CurrentGameProfile.TypeGameContent = lobbyScreenInfo.LogoImgPath;
+			CurrentGameProfile.LinkGameContent = lobbyScreenInfo.BackgroundImgPath;
+			CurrentGameProfile.Name = gameInfo.Name;
+			CurrentGameProfile.Location = gameInfo.Location;
+        }
+		else
+			CurrentGameProfile = new GameProfile
+			{
+				TagGameMode = gameInfo.TypeGameMode,
+				TypeGameContent = lobbyScreenInfo.LogoImgPath,
+				LinkGameContent = lobbyScreenInfo.BackgroundImgPath,
+				Name = gameInfo.Name,
+				Location = gameInfo.Location
+			};
 
+		lobbyScreenInfo.LocationName = gameInfo.Location.ToString();
+        lobbyScreenInfo.GameSessionName = gameInfo.Name;
 
-	}
+        MenuScreen?.SetMenuScreenContent(lobbyScreenInfo);
+    }
 
 	private void GoToGame()
 	{

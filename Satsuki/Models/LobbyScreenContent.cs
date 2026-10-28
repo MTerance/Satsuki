@@ -10,5 +10,8 @@ namespace Satsuki.Models
     {
         public string LogoImgPath { get; set; }
         public string BackgroundImgPath { get; set; }
+
+        public string LocationName { get; set; }
+        public string GameSessionName { get; set; }
     }
 }
