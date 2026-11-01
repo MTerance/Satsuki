@@ -1,0 +1,7 @@
+[
+    { "id": 1, "Name": "Classic", "imgPath": "path/to/classic.jpg", "tag": "classic" },
+    { "id": 2, "Name": "Timed", "imgPath": "path/to/timed.jpg", "tag": "timed" },
+    { "id": 3, "Name": "Survival", "imgPath": "path/to/survival.jpg", "tag": "survival" },
+    { "id": 4, "Name": "Challenge", "imgPath": "path/to/challenge.jpg", "tag": "challenge" },
+    { "id": 5, "Name": "Arcade", "imgPath": "path/to/arcade.jpg", "tag": "arcade" }
+]

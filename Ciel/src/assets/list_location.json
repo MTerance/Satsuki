@@ -1,0 +1,5 @@
+[
+    { "id": 1, "Name": "Tokyo", "imgPath": "path/to/tokyo.jpg" },
+    { "id": 2, "Name": "Kyoto", "imgPath": "path/to/kyoto.jpg" },
+    { "id": 3, "Name": "Osaka", "imgPath": "path/to/osaka.jpg" }
+]

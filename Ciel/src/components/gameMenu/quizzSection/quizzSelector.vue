@@ -8,10 +8,10 @@
                 <button class="btn-base btn-primary">Select Quizz</button>
             </div>
             <div v-else>
-                <p>Selected quizz: {{ summaryQuizz?.title }}</p>
-                <p>Location: {{ summaryQuizz?.Location?.name }}</p>
-                <p>Game Type: {{ summaryQuizz?.GameType?.name }}</p>
-                <p>Estimated Time: {{ summaryQuizz?.EstimatedTime }} minutes</p>
+                <p>Selected quizz: {{ summaryQuizz?.Name }}</p>
+                <p>Location: {{ summaryQuizz?.Location?.Name }}</p>
+                <p>Game Type: {{ summaryQuizz?.GameType?.Name }}</p>
+                <p>Estimated Time: {{ summaryQuizz?.durationTime }} minutes</p>
                 <button class="btn-base btn-secondary">Change Quizz</button>
             </div>
         </div>
@@ -38,46 +38,41 @@
                 <textarea v-model="searchText"  @input="getAvailableGames" placeholder="Enter available quizzes name"></textarea>
 
                 <div class="quizz-option" v-for="quizz in availableQuizzes" :key="quizz.id" @click="selectQuizz(quizz)">
-                    <p>{{ quizz.title }}</p>
+                    <p>{{ quizz.Name }}</p>
                 </div>
             </div>
         </div>
-
     </div>
-
 </template>
 
 <script setup lang="ts">
 
 import { ref, onMounted, computed } from 'vue';
-
-interface SummaryQuizz {
-    id: number;
-    title: string;
-    Location: LocationQuizz;
-    GameType: GameTypeQuizz;
-    EstimatedTime: number;
-}
-
-interface GameTypeQuizz {
-    id: number;
-    name: string;
-    imgPath: string;
-}
-
-interface LocationQuizz {
-    id:number;
-    name: string;
-    imgPath: string;
-}
+import * as listGame from '@/assets/list_game.json'
+import * as listLocation from '@/assets/list_location.json'
+import * as listGameMode from '@/assets/list_gamemode.json'
+import type { SummaryQuizz, LocationQuizz, GameTypeQuizz } from '@/models/SummaryQuizz';
 
 const summaryQuizz = ref<SummaryQuizz | null>(null);
 const isQuizzSelectionModalOpen = ref(false);
 const availableQuizzes = ref<SummaryQuizz[]>([]);
+const availableLocations = ref<LocationQuizz[]>([]);
+const availableGameModes = ref<GameTypeQuizz[]>([]);
+
 const searchText = ref('');
+
+
+const emit = defineEmits<{
+    (e: 'quizz-selected', quizz: SummaryQuizz): void;
+}>();
+
+
 
     onMounted(() => {
       console.log('Component is mounted');
+      availableGameModes.value = gameModes.value;
+      availableLocations.value = locations.value;
+      availableQuizzes.value = allQuizzes.value;
     });
 
 const openQuizzSelectionModal = () => {
@@ -90,24 +85,44 @@ const openQuizzSelectionModal = () => {
     isQuizzSelectionModalOpen.value = true;
 };
 
+const locations = ref<LocationQuizz[]>(listLocation.map(item => ({
+    id: item.id,
+    Name: item.Name,
+    imgPath: item.imgPath
+})));
+
+const gameModes = ref<GameTypeQuizz[]>(listGameMode.map(item => ({
+    id: item.id,
+    Name: item.Name,
+    imgPath: item.imgPath,
+    tag: item.tag
+})));
+
+const allQuizzes = ref<SummaryQuizz[]>(listGame.map(item =>({ 
+    id: item.id,
+    Name: item.Name,
+    Location: availableLocations.value?.find(loc => loc.id === item.Location),
+    GameType: availableGameModes.value?.find(mode => mode.tag === item.GameType),
+    durationTime: item.durationTime
+}))
+);
+
 const selectQuizz = (quizz: SummaryQuizz) => {
     // Logic to select a quizz
     console.log('Selected quizz:', quizz);
     summaryQuizz.value = quizz;
+    emit('quizz-selected', quizz);
     closeQuizzSelectionModal();
 };
 
 const closeQuizzSelectionModal = () => {
     isQuizzSelectionModalOpen.value = false;
     searchText.value = '';
-
 };
 
  const IsQuizzSelected = (): boolean => {
     return summaryQuizz.value !== null;
 };
-
-
 
 const getAvailableGames = async () => {
     try {
@@ -115,12 +130,26 @@ const getAvailableGames = async () => {
             availableQuizzes.value = [];
             return;
         }
+        /*
         const response = await fetch('http://localhost:3000/api/quizzes/search?query=' + encodeURIComponent(searchText.value));
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
         availableQuizzes.value = data;
+        */
+
+        var quizzes = listGame.map(item =>({    
+            id: item.id,
+            Name: item.Name,
+            Location: availableLocations.value.find(loc => loc.id === item.Location),
+            GameType: availableGameModes.value.find(mode => mode.tag === item.GameType),
+            durationTime: item.durationTime
+        }));
+
+        availableQuizzes.value = allQuizzes.value.filter(quizz =>
+            quizz.Name.toLowerCase().includes(searchText.value.toLowerCase())
+        );
     } catch (error) {
         console.error('Error fetching available quizzes:', error);
     }
@@ -131,10 +160,11 @@ const filteredQuizzes = computed(() => {
         return availableQuizzes.value;
     }
     return availableQuizzes.value.filter(quizz =>
-        quizz.title.toLowerCase().includes(searchText.value.toLowerCase())
+        quizz.Name.toLowerCase().includes(searchText.value.toLowerCase())
     );
 });
 
+const hasAChosenQuizz = computed(() => summaryQuizz.value !== null);
 
 </script>
 

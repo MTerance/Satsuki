@@ -255,10 +255,14 @@ public partial class Lobby : Node3D, IScene
 				SceneType = "Lobby",
 				Timestamp = DateTime.UtcNow
 			},
-			Spots = _spots.Select(spot => new
+			Quizz = CurrentGameProfile,
+            Players = _players.Select(player => new
 			{
-				Position = spot.Position,
-				PlayerSpot = spot.PlayerSpot.ToString()
+				Id = player.Id,
+				Name = player.Name,
+				Gender = player.Gender,
+				IdSpot = player.IdSpot,
+				Color = player.Color
 			}).ToList()
 		};
 	}
@@ -355,7 +359,6 @@ public partial class Lobby : Node3D, IScene
 
 		lobbyScreenInfo.LocationName = gameInfo.Location.ToString();
         lobbyScreenInfo.GameSessionName = gameInfo.Name;
-
         MenuScreen?.SetMenuScreenContent(lobbyScreenInfo);
     }
 

@@ -40,6 +40,7 @@
     "xmldom": "^0.6.0"
   },
   "devDependencies": {
+    "@rollup/plugin-json": "^6.1.0",
     "@tsconfig/node22": "^22.0.1",
     "@types/node": "^22.14.0",
     "@vitejs/plugin-vue": "^5.2.3",

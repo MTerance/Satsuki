@@ -90,7 +90,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import type { Player } from "@/models/player";
 import type { PlayerForm } from "@/models/playerForm";
 
@@ -118,6 +118,10 @@ const closePlayerModal = () => {
   isPlayerModalOpen.value = false;
   newPlayerForm.value = { name: '', gender: '' };
 };
+
+const hasPlayers = computed(() => players.value.length > 0);
+
+
 
 const submitPlayer = () => {
   if (!newPlayerForm.value.name.trim() || !newPlayerForm.value.gender) return;
