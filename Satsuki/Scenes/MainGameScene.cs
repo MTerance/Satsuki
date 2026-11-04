@@ -561,7 +561,7 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 
 	public string GetSceneName()
 	{
-		throw new NotImplementedException();
-	}
+		return _currentScene?.GetType().Name ?? "None";
+    }
 	#endregion
 }

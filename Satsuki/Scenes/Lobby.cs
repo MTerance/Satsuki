@@ -102,10 +102,6 @@ public partial class Lobby : Node3D, IScene
 			lobbyLocation = locationLoader.LoadStage(stageResource);
 			AddChild(lobbyLocation);
 			LoadLobby(stageResource);
-
-			//_lobbyScreen = 
-
-
 		}
 		else
 			GD.PrintErr("Lobby: Impossible de récupérer les informations du lobby.");

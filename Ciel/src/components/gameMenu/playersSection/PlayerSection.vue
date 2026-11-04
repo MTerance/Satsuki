@@ -102,6 +102,17 @@ const isPlayerModalOpen = ref(false);
 const newPlayerForm = ref<PlayerForm>({ name: '', gender: '' });
 let playerIdCounter = 1;
 
+
+onMounted(() => {
+  console.log('PlayerSection component mounted');
+
+
+  
+
+});
+
+
+
 // Emit events upward instead of handling socket logic here
 const emit = defineEmits<{
   (e: 'player-added', payload: Player): void;
