@@ -76,6 +76,13 @@ namespace Satsuki.Systems
         private void ProcessMessage(Satsuki.Message message)
         {
             GD.Print($"ServerManager: Message recu - Contenu: {message.Content}, Timestamp: {message.Timestamp}, SequenceNumber: {message.SequenceNumber}, IsEncrypted: {message.IsEncrypted}");
+            /*
+            if (message.Content.Contains("OrderRequest"))
+            {
+                HandleClientTypeResponse(message.ClientId, "BACKEND", message.Content);
+                return;
+            }
+            */
             try
             {
                 var orderRequest = JsonSerializer.Deserialize<OrderRequest>(message.Content);
@@ -196,41 +203,41 @@ namespace Satsuki.Systems
             }
         }
 
-        public async void HandleClientTypeResponse(string clientId, string clientType, string password = null)
+        public async void HandleClientTypeResponse(AuthenticationRequest authRequest)
         {
-            GD.Print($"Type de client recu - {clientId}: {clientType}");
+            GD.Print($"Type de client recu - {authRequest.ClientId}: {authRequest.ClientType}");
 
-            if (clientType == "BACKEND")
+            if (authRequest.ClientType == "BACKEND")
             {
-                if (string.IsNullOrEmpty(password))
+                if (string.IsNullOrEmpty(authRequest.Password))
                 {
-                    GD.PrintErr($"Client {clientId} tente de se connecter en tant que BACKEND sans mot de passe");
-                    await RejectBackendClient(clientId, "PASSWORD_MISSING");
+                    GD.PrintErr($"Client {authRequest.ClientId} tente de se connecter en tant que BACKEND sans mot de passe");
+                    await RejectBackendClient(authRequest.ClientId, "PASSWORD_MISSING");
                     return;
                 }
 
-                if (password != BACKEND_PASSWORD)
+                if (authRequest.Password != BACKEND_PASSWORD)
                 {
-                    GD.PrintErr($"Client {clientId} a fourni un mot de passe BACKEND invalide");
-                    await RejectBackendClient(clientId, "PASSWORD_INVALID");
+                    GD.PrintErr($"Client {authRequest.ClientId} a fourni un mot de passe BACKEND invalide");
+                    await RejectBackendClient(authRequest.ClientId, "PASSWORD_INVALID");
                     return;
                 }
 
-                GD.Print($"Client {clientId} authentifie en tant que BACKEND avec succes");
+                GD.Print($"Client {authRequest.ClientId} authentifie en tant que BACKEND avec succes");
             }
 
-            if (IsValidClientType(clientType))
+            if (IsValidClientType(authRequest.ClientType))
             {
-                EmitSignal(SignalName.ClientTypeReceived, clientId, clientType);
+                EmitSignal(SignalName.ClientTypeReceived, authRequest.ClientId, authRequest.ClientType);
 
-                _network.SetClientType(clientId, clientType);
+                _network.SetClientType(authRequest.ClientId, authRequest.ClientType);
 
-                await SendClientTypeConfirmation(clientId, clientType, true);
+                await SendClientTypeConfirmation(authRequest.ClientId, authRequest.ClientType, true);
 
-                GD.Print($"Client {clientId} enregistre en tant que {clientType}");
+                GD.Print($"Client {authRequest.ClientId} enregistre en tant que {authRequest.ClientType}");
 
                 // Envoyer le nom de la scène courante à chaque client authentifié
-                GD.Print($"Client {clientId} authentifie - Envoi du nom de la scene courante");
+                GD.Print($"Client {authRequest.ClientId} authentifie - Envoi du nom de la scene courante");
 
                 try
                 {
@@ -252,7 +259,7 @@ namespace Satsuki.Systems
                     string gameStateJson = System.Text.Json.JsonSerializer.Serialize(currentSceneNameRequest);
                     GD.Print($" current scene name : {gameStateJson}");
 
-                    await SendGameStateToClient(clientId, gameStateJson);
+                    await SendGameStateToClient(authRequest.ClientId, gameStateJson);
                 }
                 catch (Exception ex)
                 {
@@ -261,8 +268,8 @@ namespace Satsuki.Systems
             }
             else
             {
-                GD.PrintErr($"Type de client invalide recu de {clientId}: {clientType}");
-                await SendClientTypeConfirmation(clientId, clientType, false, "INVALID_TYPE");
+                GD.PrintErr($"Type de client invalide recu de {authRequest.ClientId}: {authRequest.ClientType}");
+                await SendClientTypeConfirmation(authRequest.ClientId, authRequest.ClientType, false, "INVALID_TYPE");
             }
         }
 

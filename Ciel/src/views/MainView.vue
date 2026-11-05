@@ -18,14 +18,17 @@ const isReady = ref(false);
 let stopConnectionWatch: (() => void) | null = null;
 let stopSceneWatch: (() => void) | null = null;
 let stopSceneChanged: (() => void) | null = null;
+let stopClientTypeConfirmed: (() => void) | null = null;
 
-// Correspondance scène serveur (nom de classe C#) → route enfant
+// Correspondance scène serveur (nom de classe C#) → route enfant.
+// Clés en minuscules : le serveur renvoie tantôt 'Credits', tantôt 'CREDITS'
+// (cf. GetSceneName() côté scènes C#) — la résolution est insensible à la casse.
 const SCENE_ROUTES: Record<string, string> = {
-  Title: 'game-title',
-  Lobby: 'game-lobby',
-  Credits: 'game-credits',
-  MainMenu: 'game-main-menu',
-  Arcade: 'game-arcade',
+  title: 'game-title',
+  lobby: 'game-lobby',
+  credits: 'game-credits',
+  mainmenu: 'game-main-menu',
+  arcade: 'game-arcade',
 };
 
 const goToLauncher = () => {
@@ -41,7 +44,7 @@ const goToScene = (scene: string | null) => {
     console.log('[MainView] goToScene ignoré : non connecté');
     return;
   }
-  const target = (scene && SCENE_ROUTES[scene]) || 'menu';
+  const target = (scene && SCENE_ROUTES[scene.toLowerCase()]) || 'menu';
   if (route.name === target) return; // déjà sur la bonne route
   console.log(`[MainView] Navigation → ${target} (scène: ${scene ?? 'aucune'})`);
   router.replace({ name: target });
@@ -100,12 +103,21 @@ onMounted(async () => {
   // Réagir en temps réel aux changements de connexion
   stopConnectionWatch = watch(clientService.isConnected, async (connected) => {
     if (connected) {
-      // Le serveur n'envoie GAME_STATE: qu'au premier client : le redemander.
-      // Petit délai pour laisser le handshake (ClientTypeConfirmation) se terminer.
-      setTimeout(() => { clientService.requestGameState(); }, 300);
+      // Le GetGameState est envoyé par le client TCP dès réception de
+      // ClientTypeConfirmation (cf. satsuki-tcp-client.cjs) — pas de délai
+      // arbitraire ici : un envoi avant la fin du handshake serait ignoré.
       await evaluateAndRoute();
     } else {
       goToLauncher();
+    }
+  });
+
+  // Sécurité côté renderer : si le ClientTypeConfirmation arrive alors que
+  // le client TCP n'a pas encore de scène connue, redemander l'état de jeu.
+  stopClientTypeConfirmed = clientService.onOrder('ClientTypeConfirmation', (data: any) => {
+    if (data?.success && !clientService.currentScene.value) {
+      console.log('[MainView] ClientTypeConfirmation reçu sans scène connue → GetGameState');
+      clientService.requestGameState();
     }
   });
 
@@ -131,6 +143,7 @@ onUnmounted(() => {
   stopConnectionWatch?.();
   stopSceneWatch?.();
   stopSceneChanged?.();
+  stopClientTypeConfirmed?.();
 });
 </script>
 

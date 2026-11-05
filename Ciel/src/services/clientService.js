@@ -72,10 +72,11 @@ class ClientService {
         });
 
         window.satsuki.onGameState((payload) => {
-            console.log('[ClientService] État de jeu reçu — scène:', payload?.scene);
+            console.log('[ClientService] Payload GAME_STATE:', payload);
+            console.log('[ClientService] État de jeu reçu — scène:', payload?.state?.sceneName);
             this.gameState.value = payload?.state ?? null;
             // Notifie aussi les handlers enregistrés sur l'ordre 'GameStateUpdate'
-            this._routeMessage({ data: { order: 'GameStateUpdate', scene: payload?.scene, state: payload?.state } });
+            this._routeMessage({ data: { order: 'GameStateUpdate', scene: payload?.state?.sceneName, state: payload?.state } });
         });
 
         window.satsuki.onMessage((payload) => this._routeMessage(payload));

@@ -1,0 +1,16 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Satsuki.Models
+{
+    public class AuthenticationRequest
+    {
+        public string ClientId { get; set; }
+        public string ClientType { get; set; }
+        public string Password { get; set; }
+        public string Timestamp { get; set; }
+    }
+}

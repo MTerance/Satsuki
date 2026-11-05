@@ -158,17 +158,17 @@ const submitPlayer = () => {
   closePlayerModal();
 };
 
+// Remplace la liste des joueurs (ex: état reçu du serveur)
+const setPlayers = (newPlayers: Player[]) => {
+  players.value = newPlayers ?? [];
+};
+
 const addPlayer = () => {
   if (players.value.length >= playerColors.length) 
   { 
     alert(`Maximum ${playerColors.length} joueurs autorisés`);
     return;
   }
-
-const setPlayers = (newPlayers: Player[]) => {
-  players.value = newPlayers;
-};
-
 
   const newPlayer: Player = 
   { 
@@ -192,6 +192,9 @@ const removePlayer = (index: number) => {
 };
 
 // No socket listeners here — parent handles socket events
+
+// API exposée au parent (Lobby) via template ref
+defineExpose({ setPlayers, hasPlayers });
 
 </script>
 

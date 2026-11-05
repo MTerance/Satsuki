@@ -48,14 +48,20 @@
 <script setup lang="ts">
 
 import { ref, onMounted, computed } from 'vue';
-import * as listGame from '@/assets/list_game.json'
-import * as listLocation from '@/assets/list_location.json'
-import * as listGameMode from '@/assets/list_gamemode.json'
+// Import par défaut : ces JSON sont des tableaux racines.
+// 'import * as listGame' exposerait un namespace SANS .map (cf. warning de build
+// '"map" is not exported by ...') → TypeError au setup et composant non rendu.
+import listGame from '@/assets/list_game.json'
+import listLocation from '@/assets/list_location.json'
+import listGameMode from '@/assets/list_gamemode.json'
 import type { GameProfile, SummaryQuizz, LocationQuizz, GameTypeQuizz } from '@/models/SummaryQuizz';
 
 const summaryQuizz = ref<SummaryQuizz | null>(null);
 const isQuizzSelectionModalOpen = ref(false);
 const availableQuizzes = ref<SummaryQuizz[]>([]);
+// Initialisés APRÈS locations/gameModes (voir plus bas) : les remplir au setup
+// et non dans onMounted, sinon allQuizzes (construit au setup) chercherait dans
+// des listes vides → Location/GameType undefined.
 const availableLocations = ref<LocationQuizz[]>([]);
 const availableGameModes = ref<GameTypeQuizz[]>([]);
 
@@ -70,9 +76,7 @@ const emit = defineEmits<{
 
     onMounted(() => {
       console.log('Component is mounted');
-      availableGameModes.value = gameModes.value;
-      availableLocations.value = locations.value;
-      availableQuizzes.value = allQuizzes.value;
+      // Rien à initialiser ici : les listes sont construites au setup.
     });
 
 const openQuizzSelectionModal = () => {
@@ -98,14 +102,21 @@ const gameModes = ref<GameTypeQuizz[]>(listGameMode.map(item => ({
     tag: item.tag
 })));
 
+// Remplir les listes disponibles dès le setup (utilisées par allQuizzes et la modale)
+availableLocations.value = locations.value;
+availableGameModes.value = gameModes.value;
+
 const allQuizzes = ref<SummaryQuizz[]>(listGame.map(item =>({ 
     id: item.id,
     Name: item.Name,
-    Location: availableLocations.value?.find(loc => loc.id === item.Location),
-    GameType: availableGameModes.value?.find(mode => mode.tag === item.GameType),
+    Location: locations.value.find(loc => loc.id === item.Location),
+    // tag ('arcade') vs GameType ('Arcade') : casse non alignée entre les JSON
+    GameType: gameModes.value.find(mode => mode.tag.toLowerCase() === item.GameType?.toLowerCase()),
     durationTime: item.durationTime
 }))
 );
+
+availableQuizzes.value = allQuizzes.value;
 
 const selectQuizz = (quizz: SummaryQuizz) => {
     // Logic to select a quizz
@@ -125,7 +136,7 @@ const setSelectedQuizz = (quizz: GameProfile) => {
         id: quizz.Id,
         Name: quizz.Name,
         Location: availableLocations.value?.find(loc => loc.id === quizz.Location),
-        GameType: availableGameModes.value?.find(mode => mode.tag === quizz.TypeGameMode),
+        GameType: availableGameModes.value?.find(mode => mode.tag.toLowerCase() === quizz.TypeGameMode?.toLowerCase()),
         durationTime: 0 // You may need to set this appropriately
     };
 };
@@ -155,14 +166,6 @@ const getAvailableGames = async () => {
         availableQuizzes.value = data;
         */
 
-        var quizzes = listGame.map(item =>({    
-            id: item.id,
-            Name: item.Name,
-            Location: availableLocations.value.find(loc => loc.id === item.Location),
-            GameType: availableGameModes.value.find(mode => mode.tag === item.GameType),
-            durationTime: item.durationTime
-        }));
-
         availableQuizzes.value = allQuizzes.value.filter(quizz =>
             quizz.Name.toLowerCase().includes(searchText.value.toLowerCase())
         );
@@ -181,6 +184,9 @@ const filteredQuizzes = computed(() => {
 });
 
 const hasAChosenQuizz = computed(() => summaryQuizz.value !== null);
+
+// API exposée au parent (Lobby) via template ref
+defineExpose({ setSelectedQuizz, hasAChosenQuizz });
 
 </script>
 

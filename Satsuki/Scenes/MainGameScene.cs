@@ -421,6 +421,16 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 					GD.Print($"MainGameScene: Ordre systeme GoToScene recu, scene cible: {orderRequest.JsonData}");
 					GoToScene(orderRequest.JsonData);
 					break;
+				case "ClientTypeResponse":
+					var authResponse = JsonSerializer.Deserialize<AuthenticationRequest>(orderRequest.JsonData);
+					_serverManager?.HandleClientTypeResponse(authResponse);
+					break;
+				case "GetSceneState":
+					GD.Print("MainGameScene: Ordre systeme GetSceneState recu, envoi de l'etat du jeu...");
+					var state = GetSceneState();
+					var stateJson = JsonSerializer.Serialize(state);
+					_serverManager?.SendMessageToClient(orderRequest.ClientId, stateJson);
+					break;
 				default:
 					GD.Print($"MainGameScene: Ordre systeme inconnu '{orderRequest.Order}'");
 					break;
@@ -512,8 +522,8 @@ public partial class MainGameScene : GameScene, IScene, IGameRecordUser
 			CurrentStateScene = new
 			{
 				Order = "CurrentGameScene",
-				CurrentScene = _currentScene?.GetType().Name ?? "None",
-				Content = CurrentScene?.GetSceneState(),
+				CurrentScene = ((IScene)_currentScene)?.GetSceneName() ?? "None",
+				Content = ((IScene)_currentScene)?.GetSceneState(),
 			},
 			Timestamp = DateTime.UtcNow
 		};

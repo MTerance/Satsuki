@@ -202,6 +202,7 @@ class SatsukiTcpClient {
 
   _handleLine(line) {
     let message = line;
+    console.log(`[SatsukiTCP] Ligne reçue (${line.length} chars): ${line.slice(0, 120)}${line.length > 120 ? '…' : ''}`);
 
     // Tente un décryptage si la ligne ressemble à du Base64 AES.
     if (looksEncrypted(line)) {
@@ -247,6 +248,10 @@ class SatsukiTcpClient {
     if (parsed && parsed.order === 'ClientTypeConfirmation') {
       if (parsed.success) {
         console.log(`[SatsukiTCP] Type confirmé: ${parsed.clientType}`);
+        // Authentification terminée : c'est seulement maintenant que le serveur
+        // accepte nos ordres. Demander l'état de jeu courant (le serveur n'envoie
+        // GAME_STATE: spontanément qu'au 1er client connecté).
+        this.requestGameState();
       } else {
         console.warn(`[SatsukiTCP] Type rejeté: ${parsed.reason}`);
         this._notify('satsuki-error', `ClientType rejeté: ${parsed.reason}`);
@@ -283,24 +288,41 @@ class SatsukiTcpClient {
     });
   }
 
-  // Demande l'état courant au serveur (ordre Scene, traité par MainGameScene)
+  // Demande l'état courant au serveur.
+  // Côté serveur (MainGameScene.cs), SceneOrderReceived/QuizzOrderReceived sont
+  // commentés : seul SystemOrderReceived est dispatché. L'ordre traité est donc
+  // 'GetSceneState' sur la cible 'System' (PAS 'GetGameState' sur 'Scene').
+  // Réponse : JSON direct {CurrentStateScene:{CurrentScene:...}, Timestamp}.
   requestGameState() {
-    return this.sendOrder({
+    console.log(`[SatsukiTCP] Envoi GetSceneState (clientId: ${this.clientId}, crypté: ${this.serverEncrypts})`);
+    const res = this.sendOrder({
       ClientId: this.clientId || 'ciel-client',
-      Target: 'Scene',
-      Order: 'GetGameState',
+      Target: 'System',
+      Order: 'GetSceneState',
       JsonData: '{}'
     });
+    console.log(`[SatsukiTCP] GetSceneState envoyé: ${JSON.stringify(res)}`);
+    return res;
   }
 
   // Répond au handshake RequestClientType
   _sendClientType() {
+
+    const authentificateRequest = {
+        ClientId: this.clientId,
+        ClientType: this.clientType,
+        Password: this.clientType === 'BACKEND' ? this._pendingPassword : undefined,
+        Timestamp: new Date().toISOString()
+    };
+
+    var jsonData = JSON.stringify(authentificateRequest);
+
     const payload = {
-      order: 'ClientTypeResponse',
-      clientId: this.clientId,
-      clientType: this.clientType,
-      password: this.clientType === 'BACKEND' ? this._pendingPassword : undefined,
-      timestamp: new Date().toISOString()
+
+      ClientId: this.clientId,
+      Target: 'System',
+      Order: 'ClientTypeResponse',
+      JsonData: jsonData
     };
     this._sendJson(payload);
   }
