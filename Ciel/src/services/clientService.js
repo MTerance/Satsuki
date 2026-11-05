@@ -35,6 +35,19 @@ class ClientService {
         );
         this._listenersBound = false;
         this._messageHandlers = new Map(); // order -> Set<callback>
+
+        // Ordre envoyé par le serveur juste après l'authentification du premier
+        // client : { order: 'CurrentSceneName', timestamp, sceneName }
+        // On l'intègre dans gameState pour alimenter currentScene (et donc le
+        // routage de MainView) même sans GAME_STATE: complet.
+        this.onOrder('CurrentSceneName', (data) => {
+            const sceneName = data?.sceneName ?? data?.SceneName ?? null;
+            console.log('[ClientService] CurrentSceneName reçu — scène:', sceneName);
+            if (!sceneName) return;
+            const gs = this.gameState.value ?? {};
+            gs.CurrentStateScene = { ...(gs.CurrentStateScene ?? {}), CurrentScene: sceneName };
+            this.gameState.value = { ...gs };
+        });
     }
 
     // L'API preload est-elle disponible (contexte Electron) ?

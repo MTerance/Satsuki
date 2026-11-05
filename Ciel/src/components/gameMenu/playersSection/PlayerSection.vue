@@ -107,7 +107,7 @@ onMounted(() => {
   console.log('PlayerSection component mounted');
 
 
-  
+
 
 });
 
@@ -164,6 +164,12 @@ const addPlayer = () => {
     alert(`Maximum ${playerColors.length} joueurs autorisés`);
     return;
   }
+
+const setPlayers = (newPlayers: Player[]) => {
+  players.value = newPlayers;
+};
+
+
   const newPlayer: Player = 
   { 
     id: crypto.randomUUID(),

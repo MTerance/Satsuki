@@ -1,3 +1,12 @@
+export interface GameProfile {
+    Id: number;
+    Name: string;
+    TypeGameMode: string;
+    Location: number;
+
+}
+
+
 export interface SummaryQuizz {
     id: number;
     Name : string;

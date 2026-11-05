@@ -37,6 +37,7 @@ public partial class Lobby : Node3D, IScene
 
 	public class GameProfile
 	{
+		public int Id { get; set; }
 		public string TagGameMode { get; set; }
 		public string TypeGameContent { get; set; }
 		public string LinkGameContent { get; set; }
@@ -58,7 +59,7 @@ public partial class Lobby : Node3D, IScene
 	private LobbyScreenContent _lobbyScreen;
 	private LobbyMenuScreen MenuScreen { get; set; }
 
-    private void InitCameraPlacement()
+	private void InitCameraPlacement()
 	{
 		bool isNewCamera = false;
 		_camera = GetNodeOrNull<Camera3D>("Camera3D");
@@ -251,8 +252,14 @@ public partial class Lobby : Node3D, IScene
 				SceneType = "Lobby",
 				Timestamp = DateTime.UtcNow
 			},
-			Quizz = CurrentGameProfile,
-            Players = _players.Select(player => new
+			Quizz = new
+			{
+				Id = CurrentGameProfile?.Id ?? -1,
+				Name = CurrentGameProfile?.Name ?? string.Empty,
+				TypeGameMode = CurrentGameProfile?.TagGameMode ?? string.Empty,
+				Location = CurrentGameProfile?.Location ?? -1
+			},
+			Players = _players.Select(player => new
 			{
 				Id = player.Id,
 				Name = player.Name,
@@ -336,13 +343,14 @@ public partial class Lobby : Node3D, IScene
 		LobbyScreenContent lobbyScreenInfo = LobbyScreenContentLoader.GetInstance().GetLobbyScreenContent(gameInfo.TypeGameMode);
 		if (CurrentGameProfile != null)
 		{
+			CurrentGameProfile.Id = gameInfo.Id;
 			CurrentGameProfile.TagGameMode = gameInfo.TypeGameMode;
-            CurrentGameProfile.TagGameMode = gameInfo.TypeGameMode;
-            CurrentGameProfile.TypeGameContent = lobbyScreenInfo.LogoImgPath;
+			CurrentGameProfile.TagGameMode = gameInfo.TypeGameMode;
+			CurrentGameProfile.TypeGameContent = lobbyScreenInfo.LogoImgPath;
 			CurrentGameProfile.LinkGameContent = lobbyScreenInfo.BackgroundImgPath;
 			CurrentGameProfile.Name = gameInfo.Name;
 			CurrentGameProfile.Location = gameInfo.Location;
-        }
+		}
 		else
 			CurrentGameProfile = new GameProfile
 			{
@@ -354,9 +362,9 @@ public partial class Lobby : Node3D, IScene
 			};
 
 		lobbyScreenInfo.LocationName = gameInfo.Location.ToString();
-        lobbyScreenInfo.GameSessionName = gameInfo.Name;
-        MenuScreen?.SetMenuScreenContent(lobbyScreenInfo);
-    }
+		lobbyScreenInfo.GameSessionName = gameInfo.Name;
+		MenuScreen?.SetMenuScreenContent(lobbyScreenInfo);
+	}
 
 	private void GoToGame()
 	{

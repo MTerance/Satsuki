@@ -15,7 +15,6 @@ namespace Satsuki.Systems
     {
         private Network _network;
         private bool _isServerRunning = false;
-        private bool _hasHadFirstClient = false;
         private Timer _messageProcessingTimer;
         private MainGameScene _mainGameScene;
 
@@ -165,41 +164,6 @@ namespace Satsuki.Systems
             EmitSignal(SignalName.ClientConnected, clientId);
 
             await RequestClientType(clientId);
-
-            if (!_hasHadFirstClient)
-            {
-                _hasHadFirstClient = true;
-                GD.Print("Premier client connecte - Recuperation du nom de la scene courante");
-
-                try
-                {
-                    var gameState = _mainGameScene?.GetSceneName();
-
-                    if (gameState == null)
-                    {
-                        GD.PrintErr("ServerManager: MainGameScene non disponible pour GetSceneName");
-                        return;
-                    }
-
-                    GD.Print("Nom de la scene courante recupere:");
-
-                    var currentSceneNameRequest = new
-                    {
-                        order = "CurrentSceneName",
-                        timestamp = DateTime.UtcNow.ToString("o"),
-                        sceneName = gameState
-                    };
-
-                    string gameStateJson = System.Text.Json.JsonSerializer.Serialize(currentSceneNameRequest);
-                    GD.Print($" current game state : {gameStateJson}");
-
-                    await SendGameStateToClient(clientId, gameStateJson);
-                }
-                catch (Exception ex)
-                {
-                    GD.PrintErr($"Erreur lors de la recuperation du nom de la scene courante: {ex.Message}");
-                }
-            }
         }
 
         private async Task RequestClientType(string clientId)
@@ -264,6 +228,36 @@ namespace Satsuki.Systems
                 await SendClientTypeConfirmation(clientId, clientType, true);
 
                 GD.Print($"Client {clientId} enregistre en tant que {clientType}");
+
+                // Envoyer le nom de la scène courante à chaque client authentifié
+                GD.Print($"Client {clientId} authentifie - Envoi du nom de la scene courante");
+
+                try
+                {
+                    var sceneName = _mainGameScene?.GetSceneName();
+
+                    if (sceneName == null)
+                    {
+                        GD.PrintErr("ServerManager: MainGameScene non disponible pour GetSceneName");
+                        return;
+                    }
+
+                    var currentSceneNameRequest = new
+                    {
+                        order = "CurrentSceneName",
+                        timestamp = DateTime.UtcNow.ToString("o"),
+                        sceneName = sceneName
+                    };
+
+                    string gameStateJson = System.Text.Json.JsonSerializer.Serialize(currentSceneNameRequest);
+                    GD.Print($" current scene name : {gameStateJson}");
+
+                    await SendGameStateToClient(clientId, gameStateJson);
+                }
+                catch (Exception ex)
+                {
+                    GD.PrintErr($"Erreur lors de l'envoi du nom de la scene courante: {ex.Message}");
+                }
             }
             else
             {

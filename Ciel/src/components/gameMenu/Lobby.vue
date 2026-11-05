@@ -19,6 +19,21 @@ import type { SummaryQuizz } from '@/models/SummaryQuizz.ts';
      console.log('Lobby component mounted');
      console.log('Available quizzes:', QuizzSelector);
      console.log('Player section:', PlayerSection);
+
+    clientservice.onOrder('CurrentGameScene', (data) => {
+        console.log('CurrentGameScene order received:', data);
+        if (data?.CurrentScene) {
+            console.log('Current scene:', data?.CurrentScene);
+            if (data?.Content) {
+               PlayerSection.setPlayers(data?.Content.Players);
+               QuizzSelector.setSelectedQuizz(data?.Content.Quizz);
+            }
+        }
+    });
+
+
+
+
      clientservice.sendOrder('GetSceneState', null, OrderTarget.SYSTEM);
      
  }); 

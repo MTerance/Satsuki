@@ -51,7 +51,7 @@ import { ref, onMounted, computed } from 'vue';
 import * as listGame from '@/assets/list_game.json'
 import * as listLocation from '@/assets/list_location.json'
 import * as listGameMode from '@/assets/list_gamemode.json'
-import type { SummaryQuizz, LocationQuizz, GameTypeQuizz } from '@/models/SummaryQuizz';
+import type { GameProfile, SummaryQuizz, LocationQuizz, GameTypeQuizz } from '@/models/SummaryQuizz';
 
 const summaryQuizz = ref<SummaryQuizz | null>(null);
 const isQuizzSelectionModalOpen = ref(false);
@@ -114,6 +114,22 @@ const selectQuizz = (quizz: SummaryQuizz) => {
     emit('quizz-selected', quizz);
     closeQuizzSelectionModal();
 };
+
+const setSelectedQuizz = (quizz: GameProfile) => {
+
+    if (!quizz || (quizz.Id ==1 && quizz.Name === '')) {
+        return;
+    }
+
+    summaryQuizz.value = {
+        id: quizz.Id,
+        Name: quizz.Name,
+        Location: availableLocations.value?.find(loc => loc.id === quizz.Location),
+        GameType: availableGameModes.value?.find(mode => mode.tag === quizz.TypeGameMode),
+        durationTime: 0 // You may need to set this appropriately
+    };
+};
+
 
 const closeQuizzSelectionModal = () => {
     isQuizzSelectionModalOpen.value = false;
