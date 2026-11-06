@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="AkibaQuiz.Api/AkibaQuiz.Api.csproj" />
+  <Project Path="AkibaQuiz.Application/AkibaQuiz.Application.csproj" />
+  <Project Path="AkibaQuiz.Contracts/AkibaQuiz.Contracts.csproj" />
+  <Project Path="AkibaQuiz.Infrastructure/AkibaQuiz.Infrastructure.csproj" />
+  <Project Path="AkibaQuiz.Web/AkibaQuiz.Web.csproj" />
+</Solution>

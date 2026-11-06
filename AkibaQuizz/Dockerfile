@@ -1,0 +1,27 @@
+# Étape 1 : compilation
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+
+WORKDIR /src
+
+COPY . .
+
+RUN dotnet restore AkibaQuiz.Web/AkibaQuiz.Web.csproj
+
+RUN dotnet publish AkibaQuiz.Web/AkibaQuiz.Web.csproj \
+    -c Release \
+    -o /app/publish \
+    --no-restore
+
+# Étape 2 : image d'exécution
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
+
+WORKDIR /app
+
+COPY --from=build /app/publish .
+
+ENV ASPNETCORE_URLS=http://+:8080
+ENV ASPNETCORE_ENVIRONMENT=Development
+
+EXPOSE 8080
+
+ENTRYPOINT ["dotnet", "AkibaQuiz.Web.dll"]
