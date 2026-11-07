@@ -33,8 +33,8 @@ namespace AkibaQuiz.Contracts.Models
     {
         public long Id { get; set; }
         public string Question { get; set; } = string.Empty;
-        public DateTimeOffset CreationDate { get; set; }
-        public DateTimeOffset LastUpdatedDate { get; set; }        
+        public DateTimeOffset? CreationDate { get; set; }
+        public DateTimeOffset? LastUpdatedDate { get; set; }        
         public long IdCategory { get; set; }
         public string CategoryName { get; set; } = string.Empty;        
         public string Author { get; set; } = string.Empty;

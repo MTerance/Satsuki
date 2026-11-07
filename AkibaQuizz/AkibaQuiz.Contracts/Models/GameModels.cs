@@ -26,6 +26,6 @@ namespace AkibaQuiz.Contracts.Models
         public long? IdQuestionAnswer { get; set; }
         public long? IdQCMQuestion { get; set; }
         public long? IdListQuestionsAnswers { get; set; }
-        public int Position { get; set; }
+        public long Position { get; set; }
     }
 }
