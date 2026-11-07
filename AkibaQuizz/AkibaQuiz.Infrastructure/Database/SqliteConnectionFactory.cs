@@ -2,21 +2,34 @@
 
 namespace AkibaQuiz.Infrastructure.Database;
 
-public sealed class SqliteConnectionFactory(string connectionString)
+public sealed class SqliteConnectionFactory
 {
+    private readonly string connectionString;
+
+    public SqliteConnectionFactory(string databasePath)
+    {
+        if (File.Exists(databasePath))
+        {
+           var buiilder = new SqliteConnectionStringBuilder
+           {
+               DataSource = databasePath,
+               Mode = SqliteOpenMode.ReadWriteCreate,
+               Cache = SqliteCacheMode.Shared,
+               DefaultTimeout = 30,
+               ForeignKeys = true,
+           };
+            connectionString = buiilder.ToString();
+        }
+        else
+        {
+            throw new FileNotFoundException("Database file not found.", databasePath);
+        }
+    }
+
     public async Task<SqliteConnection> OpenAsync(CancellationToken ct = default)    
     {
         var connection = new SqliteConnection(connectionString);
-
         await connection.OpenAsync(ct);
-
-        await using var command = connection.CreateCommand();
-        command.CommandText = """
-            PRAGMA foreign_keys = ON;
-            PRAGMA busy_timeout = 5000;
-            PRAGMA journal_mode = WAL;
-            """;
-        await command.ExecuteNonQueryAsync(ct);
         return connection;
     }
 }

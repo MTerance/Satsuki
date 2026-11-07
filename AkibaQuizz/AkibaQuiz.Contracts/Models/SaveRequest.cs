@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace AkibaQuiz.Contracts.Models
 {
+    /*
     public sealed class SaveQcmMediaRequest
     {
         public long IdMedia { get; set; }
@@ -37,4 +38,5 @@ namespace AkibaQuiz.Contracts.Models
 
         public List<SaveQcmMediaRequest> Medias { get; set; } = [];
     }
+    */
 }
