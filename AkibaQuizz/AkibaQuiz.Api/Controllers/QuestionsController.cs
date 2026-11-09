@@ -3,10 +3,12 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 using AkibaQuiz.Contracts.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AkibaQuiz.Api.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/questions")]
     public sealed class QuestionsController : ControllerBase

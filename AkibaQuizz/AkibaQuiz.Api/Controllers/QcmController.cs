@@ -1,10 +1,11 @@
 ﻿using AkibaQuiz.Application.Interfaces;
 using AkibaQuiz.Contracts.Requests;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AkibaQuiz.Api.Controllers
 {
-
+    [Authorize]
     [ApiController]
     [Route("api/admin/qcm")]
     public class QcmController : ControllerBase
