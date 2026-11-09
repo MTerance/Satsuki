@@ -1,3 +1,6 @@
+using AkibaQuiz.Application.Interfaces;
+using AkibaQuiz.Application.Services;
+using AkibaQuiz.Infrastructure.Repositories;
 using AkibaQuiz.Infrastructure.Database;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
@@ -16,6 +19,8 @@ public sealed class Startup : StartupBase
 
         services.AddSingleton(
             new SqliteConnectionFactory(connectionString));
+        services.AddScoped<IQcmRepository, QcmRepository>();
+        services.AddScoped<IQcmService, QcmService>();
     }
 
     public override void Configure(IApplicationBuilder builder, IEndpointRouteBuilder routes, IServiceProvider serviceProvider)
