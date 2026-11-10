@@ -1,3 +1,4 @@
+using AkibaQuiz.Api.Security;
 using AkibaQuiz.Application.Interfaces;
 using AkibaQuiz.Application.Services;
 using AkibaQuiz.Infrastructure.Repositories;
@@ -14,13 +15,24 @@ public sealed class Startup : StartupBase
 {
     public override void ConfigureServices(IServiceCollection services)
     {
-        var connectionString = Environment.GetEnvironmentVariable("AkibaQuiz") ??
-            "Data Source=AkibaQuiz.db;Cache=Shared;Mode=ReadWriteCreate;Pooling=True;Max Pool Size=100;";
+        var connectionString = Environment.GetEnvironmentVariable("AKIBA_DB_PATH");
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            throw new InvalidOperationException("The AKIBA_DB_PATH environment variable is not set.");
+        }
 
         services.AddSingleton(
             new SqliteConnectionFactory(connectionString));
         services.AddScoped<IQcmRepository, QcmRepository>();
+        services.AddScoped<IReferenceRepository, ReferenceRepository>();
+        services.AddScoped<IQuestionRepository, QuestionRepository>();
+        services.AddScoped<IGameRepository, GameRepository>();
+        services.AddScoped<QuestionService>();
+        services.AddScoped<GameService>();
         services.AddScoped<IQcmService, QcmService>();
+
+        services.AddScoped<AdminApiKeyFilter>();
+        services.AddScoped<ApiExceptionFilter>();
     }
 
     public override void Configure(IApplicationBuilder builder, IEndpointRouteBuilder routes, IServiceProvider serviceProvider)

@@ -1,13 +1,16 @@
-﻿using AkibaQuiz.Application.Interfaces;
+﻿using AkibaQuiz.Api.Security;
+using AkibaQuiz.Application.Interfaces;
 using AkibaQuiz.Contracts.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AkibaQuiz.Api.Controllers
 {
-    [Authorize]
     [ApiController]
     [Route("api/admin/qcm")]
+    [IgnoreAntiforgeryToken]
+    [TypeFilter(typeof(AdminApiKeyFilter))]
+    [TypeFilter(typeof(ApiExceptionFilter))]
     public class QcmController : ControllerBase
     {
         private readonly IQcmService qcmService;

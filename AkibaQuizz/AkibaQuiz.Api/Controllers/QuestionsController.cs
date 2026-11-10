@@ -1,58 +1,47 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Text;
+﻿using AkibaQuiz.Api.Security;
+using AkibaQuiz.Application.Services;
+using AkibaQuiz.Contracts;
 using AkibaQuiz.Contracts.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Text;
 
 namespace AkibaQuiz.Api.Controllers
 {
-    [Authorize]
     [ApiController]
-    [Route("api/questions")]
-    public sealed class QuestionsController : ControllerBase
+    [Route("api/admin/questions-answers")]
+    [IgnoreAntiforgeryToken]
+    [TypeFilter(typeof(AdminApiKeyFilter))]
+    [TypeFilter(typeof(ApiExceptionFilter))]
+    public sealed class QuestionsAnswersController(QuestionService service) : ControllerBase
     {
-        private static readonly ConcurrentDictionary<int,QuestionAnswerDto> _questions = new ();
-
-        private static int _nextId;
-
         [HttpGet]
-        public ActionResult<IEnumerable<QuestionAnswerDto>> GetAll()
-        {
-            return Ok(_questions.Values.OrderBy(q => q.Id));
-        }
+        public async Task<IActionResult> All(CancellationToken ct) => Ok(await service.All(ct));
 
-        [HttpGet("{id:int}")]
-        public ActionResult<QuestionAnswerDto> GetById(int id)
+        [HttpGet("{id:long}")]
+        public async Task<IActionResult> Get(long id, CancellationToken ct)
         {
-            if (_questions.TryGetValue(id, out var question))
-            {
-                return Ok(question);
-            }
-            return NotFound();
+            var x = await service.Get(id, ct); return x is null ? NotFound() : Ok(x);
         }
-
         [HttpPost]
-        public ActionResult<QuestionAnswerDto> Create([FromBody] CreateQuestionRequest request)
+        public async Task<IActionResult> Create([FromBody] QuestionWrite input, CancellationToken ct)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var id = System.Threading.Interlocked.Increment(ref _nextId);
-
-            var question = new QuestionAnswerDto
-            {
-                Id = id,
-                Question = request.Question,
-                Answer = request.Answer,
-                Points = request.Points,
-                TimeLimitSeconds = request.TimeLimitSeconds
-            };
-            _questions[id] = question;
-            return CreatedAtAction(nameof(GetById), new { id }, question);
+            var x = await service.Save(null, input, "TP4-Admin", ct);
+            return CreatedAtAction(nameof(Get), new { id = x.Id }, x);
+        }
+        [HttpPut("{id:long}")]
+        public async Task<IActionResult> Update(long id, [FromBody] QuestionWrite input, CancellationToken ct)
+        {
+            await service.Save(id, input, "TP4-Admin", ct);
+            return NoContent();
+        }
+        [HttpDelete("{id:long}")]
+        public async Task<IActionResult> Delete(long id, CancellationToken ct)
+        {
+            return await service.Delete(id, ct) ? NoContent() : NotFound();
         }
     }
 }

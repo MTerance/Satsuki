@@ -6,17 +6,21 @@ services:
       context: .
       dockerfile: Dockerfile
 
-    image: akibaquiz-web:0.1
+    image: akibaquiz-web:0.4.3
     container_name: akiba-quiz-dev-web
 
     ports:
-      - "127.0.0.1:8091:8080"
+      - "127.0.0.1:8092:8080"
 
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      AKIBA_DB_PATH: /app/QuizData/Quizz.db
+      AKIBA_ADMIN_API_KEY: ${AKIBA_ADMIN_API_KEY:?API key required}
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
 
     volumes:
       - orchard-data:/app/App_Data
+      - ./data:/app/QuizData
 
     restart: unless-stopped
 
