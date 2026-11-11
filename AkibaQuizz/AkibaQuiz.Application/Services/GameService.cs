@@ -1,4 +1,5 @@
 ﻿using AkibaQuiz.Application.Interfaces;
+using AkibaQuiz.Contracts.Models;
 using AkibaQuiz.Contracts;
 using System;
 using System.Collections.Generic;
@@ -6,7 +7,7 @@ using System.Text;
 
 namespace AkibaQuiz.Application.Services
 {
-    public sealed class GameService(IGameRepository repo)
+    public sealed class GameService(IGameRepository repo, QuestionService questionService, QcmService qcmService)
     {
         public Task<List<GameDto>> All(CancellationToken ct) => repo.All(ct);
         public Task<GameDto?> Get(long id, CancellationToken ct) => repo.Get(id, ct);
@@ -29,5 +30,82 @@ namespace AkibaQuiz.Application.Services
             return (await repo.Get(key, ct))!;
         }
         public Task<bool> Delete(long id, CancellationToken ct) => repo.Delete(id, ct);
+
+        /// <summary>
+        /// Charge la definition complete d'un Game destinee a Ciel (regie).
+        /// Reutilise les repositories existants et ne change pas le CRUD TP4.
+        /// </summary>
+        public async Task<GameFullDto?> GetFull(long id, CancellationToken ct)
+        {
+            if (id <= 0)
+                return null;
+
+            var game = await repo.Get(id, ct);
+            if (game is null)
+                return null;
+
+            // Un QCM / QuestionAnswer peut apparaitre dans plusieurs manches :
+            // le charger une seule fois pendant cette requete.
+            var questions = new Dictionary<long, QuestionDto>();
+            var qcms = new Dictionary<long, QcmDto>();
+            var rounds = new List<GameFullRoundDto>();
+
+            foreach (var round in game.Rounds.OrderBy(r => r.Position).ThenBy(r => r.Id))
+            {
+                var entries = new List<GameFullQuestionDto>();
+
+                foreach (var reference in round.Questions.OrderBy(q => q.Position).ThenBy(q => q.Id))
+                {
+                    bool hasQa = reference.IdQuestionAnswer.HasValue;
+                    bool hasQcm = reference.IdQCMQuestion.HasValue;
+
+                    if (reference.IdListQuestionsAnswers.HasValue ||
+                        hasQa == hasQcm ||
+                        (hasQa && reference.IdQuestionAnswer!.Value <= 0) ||
+                        (hasQcm && reference.IdQCMQuestion!.Value <= 0))
+                    {
+                        throw new ApiConflictException(
+                            $"Reference de question incorrecte : RoundQuestions #{reference.Id}.");
+                    }
+
+                    if (hasQa)
+                    {
+                        long questionId = reference.IdQuestionAnswer!.Value;
+                        if (!questions.TryGetValue(questionId, out var question))
+                        {
+                            question = await questionService.Get(questionId, ct)
+                                ?? throw new ApiConflictException(
+                                    $"QuestionAnswer #{questionId} introuvable.");
+                            questions.Add(questionId, question);
+                        }
+
+                        entries.Add(new GameFullQuestionDto(
+                            reference.Id, reference.Position, "QuestionAnswer",
+                            questionId, null, question, null));
+                    }
+                    else
+                    {
+                        long qcmId = reference.IdQCMQuestion!.Value;
+                        if (!qcms.TryGetValue(qcmId, out var qcm))
+                        {
+                            qcm = await qcmService.GetByIdAsync(qcmId, ct)
+                                ?? throw new ApiConflictException(
+                                    $"QCM #{qcmId} introuvable.");
+                            qcms.Add(qcmId, qcm);
+                        }
+
+                        entries.Add(new GameFullQuestionDto(
+                            reference.Id, reference.Position, "QCM",
+                            null, qcmId, null, qcm));
+                    }
+                }
+
+                rounds.Add(new GameFullRoundDto(round.Id, round.Position, entries));
+            }
+
+            return new GameFullDto(
+                game.Id, game.Name, game.Author, game.CreationDate, rounds);
+        }
+
     }
 }
