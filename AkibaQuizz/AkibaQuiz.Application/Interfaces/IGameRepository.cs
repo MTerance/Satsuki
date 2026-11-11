@@ -1,24 +1,13 @@
-﻿using AkibaQuiz.Contracts;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using AkibaQuiz.Contracts.Models;
+using AkibaQuiz.Contracts.Requests;
 
-namespace AkibaQuiz.Application.Interfaces
+namespace AkibaQuiz.Application.Interfaces;
+
+public interface IGameRepository
 {
-    public interface IGameRepository
-    {
-        Task<List<GameDto>> All(CancellationToken ct);
-
-        Task<GameDto?> Get(long id, CancellationToken ct);
-
-        Task<long> Save(
-            long? id,
-            GameWrite value,
-            string author,
-            CancellationToken ct);
-
-        Task<bool> Delete(
-            long id,
-            CancellationToken ct);
-    }
+    Task<IReadOnlyList<GameModel>> GetAllAsync(CancellationToken ct);
+    Task<GameModel?> GetByIdAsync(long id, CancellationToken ct);
+    Task<IReadOnlyList<GameSummaryModel>> GetSummariesAsync(CancellationToken ct);
+    Task<long> SaveAsync(long? id, SaveGameRequest request, string author, CancellationToken ct);
+    Task<bool> DeleteAsync(long id, CancellationToken ct);
 }

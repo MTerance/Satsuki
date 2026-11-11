@@ -1,27 +1,18 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using AkibaQuiz.Application.Interfaces;
+using AkibaQuiz.Api.Mapping;
 using AkibaQuiz.Api.Security;
+using AkibaQuiz.Application.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
-namespace AkibaQuiz.Api.Controllers
+namespace AkibaQuiz.Api.Controllers;
+
+[ApiController]
+[Route("api/catalog/games")]
+[TypeFilter(typeof(AdminApiKeyFilter))]
+[TypeFilter(typeof(ApiExceptionFilter))]
+public sealed class GameCatalogController(IGameService games) : ControllerBase
 {
-
-    [ApiController]
-    [Route("api/catalog/games")]
-    [TypeFilter(typeof(AdminApiKeyFilter))]
-    public class GameCatalogController : ControllerBase
-    {
-        private readonly IGameCatalogService _gameCatalogService;
-
-        public GameCatalogController(IGameCatalogService gameCatalogService)
-        {
-            _gameCatalogService = gameCatalogService;
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetGames(CancellationToken cancellationToken)
-        {
-            var games = await _gameCatalogService.GetGamesAsync(cancellationToken);
-            return Ok(games);
-        }
-    }
+    [HttpGet]
+    public async Task<IActionResult> GetGames(CancellationToken ct)
+        => Ok((await games.GetSummariesAsync(ct))
+            .Select(QuizApiMapper.ToDto).ToList());
 }

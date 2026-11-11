@@ -1,111 +1,110 @@
-﻿using AkibaQuiz.Application.Interfaces;
-using AkibaQuiz.Contracts.Models;
+using AkibaQuiz.Application.Interfaces;
 using AkibaQuiz.Contracts;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using AkibaQuiz.Contracts.Models;
+using AkibaQuiz.Contracts.Requests;
 
-namespace AkibaQuiz.Application.Services
+namespace AkibaQuiz.Application.Services;
+
+// Orchestration de cas d'utilisation. Ne dépend pas d'Infrastructure ni d'un DTO HTTP.
+public sealed class GameService(
+    IGameRepository repository,
+    IQuestionService questions,
+    IQcmService qcms) : IGameService
 {
-    public sealed class GameService(IGameRepository repo, QuestionService questionService, QcmService qcmService)
+    public Task<IReadOnlyList<GameModel>> GetAllAsync(CancellationToken ct)
+        => repository.GetAllAsync(ct);
+
+    public Task<GameModel?> GetByIdAsync(long id, CancellationToken ct)
+        => repository.GetByIdAsync(id, ct);
+
+    public Task<IReadOnlyList<GameSummaryModel>> GetSummariesAsync(CancellationToken ct)
+        => repository.GetSummariesAsync(ct);
+
+    public async Task<GameFullModel?> GetFullAsync(long id, CancellationToken ct)
     {
-        public Task<List<GameDto>> All(CancellationToken ct) => repo.All(ct);
-        public Task<GameDto?> Get(long id, CancellationToken ct) => repo.Get(id, ct);
-        public async Task<GameDto> Save(long? id, GameWrite value, string author, CancellationToken ct)
+        var game = await repository.GetByIdAsync(id, ct);
+        if (game is null) return null;
+
+        // Une même question peut apparaître dans plusieurs manches : un seul chargement par ID.
+        var questionCache = new Dictionary<long, QuestionAnswerModel>();
+        var qcmCache = new Dictionary<long, QcmModel>();
+        var fullRounds = new List<GameFullRoundModel>();
+
+        foreach (var round in game.Rounds.OrderBy(r => r.Position).ThenBy(r => r.Id))
         {
-            if (string.IsNullOrWhiteSpace(value.Name) 
-                || value.Rounds is null) 
-                throw new ApiValidationException("Nom et manches obligatoires.");
-            if (value.Rounds.Any(r => r is null || r.Position < 0 ||r.Questions is null) ||
-            value.Rounds.Select(r => r.Position).Distinct().Count() != value.Rounds.Count) 
-                throw new ApiValidationException("Positions de manches invalides ou dupliquées.");
-            foreach (var r in value.Rounds)
+            var fullQuestions = new List<GameFullQuestionModel>();
+            foreach (var entry in round.Questions.OrderBy(q => q.Position).ThenBy(q => q.Id))
             {
-                if (r.Questions.Any(q => q is null || q.Position < 0) || r.Questions.Select(q => q.Position).Distinct().Count() != r.Questions.Count)
-                    throw new ApiValidationException("Positions de questions invalides ou dupliquées.");
-                foreach (var q in r.Questions) if ((q.IdQuestionAnswer.HasValue ? 1 : 0) + (q.IdQCMQuestion.HasValue ? 1 : 0) + (q.IdListQuestionsAnswers.HasValue ? 1 : 0) != 1 || q.IdListQuestionsAnswers.HasValue)
-                    throw new ApiValidationException("Utiliser exactement une référence QuestionAnswer ou QCM. IdListQuestionsAnswers n'est pas pris en charge.");
-            }
-            var key = await repo.Save(id, value, author, ct); 
-            return (await repo.Get(key, ct))!;
-        }
-        public Task<bool> Delete(long id, CancellationToken ct) => repo.Delete(id, ct);
+                bool hasQuestion = entry.IdQuestionAnswer is > 0;
+                bool hasQcm = entry.IdQCMQuestion is > 0;
+                if (entry.IdListQuestionsAnswers.HasValue || hasQuestion == hasQcm
+                    || (entry.IdQuestionAnswer.HasValue && !hasQuestion)
+                    || (entry.IdQCMQuestion.HasValue && !hasQcm))
+                    throw new ApiConflictException($"Référence invalide dans RoundQuestions #{entry.Id}.");
 
-        /// <summary>
-        /// Charge la definition complete d'un Game destinee a Ciel (regie).
-        /// Reutilise les repositories existants et ne change pas le CRUD TP4.
-        /// </summary>
-        public async Task<GameFullDto?> GetFull(long id, CancellationToken ct)
-        {
-            if (id <= 0)
-                return null;
-
-            var game = await repo.Get(id, ct);
-            if (game is null)
-                return null;
-
-            // Un QCM / QuestionAnswer peut apparaitre dans plusieurs manches :
-            // le charger une seule fois pendant cette requete.
-            var questions = new Dictionary<long, QuestionDto>();
-            var qcms = new Dictionary<long, QcmDto>();
-            var rounds = new List<GameFullRoundDto>();
-
-            foreach (var round in game.Rounds.OrderBy(r => r.Position).ThenBy(r => r.Id))
-            {
-                var entries = new List<GameFullQuestionDto>();
-
-                foreach (var reference in round.Questions.OrderBy(q => q.Position).ThenBy(q => q.Id))
+                QuestionAnswerModel? question = null;
+                QcmModel? qcm = null;
+                if (entry.IdQuestionAnswer is long questionId)
                 {
-                    bool hasQa = reference.IdQuestionAnswer.HasValue;
-                    bool hasQcm = reference.IdQCMQuestion.HasValue;
-
-                    if (reference.IdListQuestionsAnswers.HasValue ||
-                        hasQa == hasQcm ||
-                        (hasQa && reference.IdQuestionAnswer!.Value <= 0) ||
-                        (hasQcm && reference.IdQCMQuestion!.Value <= 0))
+                    if (!questionCache.TryGetValue(questionId, out question))
                     {
-                        throw new ApiConflictException(
-                            $"Reference de question incorrecte : RoundQuestions #{reference.Id}.");
-                    }
-
-                    if (hasQa)
-                    {
-                        long questionId = reference.IdQuestionAnswer!.Value;
-                        if (!questions.TryGetValue(questionId, out var question))
-                        {
-                            question = await questionService.Get(questionId, ct)
-                                ?? throw new ApiConflictException(
-                                    $"QuestionAnswer #{questionId} introuvable.");
-                            questions.Add(questionId, question);
-                        }
-
-                        entries.Add(new GameFullQuestionDto(
-                            reference.Id, reference.Position, "QuestionAnswer",
-                            questionId, null, question, null));
-                    }
-                    else
-                    {
-                        long qcmId = reference.IdQCMQuestion!.Value;
-                        if (!qcms.TryGetValue(qcmId, out var qcm))
-                        {
-                            qcm = await qcmService.GetByIdAsync(qcmId, ct)
-                                ?? throw new ApiConflictException(
-                                    $"QCM #{qcmId} introuvable.");
-                            qcms.Add(qcmId, qcm);
-                        }
-
-                        entries.Add(new GameFullQuestionDto(
-                            reference.Id, reference.Position, "QCM",
-                            null, qcmId, null, qcm));
+                        question = await questions.GetByIdAsync(questionId, ct)
+                            ?? throw new ApiConflictException($"QuestionAnswer #{questionId} introuvable.");
+                        questionCache.Add(questionId, question);
                     }
                 }
-
-                rounds.Add(new GameFullRoundDto(round.Id, round.Position, entries));
+                else if (entry.IdQCMQuestion is long qcmId)
+                {
+                    if (!qcmCache.TryGetValue(qcmId, out qcm))
+                    {
+                        qcm = await qcms.GetByIdAsync(qcmId, ct)
+                            ?? throw new ApiConflictException($"QCM #{qcmId} introuvable.");
+                        qcmCache.Add(qcmId, qcm);
+                    }
+                }
+                fullQuestions.Add(new GameFullQuestionModel
+                {
+                    Id = entry.Id, Position = entry.Position,
+                    IdQuestionAnswer = entry.IdQuestionAnswer,
+                    IdQCMQuestion = entry.IdQCMQuestion,
+                    QuestionAnswer = question, Qcm = qcm
+                });
             }
-
-            return new GameFullDto(
-                game.Id, game.Name, game.Author, game.CreationDate, rounds);
+            fullRounds.Add(new GameFullRoundModel
+            {
+                Id = round.Id, Position = round.Position, Questions = fullQuestions
+            });
         }
-
+        return new GameFullModel { Game = game, Rounds = fullRounds };
     }
+
+    public async Task<GameModel> SaveAsync(long? id, SaveGameRequest value, string author, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+        if (string.IsNullOrWhiteSpace(value.Name) || value.Rounds is null)
+            throw new ApiValidationException("Nom et manches obligatoires.");
+        if (value.Rounds.Any(r => r is null || r.Position < 0 || r.Questions is null)
+            || value.Rounds.Select(r => r.Position).Distinct().Count() != value.Rounds.Count)
+            throw new ApiValidationException("Positions de manches invalides ou dupliquées.");
+        foreach (var round in value.Rounds)
+        {
+            if (round.Questions.Any(q => q is null || q.Position < 0)
+                || round.Questions.Select(q => q.Position).Distinct().Count() != round.Questions.Count)
+                throw new ApiValidationException("Positions de questions invalides ou dupliquées.");
+            foreach (var question in round.Questions)
+            {
+                var validQA = question.IdQuestionAnswer is > 0;
+                var validQcm = question.IdQCMQuestion is > 0;
+                if (question.IdListQuestionsAnswers.HasValue || validQA == validQcm
+                    || (question.IdQuestionAnswer.HasValue && !validQA)
+                    || (question.IdQCMQuestion.HasValue && !validQcm))
+                    throw new ApiValidationException("Utiliser exactement une référence QuestionAnswer ou QCM. IdListQuestionsAnswers n'est pas pris en charge.");
+            }
+        }
+        var key = await repository.SaveAsync(id, value, author, ct);
+        return await repository.GetByIdAsync(key, ct)
+            ?? throw new InvalidOperationException($"Game #{key} non relu après enregistrement.");
+    }
+
+    public Task<bool> DeleteAsync(long id, CancellationToken ct) => repository.DeleteAsync(id, ct);
 }

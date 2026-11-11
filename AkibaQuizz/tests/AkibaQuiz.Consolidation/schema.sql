@@ -1,0 +1,129 @@
+PRAGMA foreign_keys=ON;
+
+CREATE TABLE "Categories" (
+	"Id"	INTEGER NOT NULL,
+	"Name"	TEXT NOT NULL,
+	PRIMARY KEY("Id" AUTOINCREMENT)
+);
+
+CREATE TABLE "GameModes" (
+	"Id"	INTEGER NOT NULL,
+	"Name"	TEXT NOT NULL,
+	"Tag"	TEXT NOT NULL,
+	"DateCreation"	TEXT NOT NULL,
+	"DateUpdated"	TEXT NOT NULL,
+	"Author"	TEXT NOT NULL,
+	PRIMARY KEY("Id" AUTOINCREMENT)
+);
+
+CREATE TABLE "GameRounds" (
+	"Id"	INTEGER NOT NULL,
+	"Position"	INTEGER NOT NULL,
+	"IdGame"	INTEGER NOT NULL,
+	PRIMARY KEY("Id" AUTOINCREMENT),
+	FOREIGN KEY("IdGame") REFERENCES "Games"("Id")
+);
+
+CREATE TABLE "Games" (
+	"Id"	INTEGER NOT NULL,
+	"Name"	TEXT NOT NULL,
+	"Author"	TEXT NOT NULL,
+	"CreationDate"	TEXT,
+	PRIMARY KEY("Id" AUTOINCREMENT)
+);
+
+CREATE TABLE "MediaQuizz" (
+	"Id"	INTEGER NOT NULL,
+	"IdQCMQuestion"	INTEGER,
+	"IdMedia"	INTEGER NOT NULL,
+	"IdQuestionAnswer"	INTEGER,
+	"TypeDisplay"	TEXT NOT NULL,
+	PRIMARY KEY("Id" AUTOINCREMENT),
+	FOREIGN KEY("IdMedia") REFERENCES "Medias"("Id"),
+	FOREIGN KEY("IdQCMQuestion") REFERENCES "QCMQuestion"("Id"),
+	FOREIGN KEY("IdQuestionAnswer") REFERENCES "QuestionsAnswers"("Id")
+);
+
+CREATE TABLE "Medias" (
+	"Id"	INTEGER NOT NULL,
+	"Filename"	TEXT NOT NULL,
+	"IdTypeMedia"	INTEGER NOT NULL,
+	PRIMARY KEY("Id" AUTOINCREMENT),
+	FOREIGN KEY("IdTypeMedia") REFERENCES "TypeMedia"("Id")
+);
+
+CREATE TABLE "QCMAnswer" (
+	"Id"	INTEGER NOT NULL,
+	"Answer"	TEXT NOT NULL,
+	PRIMARY KEY("Id" AUTOINCREMENT)
+);
+
+CREATE TABLE "QCMQuestion" (
+	"Id"	INTEGER NOT NULL,
+	"Question"	TEXT NOT NULL,
+	"CreationDate"	TEXT NOT NULL,
+	"LastUpdatedTDate"	TEXT NOT NULL,
+	"Author"	TEXT NOT NULL,
+	"IdCategory"	INTEGER NOT NULL,
+	PRIMARY KEY("Id" AUTOINCREMENT),
+	FOREIGN KEY("IdCategory") REFERENCES "Categories"("Id")
+);
+
+CREATE TABLE "QCMQuizz" (
+	"Id"	INTEGER NOT NULL,
+	"IdQCMQuestion"	INTEGER NOT NULL,
+	"IdQCMAnswer"	INTEGER NOT NULL,
+	"IsTrue"	TEXT NOT NULL DEFAULT 'FALSE',
+	PRIMARY KEY("Id" AUTOINCREMENT),
+	FOREIGN KEY("IdQCMAnswer") REFERENCES "QCMAnswer"("Id"),
+	FOREIGN KEY("IdQCMQuestion") REFERENCES "QCMQuestion"("Id")
+);
+
+CREATE TABLE "QuestionsAnswers" (
+	"Id"	INTEGER NOT NULL,
+	"Question"	TEXT NOT NULL,
+	"Answer"	TEXT NOT NULL,
+	"IdCategory"	INTEGER NOT NULL,
+	"CreationDate"	TEXT NOT NULL,
+	"LastUpdateDate"	TEXT NOT NULL,
+	"Author"	TEXT NOT NULL,
+	PRIMARY KEY("Id" AUTOINCREMENT),
+	FOREIGN KEY("IdCategory") REFERENCES "Categories"("Id")
+);
+
+CREATE TABLE "RoundQuestions" (
+	"Id"	INTEGER NOT NULL,
+	"Position"	INTEGER NOT NULL,
+	"IdGameRound"	INTEGER NOT NULL,
+	"IdQuestionAnswer"	INTEGER,
+	"IdQCMQuestion"	INTEGER,
+	"IdListQuestionsAnswers"	INTEGER,
+	PRIMARY KEY("Id" AUTOINCREMENT),
+	FOREIGN KEY("IdGameRound") REFERENCES "GameRounds"("Id"),
+	FOREIGN KEY("IdQCMQuestion") REFERENCES "QCMQuestion"("Id"),
+	FOREIGN KEY("IdQuestionAnswer") REFERENCES "QuestionsAnswers"("Id")
+);
+
+CREATE TABLE "TagQuizz" (
+	"Id"	INTEGER NOT NULL,
+	"IdTag"	INTEGER NOT NULL,
+	"IdQuestionAnswer"	INTEGER,
+	"IdQCM"	INTEGER,
+	PRIMARY KEY("Id" AUTOINCREMENT),
+	FOREIGN KEY("IdQCM") REFERENCES "QCMQuestion"("Id"),
+	FOREIGN KEY("IdQuestionAnswer") REFERENCES "QuestionsAnswers"("Id"),
+	FOREIGN KEY("IdTag") REFERENCES "Tags"("Id")
+);
+
+CREATE TABLE "Tags" (
+	"Id"	INTEGER NOT NULL,
+	"Name"	TEXT NOT NULL UNIQUE,
+	"Color"	TEXT,
+	PRIMARY KEY("Id" AUTOINCREMENT)
+);
+
+CREATE TABLE "TypeMedia" (
+	"Id"	INTEGER NOT NULL,
+	"Name"	TEXT NOT NULL,
+	PRIMARY KEY("Id" AUTOINCREMENT)
+);

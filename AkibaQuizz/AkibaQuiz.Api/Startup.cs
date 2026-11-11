@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using OrchardCore.Modules;
-using AkibaQuiz.Application.Catalog;
 
 namespace AkibaQuiz.Api;
 
@@ -28,11 +27,10 @@ public sealed class Startup : StartupBase
         services.AddScoped<IReferenceRepository, ReferenceRepository>();
         services.AddScoped<IQuestionRepository, QuestionRepository>();
         services.AddScoped<IGameRepository, GameRepository>();
-        services.AddScoped<IGameCatalogRepository, GameCatalogRepository>();
-        services.AddScoped<QuestionService>();
-        services.AddScoped<GameService>();
+        services.AddScoped<IQuestionService, QuestionService>();
         services.AddScoped<IQcmService, QcmService>();
-        services.AddScoped<IGameCatalogService, GameCatalogService>();
+        services.AddScoped<IGameService, GameService>();
+        services.AddScoped<IReferenceService, ReferenceService>();
 
         services.AddScoped<AdminApiKeyFilter>();
         services.AddScoped<ApiExceptionFilter>();

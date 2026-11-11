@@ -1,13 +1,9 @@
-﻿using AkibaQuiz.Contracts;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using AkibaQuiz.Contracts.Models;
 
-namespace AkibaQuiz.Application.Interfaces
+namespace AkibaQuiz.Application.Interfaces;
+
+public interface IReferenceRepository
 {
-    public interface IReferenceRepository 
-    { 
-        Task<List<CategoryDto>> Categories(CancellationToken ct);
-        Task<List<TagDto>> Tags(CancellationToken ct);
-    }
+    Task<IReadOnlyList<CategoryModel>> GetCategoriesAsync(CancellationToken ct);
+    Task<IReadOnlyList<TagModel>> GetTagsAsync(CancellationToken ct);
 }

@@ -12,14 +12,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.1.1" />
     <PackageReference Include="MySqlConnector" Version="2.6.1" />
-    <PackageReference Include="NetVips" Version="3.2.0" />
     <PackageReference Include="OrchardCore.Module.Targets" Version="3.0.1" />
     <PackageReference Include="OrchardCore.ContentManagement" Version="3.0.1" />
     <PackageReference Include="OrchardCore.ContentTypes.Abstractions" Version="3.0.1" />
     <PackageReference Include="OrchardCore.DisplayManagement" Version="3.0.1" />
-    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.14" />
   </ItemGroup>
 
   <ItemGroup>

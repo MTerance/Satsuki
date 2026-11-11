@@ -1,0 +1,165 @@
+{
+  "Files": [
+    {
+      "Path": "AkibaQuiz.Api/Controllers/GameCatalogController.cs",
+      "Existed": true
+    },
+    {
+      "Path": "AkibaQuiz.Api/Controllers/GameController.cs",
+      "Existed": true
+    },
+    {
+      "Path": "AkibaQuiz.Api/Controllers/GameFullController.cs",
+      "Existed": true
+    },
+    {
+      "Path": "AkibaQuiz.Api/Controllers/QcmController.cs",
+      "Existed": true
+    },
+    {
+      "Path": "AkibaQuiz.Api/Controllers/QuestionsController.cs",
+      "Existed": true
+    },
+    {
+      "Path": "AkibaQuiz.Api/Controllers/ReferenceController.cs",
+      "Existed": true
+    },
+    {
+      "Path": "AkibaQuiz.Api/Mapping/QcmAdminDto.cs",
+      "Existed": false
+    },
+    {
+      "Path": "AkibaQuiz.Api/Mapping/QuizApiMapper.cs",
+      "Existed": false
+    },
+    {
+      "Path": "AkibaQuiz.Api/Startup.cs",
+      "Existed": true
+    },
+    {
+      "Path": "AkibaQuiz.Application/Interfaces/IGameRepository.cs",
+      "Existed": true
+    },
+    {
+      "Path": "AkibaQuiz.Application/Interfaces/IGameService.cs",
+      "Existed": false
+    },
+    {
+      "Path": "AkibaQuiz.Application/Interfaces/IQcmRepository.cs",
+      "Existed": true
+    },
+    {
+      "Path": "AkibaQuiz.Application/Interfaces/IQcmService.cs",
+      "Existed": true
+    },
+    {
+      "Path": "AkibaQuiz.Application/Interfaces/IQuestionRepository.cs",
+      "Existed": true
+    },
+    {
+      "Path": "AkibaQuiz.Application/Interfaces/IQuestionService.cs",
+      "Existed": false
+    },
+    {
+      "Path": "AkibaQuiz.Application/Interfaces/IReferenceRepository.cs",
+      "Existed": true
+    },
+    {
+      "Path": "AkibaQuiz.Application/Interfaces/IReferenceService.cs",
+      "Existed": false
+    },
+    {
+      "Path": "AkibaQuiz.Application/Services/GameService.cs",
+      "Existed": true
+    },
+    {
+      "Path": "AkibaQuiz.Application/Services/QcmService.cs",
+      "Existed": true
+    },
+    {
+      "Path": "AkibaQuiz.Application/Services/QuestionService.cs",
+      "Existed": true
+    },
+    {
+      "Path": "AkibaQuiz.Application/Services/ReferenceService.cs",
+      "Existed": false
+    },
+    {
+      "Path": "AkibaQuiz.Contracts/Models/CategoryModel.cs",
+      "Existed": false
+    },
+    {
+      "Path": "AkibaQuiz.Contracts/Models/GameFullDtos.cs",
+      "Existed": true
+    },
+    {
+      "Path": "AkibaQuiz.Contracts/Models/GameFullModels.cs",
+      "Existed": false
+    },
+    {
+      "Path": "AkibaQuiz.Contracts/Models/GameModels.cs",
+      "Existed": true
+    },
+    {
+      "Path": "AkibaQuiz.Infrastructure/Repositories/GameRepository.cs",
+      "Existed": true
+    },
+    {
+      "Path": "AkibaQuiz.Infrastructure/Repositories/QcmRepository.cs",
+      "Existed": true
+    },
+    {
+      "Path": "AkibaQuiz.Infrastructure/Repositories/QuestionRepository.cs",
+      "Existed": true
+    },
+    {
+      "Path": "AkibaQuiz.Infrastructure/Repositories/ReferenceRepository.cs",
+      "Existed": true
+    },
+    {
+      "Path": "AkibaQuiz.Infrastructure/SqlHelpers.cs",
+      "Existed": true
+    },
+    {
+      "Path": "tests/AkibaQuiz.Consolidation.Smoke/AkibaQuiz.Consolidation.Smoke.csproj",
+      "Existed": false
+    },
+    {
+      "Path": "tests/AkibaQuiz.Consolidation.Smoke/Program.cs",
+      "Existed": false
+    },
+    {
+      "Path": "tests/AkibaQuiz.Consolidation/Validate-Api.ps1",
+      "Existed": false
+    },
+    {
+      "Path": "tests/AkibaQuiz.Consolidation/schema.sql",
+      "Existed": false
+    },
+    {
+      "Path": "tests/AkibaQuiz.Consolidation/sqlite_smoke.py",
+      "Existed": false
+    },
+    {
+      "Path": "tests/AkibaQuiz.Consolidation/static_architecture.py",
+      "Existed": false
+    },
+    {
+      "Path": "AkibaQuiz.Application/Interfaces/IGameCatalogService.cs",
+      "Existed": true
+    },
+    {
+      "Path": "AkibaQuiz.Application/Catalog/IGameCatalogRepository.cs",
+      "Existed": true
+    },
+    {
+      "Path": "AkibaQuiz.Application/Services/GameCatalogService.cs",
+      "Existed": true
+    },
+    {
+      "Path": "AkibaQuiz.Infrastructure/Repositories/GameCatalogRepository.cs",
+      "Existed": true
+    }
+  ],
+  "ProjectRoot": "C:\\Users\\Utilisateur\\source\\repos\\MTerance\\Satsuki\\AkibaQuizz"
+}
