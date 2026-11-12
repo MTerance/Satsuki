@@ -7,13 +7,18 @@
         <p>Gestions des Questions, QCM, Games</p>
 
         <h2> Questions - reponses : (@Model.Questions.Count) </h2>
-
+        <a class="btn btn-primary mb-3"
+           href="@Url.Action("QuestionEditor", "QuizStudio",
+           new { area = "AkibaQuiz.Api" })">
+            Nouvelle QuestionAnswer
+        </a>
         <table class="table table-striped">
             <thead>
                 <tr>
                     <th>Id</th>
                     <th>Question</th>
                     <th>Category</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -23,6 +28,17 @@
                         <td>@question.Id</td>
                         <td>@question.Question</td>
                         <td>@question.Category</td>
+                        <td>
+                            <a class="btn btn-sm btn-outline-primary"
+                               href="@Url.Action("QuestionEditor", "QuizStudio",
+                                   new
+                                   {
+                                       area = "AkibaQuiz.Api",
+                                       id = question.Id
+                                   })">
+                                Modifier
+                            </a>
+                        </td>
                     </tr>
                 }
             </tbody>

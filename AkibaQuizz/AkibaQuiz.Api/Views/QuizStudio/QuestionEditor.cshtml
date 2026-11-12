@@ -1,0 +1,124 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model AkibaQuiz.Api.Admin.QuestionEditorVm
+@{
+    ViewData["Title"] = Model.Id.HasValue ? "Edit Question" : "Create Question";
+}
+<div class="container-fluid">
+    <h1>@ViewData["Title"]</h1>
+    <form method="post" action="@Url.Action("SaveQuestion", "QuizStudio")">
+        @Html.AntiForgeryToken()
+        <input type="hidden"
+               name="Id"
+               value="@Model.Id" />
+
+        <div class="text-danger">
+            @Html.ValidationSummary(false)
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label"
+                   for="question">
+                Énoncé
+            </label>
+
+            <textarea id="question"
+                      name="Question"
+                      class="form-control"
+                      rows="3"
+                      required
+                      minlength="3">@Model.Question</textarea>
+
+            @Html.ValidationMessageFor(m => m.Question)
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label"
+                   for="answer">
+                Réponse attendue
+            </label>
+
+            <textarea id="answer"
+                      name="Answer"
+                      class="form-control"
+                      rows="3"
+                      required>@Model.Answer</textarea>
+
+            @Html.ValidationMessageFor(m => m.Answer)
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label"
+                   for="category">
+                Catégorie
+            </label>
+
+            <select id="category"
+                    name="IdCategory"
+                    class="form-select"
+                    required>
+
+                <option value="0">Sélectionner...</option>
+
+                @foreach (var category in Model.Categories)
+                {
+                    <option value="@category.Id"
+                            selected="@(category.Id == Model.IdCategory)">
+                        @category.Name
+                    </option>
+                }
+            </select>
+
+            @Html.ValidationMessageFor(m => m.IdCategory)
+        </div>
+
+        <fieldset class="mb-3">
+            <legend class="h5">Tags</legend>
+
+            @foreach (var tag in Model.AvailablesTags)
+            {
+                <label class="form-check form-check-inline">
+                    <input type="checkbox"
+                           class="form-check-input"
+                           name="TagIds"
+                           value="@tag.Id"
+                           checked="@(Model.TagsId.Contains(tag.Id))" />
+
+                    <span class="form-check-label">
+                        @tag.Name
+                    </span>
+                </label>
+            }
+        </fieldset>
+
+        @if (Model.ExistingMedia.Count > 0)
+        {
+            <div class="alert alert-info">
+                Les médias associés seront conservés.
+                Leur modification sera ajoutée dans
+                un prochain TP.
+            </div>
+
+            <ul>
+                @foreach (var media in Model.ExistingMedia)
+                {
+                    <li>@media.Filename (@media.TypeDisplay)</li>
+                }
+            </ul>
+        }
+
+        <div class="mt-4">
+            <button type="submit"
+                    class="btn btn-primary">
+                Enregistrer
+            </button>
+
+            <a class="btn btn-secondary"
+               href="@Url.Action("Index", "QuizStudio",
+                   new { area = "AkibaQuiz.Api" })">
+                Annuler
+            </a>
+        </div>
+    </form>
+</div>
