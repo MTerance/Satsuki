@@ -62,6 +62,8 @@ namespace AkibaQuiz.Api.Controllers
             return View(model);
         }
 
+        #region Question Editor
+
         [HttpGet]
         [Admin("AkibaQuiz/Studio/QuestionEditor")]
         public async Task<IActionResult> QuestionEditor(long? id, CancellationToken ct)
@@ -201,6 +203,9 @@ namespace AkibaQuiz.Api.Controllers
 
             return View("QuestionEditor", input);
         }
+        #endregion
+
+        #region QCM Editor
 
         [Admin("AkibaQuiz/Studio/QcmEditor")]
         [HttpGet]
@@ -312,8 +317,46 @@ namespace AkibaQuiz.Api.Controllers
             }
         }
 
+        #endregion
+
+        #region Game Editor
 
 
+        [Admin("AkibaQuiz/Studio/GameEditor")]
+        [HttpGet]
+        public async Task<IActionResult> GameEditor(long? id, CancellationToken ct)
+        {
+            var model = new GameEditorVm();
+            if (id.HasValue)
+            {
+                var game = await _gameService.GetByIdAsync(id.Value, ct);
+                if (game == null)
+                {
+                    return NotFound();
+                }
+                model = new GameEditorVm
+                {
+                    Id = game.Id,
+                    Name = game.Name,
+                    Rounds = game.Rounds.Select(r => new GameRoundEditorVm
+                    {
+                        Id = r.Id,
+                        Position = r.Position,
+                        QuestionCount = r.Questions.Count
+                    }).OrderBy(r => r.Position).ToList()
+                };
+            }
+            if (model.Rounds.Count == 0)
+            {
+                model.Rounds.Add(new GameRoundEditorVm
+                {
+                    Position = 1,
+                    QuestionCount = 0
+                });
+            }
+            return View(model);
+        }
 
+        #endregion
     }
 }

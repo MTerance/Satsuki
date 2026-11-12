@@ -1,105 +1,116 @@
 ﻿@model AkibaQuiz.Api.Admin.QuizStudioIndexVm
 @{
     ViewData["Title"] = "Quiz Studio";
-
-    <div class="container-fluid">
-        <h1>Quiz Studio</h1>
-        <p>Gestions des Questions, QCM, Games</p>
-
-        <h2> Questions - reponses : (@Model.Questions.Count) </h2>
-        <a class="btn btn-primary mb-3"
-           href="@Url.Action("QuestionEditor", "QuizStudio",
-           new { area = "AkibaQuiz.Api" })">
-            Nouvelle QuestionAnswer
-        </a>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Id</th>
-                    <th>Question</th>
-                    <th>Category</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var question in Model.Questions)
-                {
-                    <tr>
-                        <td>@question.Id</td>
-                        <td>@question.Question</td>
-                        <td>@question.Category</td>
-                        <td>
-                            <a class="btn btn-sm btn-outline-primary"
-                               href="@Url.Action("QuestionEditor", "QuizStudio",
-                                   new
-                                   {
-                                       area = "AkibaQuiz.Api",
-                                       id = question.Id
-                                   })">
-                                Modifier
-                            </a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-
-        <h2> QCM : (@Model.Qcms.Count) </h2>
-        <a class="btn btn-primary mb-3"
-           href="@Url.Action("QcmEditor", "QuizStudio",
-           new { area = "AkibaQuiz.Api" })">
-            Nouveau QCM
-        </a>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Id</th>
-                    <th>Question</th>
-                    <th>Propositions</th>
-                    <th>Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                @foreach (var qcm in Model.Qcms)
-                {
-                    <tr>
-                        <td>@qcm.Id</td>
-                        <td>@qcm.Question</td>
-                        <td>@qcm.AnswerCount</td>
-                        <td>
-                            <a class="btn btn-sm btn-outline-primary"
-                               href="@Url.Action("QcmEditor", "QuizStudio",
-                                   new { area = "AkibaQuiz.Api", id = qcm.Id })">
-                                Modifier
-                            </a>
-                        </td>
-                    </tr>
-                }
-                </tbody>
-        </table>
-
-        <h2> Games : (@Model.Games.Count) </h2>
-        
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Id</th>
-                    <th>Nom</th>
-                    <th>Manches</th>
-                    <th>Questions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var game in Model.Games)
-                {
-                    <tr>
-                        <td>@game.Id</td>
-                        <td>@game.Name</td>
-                        <td>@game.RoundCount</td>
-                        <td>@game.QuestionCount</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
 }
+<div class="container-fluid">
+    <h1>Quiz Studio</h1>
+    <p>Gestions des Questions, QCM, Games</p>
+
+    <h2> Questions - reponses : (@Model.Questions.Count) </h2>
+    <a class="btn btn-primary mb-3"
+       href="@Url.Action("QuestionEditor", "QuizStudio",
+       new { area = "AkibaQuiz.Api" })">
+        Nouvelle QuestionAnswer
+    </a>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Question</th>
+                <th>Category</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var question in Model.Questions)
+            {
+                <tr>
+                    <td>@question.Id</td>
+                    <td>@question.Question</td>
+                    <td>@question.Category</td>
+                    <td>
+                        <a class="btn btn-sm btn-outline-primary"
+                           href="@Url.Action("QuestionEditor", "QuizStudio",
+                               new
+                               {
+                                   area = "AkibaQuiz.Api",
+                                   id = question.Id
+                               })">
+                            Modifier
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h2> QCM : (@Model.Qcms.Count) </h2>
+    <a class="btn btn-primary mb-3"
+       href="@Url.Action("QcmEditor", "QuizStudio",
+       new { area = "AkibaQuiz.Api" })">
+        Nouveau QCM
+    </a>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Question</th>
+                <th>Propositions</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var qcm in Model.Qcms)
+            {
+                <tr>
+                    <td>@qcm.Id</td>
+                    <td>@qcm.Question</td>
+                    <td>@qcm.AnswerCount</td>
+                    <td>
+                        <a class="btn btn-sm btn-outline-primary"
+                           href="@Url.Action("QcmEditor", "QuizStudio",
+                               new { area = "AkibaQuiz.Api", id = qcm.Id })">
+                            Modifier
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h2> Games : (@Model.Games.Count) </h2>
+    <a class="btn btn-primary mb-3"
+       href="@Url.Action("GameEditor", "QuizStudio",
+       new { area = "AkibaQuiz.Api" })">
+        Nouvelle Session
+    </a>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Nom</th>
+                <th>Manches</th>
+                <th>Questions</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var game in Model.Games)
+            {
+                <tr>
+                    <td>@game.Id</td>
+                    <td>@game.Name</td>
+                    <td>@game.RoundCount</td>
+                    <td>@game.QuestionCount</td>
+                    <td>
+                        <a class="btn btn-sm btn-outline-primary"
+                           href="@Url.Action("GameEditor", "QuizStudio",
+                           new { area = "AkibaQuiz.Api", id = game.Id })">
+                            Modifier
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

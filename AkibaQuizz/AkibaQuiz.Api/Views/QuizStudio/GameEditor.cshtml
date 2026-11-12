@@ -1,0 +1,221 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model AkibaQuiz.Api.Admin.GameEditorVm
+@{
+    ViewData["Title"] = Model.Id.HasValue ? "Edit Game" : "Create Game";
+}
+
+<div class="container-fluid" style="max-width: 1100px;">
+
+    <h1>@ViewData["Title"]</h1>
+
+    <div class="alert alert-info">
+        Étape 5.3.5.1 :
+        composition visuelle des manches.
+        L'enregistrement sera ajouté ultérieurement.
+    </div>
+
+    <div class="mb-4">
+        <label for="gameName" class="form-label">
+            Nom du Game
+        </label>
+
+        <input id="gameName"
+               class="form-control"
+               value="@Model.Name"
+               minlength="2"
+               maxlength="200" />
+    </div>
+
+    <h2 class="h4">Manches</h2>
+
+    <div id="gameRounds">
+
+        @foreach (var round in Model.Rounds)
+        {
+            <article class="game-round card mb-3"
+                     data-round-id="@round.Id"
+                     data-question-count="@round.QuestionCount">
+
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-3">
+
+                        <div class="flex-grow-1">
+                            <h3 class="h5 round-title">
+                                Manche @round.Position
+                            </h3>
+
+                            <span class="text-muted">
+                                @round.QuestionCount question(s)
+                            </span>
+                        </div>
+
+                        <button type="button"
+                                class="btn btn-outline-secondary"
+                                data-action="up">
+                            ↑
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-outline-secondary"
+                                data-action="down">
+                            ↓
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-outline-danger"
+                                data-action="remove">
+                            Retirer
+                        </button>
+                    </div>
+                </div>
+
+            </article>
+        }
+
+    </div>
+
+    <button type="button"
+            id="addRound"
+            class="btn btn-outline-primary">
+        + Ajouter une manche
+    </button>
+
+    <template id="roundTemplate">
+        <article class="game-round card mb-3"
+                 data-round-id="0"
+                 data-question-count="0">
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="flex-grow-1">
+                        <h3 class="h5 round-title"></h3>
+                        <span class="text-muted">
+                            0 question(s)
+                        </span>
+                    </div>
+
+                    <button type="button"
+                            class="btn btn-outline-secondary"
+                            data-action="up">
+                        ↑
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-outline-secondary"
+                            data-action="down">
+                        ↓
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-outline-danger"
+                            data-action="remove">
+                        Retirer
+                    </button>
+                </div>
+            </div>
+        </article>
+    </template>
+
+    <hr />
+
+    <a class="btn btn-secondary"
+       href="@Url.Action("Index", "QuizStudio",
+           new { area = "AkibaQuiz.Api" })">
+        Retour à la banque de contenu
+    </a>
+
+</div>
+
+<script>
+    (() => {
+        const container =
+            document.getElementById("gameRounds");
+
+        const template =
+            document.getElementById("roundTemplate");
+
+        const addButton =
+            document.getElementById("addRound");
+
+        const getRounds = () =>
+            [...container.querySelectorAll(".game-round")];
+
+        function refreshPositions() {
+            const rounds = getRounds();
+
+            rounds.forEach((round, index) => {
+                round.querySelector(".round-title")
+                    .textContent = `Manche ${index + 1}`;
+
+                round.querySelector('[data-action="up"]')
+                    .disabled = index === 0;
+
+                round.querySelector('[data-action="down"]')
+                    .disabled = index === rounds.length - 1;
+
+                // On garde au moins une manche.
+                round.querySelector('[data-action="remove"]')
+                    .disabled = rounds.length === 1;
+            });
+        }
+
+        addButton.addEventListener("click", () => {
+            const fragment = template.content.cloneNode(true);
+
+            container.appendChild(fragment);
+
+            refreshPositions();
+        });
+
+        container.addEventListener("click", event => {
+            const button = event.target.closest(
+                "button[data-action]"
+            );
+
+            if (!button || !container.contains(button))
+                return;
+
+            const round = button.closest(".game-round");
+            const action = button.dataset.action;
+
+            if (action === "up" &&
+                round.previousElementSibling) {
+                container.insertBefore(
+                    round,
+                    round.previousElementSibling
+                );
+            }
+
+            if (action === "down" &&
+                round.nextElementSibling) {
+                container.insertBefore(
+                    round.nextElementSibling,
+                    round
+                );
+            }
+
+            if (action === "remove") {
+                if (getRounds().length <= 1)
+                    return;
+
+                // Ne pas retirer pour l'instant une manche
+                // qui contient des questions existantes.
+                if (Number(round.dataset.questionCount) > 0) {
+                    alert(
+                        "Cette manche contient des questions. " +
+                        "Leur gestion sera ajoutée au TP suivant."
+                    );
+                    return;
+                }
+
+                round.remove();
+            }
+
+            refreshPositions();
+        });
+
+        refreshPositions();
+    })();
+</script>
+
