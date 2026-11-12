@@ -1,4 +1,5 @@
 using AkibaQuiz.Api.Security;
+using AkibaQuiz.Api.Navigation;
 using AkibaQuiz.Application.Interfaces;
 using AkibaQuiz.Application.Services;
 using AkibaQuiz.Infrastructure.Repositories;
@@ -8,7 +9,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using OrchardCore.Modules;
-
+using OrchardCore.Navigation;
 namespace AkibaQuiz.Api;
 
 public sealed class Startup : StartupBase
@@ -31,7 +32,7 @@ public sealed class Startup : StartupBase
         services.AddScoped<IQcmService, QcmService>();
         services.AddScoped<IGameService, GameService>();
         services.AddScoped<IReferenceService, ReferenceService>();
-
+        services.AddNavigationProvider<QuizStudioAdminMenu>();
         services.AddScoped<AdminApiKeyFilter>();
         services.AddScoped<ApiExceptionFilter>();
     }

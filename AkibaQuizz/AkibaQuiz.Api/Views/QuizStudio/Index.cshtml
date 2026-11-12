@@ -1,0 +1,77 @@
+﻿@model AkibaQuiz.Api.Admin.QuizStudioIndexVm
+@{
+    ViewData["Title"] = "Quiz Studio";
+
+    <div class="container-fluid">
+        <h1>Quiz Studio</h1>
+        <p>Gestions des Questions, QCM, Games</p>
+
+        <h2> Questions - reponses : (@Model.Questions.Count) </h2>
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Question</th>
+                    <th>Category</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var question in Model.Questions)
+                {
+                    <tr>
+                        <td>@question.Id</td>
+                        <td>@question.Question</td>
+                        <td>@question.Category</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <h2> QCM : (@Model.Qcms.Count) </h2>
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Question</th>
+                    <th>Propositions</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var qcm in Model.Qcms)
+                {
+                    <tr>
+                        <td>@qcm.Id</td>
+                        <td>@qcm.Question</td>
+                        <td>@qcm.AnswerCount</td>
+                    </tr>
+                }
+                </tbody>
+        </table>
+
+        <h2> Games : (@Model.Games.Count) </h2>
+        
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Nom</th>
+                    <th>Manches</th>
+                    <th>Questions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var game in Model.Games)
+                {
+                    <tr>
+                        <td>@game.Id</td>
+                        <td>@game.Name</td>
+                        <td>@game.RoundCount</td>
+                        <td>@game.QuestionCount</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
