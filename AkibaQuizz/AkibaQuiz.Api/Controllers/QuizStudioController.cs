@@ -201,5 +201,119 @@ namespace AkibaQuiz.Api.Controllers
 
             return View("QuestionEditor", input);
         }
+
+        [Admin("AkibaQuiz/Studio/QcmEditor")]
+        [HttpGet]
+        public async Task<IActionResult> QcmEditor(long? id, CancellationToken ct)
+        {
+            var tags = await _referenceService.GetTagsAsync(ct);
+            var categories = await _referenceService.GetCategoriesAsync(ct);
+            var model = new QcmEditorVm();
+
+            if (id.HasValue)
+            {
+                var qcm = await _qcmService.GetByIdAsync(id.Value, ct);
+                if (qcm == null)
+                {
+                    return NotFound();
+                }
+                model = new QcmEditorVm
+                {
+                    Id = qcm.Id,
+                    Question = qcm.Question,
+                    Answers = qcm.Answers.Select(a => new QcmAnswerEditorVm
+                    {
+                        Answer = a.Answer,
+                        IsTrue = a.IsTrue
+                    }).ToList(),
+                    IdCategory = qcm.IdCategory,
+                    TagIds = qcm.Tags.Select(t => t.Id).ToList(),
+                    AvailablesTags = tags,
+                    ExistingMedias = qcm.Medias
+                };
+            }
+            await FillQcmReferenceAsync(model, ct);
+            return View(model);
+        }
+
+        [Admin("AkibaQuiz/Studio/SaveQcm")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveQcm(QcmEditorVm input, CancellationToken ct)
+        {
+            input.Question = input.Question?.Trim() ?? "";
+            if (string.IsNullOrWhiteSpace(input.Question) ||
+                input.Question.Length < 3)
+            {
+                ModelState.AddModelError(
+                    nameof(input.Question),
+                    "L'énoncé doit contenir au moins 3 caractères.");
+            }
+            if (input.Answers.Count < 2)
+            {
+                ModelState.AddModelError(
+                    nameof(input.Answers),
+                    "Au moins deux réponses sont requises.");
+            }
+            if (!input.Answers.Any(a => a.IsTrue))
+            {
+                ModelState.AddModelError(
+                    nameof(input.Answers),
+                    "Au moins une réponse correcte est requise.");
+            }
+            await FillQcmReferenceAsync(input, ct);
+            if (!ModelState.IsValid)
+                return View("QcmEditor", input);
+            var request = new SaveQcmRequest
+            {
+                Question = input.Question,
+                Answers = input.Answers.Select(a => new SaveQcmPropositionRequest
+                {
+                    Answer = a.Answer,
+                    IsTrue = a.IsTrue
+                }).ToList(),
+                IdCategory = input.IdCategory,
+                TagIds = input.TagIds.Distinct().ToList(),
+                Medias = input.ExistingMedias.Select(m => new SaveMediaAssociationRequest
+                {
+                    IdMedia = m.IdMedia,
+                    TypeDisplay = m.TypeDisplay
+                }).ToList()
+            };
+            try
+            {
+                await _qcmService.SaveAsync(
+                    input.Id,
+                    request,
+                    User.Identity?.Name ?? "Administrator",
+                    ct);
+                TempData["Notice"] = "QCM enregistré.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (ApiValidationException ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+            }
+            catch (ApiConflictException ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+            }
+            return View("QcmEditor", input);
+        }
+
+        private async Task FillQcmReferenceAsync(QcmEditorVm model, CancellationToken ct)
+        {
+            model.AvailablesTags = await _referenceService.GetTagsAsync(ct);
+            model.Categories = await _referenceService.GetCategoriesAsync(ct);
+
+            while (model.Answers.Count < 4)
+            {
+                model.Answers.Add(new QcmAnswerEditorVm());
+            }
+        }
+
+
+
+
     }
 }

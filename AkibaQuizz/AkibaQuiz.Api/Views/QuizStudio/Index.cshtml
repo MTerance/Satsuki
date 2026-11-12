@@ -45,13 +45,18 @@
         </table>
 
         <h2> QCM : (@Model.Qcms.Count) </h2>
-
+        <a class="btn btn-primary mb-3"
+           href="@Url.Action("QcmEditor", "QuizStudio",
+           new { area = "AkibaQuiz.Api" })">
+            Nouveau QCM
+        </a>
         <table class="table table-striped">
             <thead>
                 <tr>
                     <th>Id</th>
                     <th>Question</th>
                     <th>Propositions</th>
+                    <th>Actions</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -61,6 +66,13 @@
                         <td>@qcm.Id</td>
                         <td>@qcm.Question</td>
                         <td>@qcm.AnswerCount</td>
+                        <td>
+                            <a class="btn btn-sm btn-outline-primary"
+                               href="@Url.Action("QcmEditor", "QuizStudio",
+                                   new { area = "AkibaQuiz.Api", id = qcm.Id })">
+                                Modifier
+                            </a>
+                        </td>
                     </tr>
                 }
                 </tbody>

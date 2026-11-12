@@ -1,0 +1,208 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model AkibaQuiz.Api.Admin.QcmEditorVm
+@{
+    ViewData["Title"] = Model.Id.HasValue ? "Edit QCM" : "Create QCM";
+}
+
+<div class="container-fluid">
+    <h1>@ViewData["Title"]</h1>
+
+    <form method="post" action="@Url.Action("SaveQcm", "QuizStudio", new { area = "AkibaQuiz.Api" })">
+        @Html.AntiForgeryToken()
+        <input type="hidden"
+               name="Id"
+               value="@Model.Id" />
+
+        <div class="text-danger mb-3">
+            <label for="question" class="form-label">Enoncé du QCM</label>
+            <textarea id="question"
+                      name="Question"
+                      class="form-control"
+                      rows="3"
+                      required
+                      minlength="3">@Model.Question
+            </textarea>
+            <div class="mb-4">
+                <label for="category" class="form-label">
+                    Catégorie
+                </label>
+
+                <select id="category"
+                        name="IdCategory"
+                        class="form-select"
+                        required>
+
+                    <option value="0">Sélectionner...</option>
+
+                    @foreach (var category in Model.Categories)
+                    {
+                        <option value="@category.Id"
+                                selected="@(category.Id == Model.IdCategory)">
+                            @category.Name
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <h2 class="h4">Propositions</h2>
+            <p class="text-muted">
+                Entre 2 et 4 propositions.
+                Coche une ou plusieurs réponses correctes.
+            </p>
+
+            <div id="answerRows">
+                @for (int i = 0; i < Model.Answers.Count; i++)
+                {
+                    var visible = i < 2 ||
+                        !string.IsNullOrWhiteSpace(Model.Answers[i].Answer) ||
+                        Model.Answers[i].IsTrue;
+
+                    <div class="answer-row border rounded p-3 mb-2 @(visible ? "" : "d-none")">
+
+                        <div class="row align-items-center g-2">
+                            <div class="col-md-1">
+                                <strong>@(i + 1)</strong>
+                            </div>
+
+                            <div class="col-md-7">
+                                @Html.TextBoxFor(
+                                    m => m.Answers[i].Answer,
+                                    new
+                                    {
+                                        @class = "form-control",
+                                        placeholder = "Texte de la proposition"
+                                    })
+                            </div>
+
+                            <div class="col-md-2">
+                                <label class="form-check">
+                                    @Html.CheckBoxFor(
+                                        m => m.Answers[i].IsTrue,
+                                        new { @class = "form-check-input" })
+
+                                    <span class="form-check-label">
+                                        Correcte
+                                    </span>
+                                </label>
+                            </div>
+
+                            <div class="col-md-2">
+                                @if (i >= 2)
+                                {
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger remove-answer">
+                                        Retirer
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <button id="addAnswer"
+                    type="button"
+                    class="btn btn-outline-primary mt-2 mb-4">
+                + Ajouter une proposition
+            </button>
+
+            <fieldset class="mb-4">
+                <legend class="h5">Tags</legend>
+
+                @foreach (var tag in Model.AvailablesTags)
+                {
+                    <label class="form-check form-check-inline">
+                        <input type="checkbox"
+                               class="form-check-input"
+                               name="TagIds"
+                               value="@tag.Id"
+                               checked="@(Model.TagIds.Contains(tag.Id))" />
+
+                        <span class="form-check-label">
+                            @tag.Name
+                        </span>
+                    </label>
+                }
+            </fieldset>
+
+            @if (Model.ExistingMedias.Count > 0)
+            {
+                <div class="alert alert-info">
+                    Les médias existants seront conservés.
+                </div>
+
+                <ul>
+                    @foreach (var media in Model.ExistingMedias)
+                    {
+                        <li>@media.Filename</li>
+                    }
+                </ul>
+            }
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    Enregistrer le QCM
+                </button>
+
+                <a class="btn btn-secondary"
+                   href="@Url.Action("Index", "QuizStudio",
+                       new { area = "AkibaQuiz.Api" })">
+                    Annuler
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    (() => {
+        const rows = [
+            ...document.querySelectorAll("#answerRows .answer-row")
+        ];
+
+        const addButton = document.getElementById("addAnswer");
+
+        function updateAddButton() {
+            addButton.disabled = !rows.some(
+                row => row.classList.contains("d-none")
+            );
+        }
+
+        addButton.addEventListener("click", () => {
+            const row = rows.find(
+                item => item.classList.contains("d-none")
+            );
+
+            if (!row) return;
+
+            row.classList.remove("d-none");
+            row.querySelector('input[type="text"]')?.focus();
+
+            updateAddButton();
+        });
+
+        document.querySelectorAll(".remove-answer")
+            .forEach(button => {
+                button.addEventListener("click", () => {
+                    const row = button.closest(".answer-row");
+
+                    const text = row.querySelector('input[type="text"]');
+                    const checkbox = row.querySelector(
+                        'input[type="checkbox"]'
+                    );
+
+                    if (text) text.value = "";
+                    if (checkbox) checkbox.checked = false;
+
+                    row.classList.add("d-none");
+
+                    updateAddButton();
+                });
+            });
+
+        updateAddButton();
+    })();
+</script>
+
