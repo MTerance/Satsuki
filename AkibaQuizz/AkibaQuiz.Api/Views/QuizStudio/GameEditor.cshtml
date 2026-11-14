@@ -11,8 +11,8 @@
     <h1>@ViewData["Title"]</h1>
 
     <div class="alert alert-info">
-        Étape 5.3.5.1 :
-        composition visuelle des manches.
+        Étape 5.3.5.2 :
+        composition des manches et questions.
         L'enregistrement sera ajouté ultérieurement.
     </div>
 
@@ -27,146 +27,397 @@
                minlength="2"
                maxlength="200" />
     </div>
-
-    <h2 class="h4">Manches</h2>
+    <h2 class="h4">Manches et questions</h2>
 
     <div id="gameRounds">
 
         @foreach (var round in Model.Rounds)
         {
             <article class="game-round card mb-3"
-                     data-round-id="@round.Id"
-                     data-question-count="@round.QuestionCount">
+                     data-round-id="@round.Id">
 
                 <div class="card-body">
-                    <div class="d-flex align-items-center gap-3">
 
-                        <div class="flex-grow-1">
-                            <h3 class="h5 round-title">
-                                Manche @round.Position
-                            </h3>
+                    <div class="d-flex align-items-center gap-2 mb-3">
 
-                            <span class="text-muted">
-                                @round.QuestionCount question(s)
-                            </span>
-                        </div>
+                        <h3 class="h5 round-title flex-grow-1">
+                            Manche @round.Position
+                        </h3>
+
+                        <span class="round-count badge bg-secondary">
+                            @round.QuestionCount question(s)
+                        </span>
 
                         <button type="button"
                                 class="btn btn-outline-secondary"
-                                data-action="up">
+                                data-action="up-round"
+                                title="Monter la manche">
                             ↑
                         </button>
 
                         <button type="button"
                                 class="btn btn-outline-secondary"
-                                data-action="down">
+                                data-action="down-round"
+                                title="Descendre la manche">
                             ↓
                         </button>
 
                         <button type="button"
                                 class="btn btn-outline-danger"
-                                data-action="remove">
+                                data-action="remove-round">
                             Retirer
                         </button>
                     </div>
-                </div>
 
+                    <div class="round-question-list mb-3">
+
+                        @foreach (var question in round.Questions)
+                        {
+                            <div class="game-question border rounded p-2 mb-2"
+                                 data-entry-id="@question.Id"
+                                 data-type="@question.TypeQuestion"
+                                 data-question-id="@question.QuestionId">
+
+                                <div class="d-flex align-items-center gap-2">
+
+                                    <span class="question-number"></span>
+
+                                    <span class="question-label flex-grow-1">
+                                        [@question.TypeQuestion] @question.Label
+                                    </span>
+
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-secondary"
+                                            data-action="up-question"
+                                            title="Monter la question">
+                                        ↑
+                                    </button>
+
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-secondary"
+                                            data-action="down-question"
+                                            title="Descendre la question">
+                                        ↓
+                                    </button>
+
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger"
+                                            data-action="remove-question">
+                                        ×
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="input-group">
+
+                        <select class="form-select question-picker">
+
+                            <option value="">
+                                Choisir une question...
+                            </option>
+
+                            @foreach (var item in Model.QuestionBank)
+                            {
+                                <option value="@(item.TypeQuestion + ":" + item.Id)">
+                                    [@item.TypeQuestion] @item.Label
+                                </option>
+                            }
+                        </select>
+
+                        <button type="button"
+                                class="btn btn-outline-primary"
+                                data-action="add-question">
+                            Ajouter
+                        </button>
+                    </div>
+                </div>
             </article>
         }
-
     </div>
 
     <button type="button"
             id="addRound"
-            class="btn btn-outline-primary">
+            class="btn btn-outline-primary mb-4">
         + Ajouter une manche
     </button>
 
-    <template id="roundTemplate">
-        <article class="game-round card mb-3"
-                 data-round-id="0"
-                 data-question-count="0">
-            <div class="card-body">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="flex-grow-1">
-                        <h3 class="h5 round-title"></h3>
-                        <span class="text-muted">
-                            0 question(s)
-                        </span>
-                    </div>
+    <h2 class="h5">Prévisualisation JSON</h2>
 
-                    <button type="button"
-                            class="btn btn-outline-secondary"
-                            data-action="up">
-                        ↑
-                    </button>
-
-                    <button type="button"
-                            class="btn btn-outline-secondary"
-                            data-action="down">
-                        ↓
-                    </button>
-
-                    <button type="button"
-                            class="btn btn-outline-danger"
-                            data-action="remove">
-                        Retirer
-                    </button>
-                </div>
-            </div>
-        </article>
-    </template>
-
-    <hr />
+    <pre id="gamePreview"
+         class="border rounded p-3"
+         style="max-height: 350px; overflow: auto;"></pre>
 
     <a class="btn btn-secondary"
-       href="@Url.Action("Index", "QuizStudio",
+       href="@Url.Action(
+           "Index",
+           "QuizStudio",
            new { area = "AkibaQuiz.Api" })">
         Retour à la banque de contenu
     </a>
-
 </div>
+
+<!-- Modèle HTML : nouvelle manche -->
+
+<template id="roundTemplate">
+
+    <article class="game-round card mb-3"
+             data-round-id="0">
+
+        <div class="card-body">
+
+            <div class="d-flex align-items-center gap-2 mb-3">
+
+                <h3 class="h5 round-title flex-grow-1"></h3>
+
+                <span class="round-count badge bg-secondary">
+                    0 question(s)
+                </span>
+
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        data-action="up-round">
+                    ↑
+                </button>
+
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        data-action="down-round">
+                    ↓
+                </button>
+
+                <button type="button"
+                        class="btn btn-outline-danger"
+                        data-action="remove-round">
+                    Retirer
+                </button>
+            </div>
+
+            <div class="round-question-list mb-3"></div>
+
+            <div class="input-group">
+
+                <select class="form-select question-picker">
+
+                    <option value="">
+                        Choisir une question...
+                    </option>
+
+                    @foreach (var item in Model.QuestionBank)
+                    {
+                        <option value="@(item.TypeQuestion + ":" + item.Id)">
+                            [@item.TypeQuestion] @item.Label
+                        </option>
+                    }
+                </select>
+
+                <button type="button"
+                        class="btn btn-outline-primary"
+                        data-action="add-question">
+                    Ajouter
+                </button>
+            </div>
+        </div>
+    </article>
+</template>
+
+<!-- Modèle HTML : nouvelle question -->
+
+<template id="questionTemplate">
+
+    <div class="game-question border rounded p-2 mb-2"
+         data-entry-id="0">
+
+        <div class="d-flex align-items-center gap-2">
+
+            <span class="question-number"></span>
+
+            <span class="question-label flex-grow-1"></span>
+
+            <button type="button"
+                    class="btn btn-sm btn-outline-secondary"
+                    data-action="up-question">
+                ↑
+            </button>
+
+            <button type="button"
+                    class="btn btn-sm btn-outline-secondary"
+                    data-action="down-question">
+                ↓
+            </button>
+
+            <button type="button"
+                    class="btn btn-sm btn-outline-danger"
+                    data-action="remove-question">
+                ×
+            </button>
+        </div>
+    </div>
+</template>
+
+<hr />
 
 <script>
     (() => {
         const container =
             document.getElementById("gameRounds");
 
-        const template =
+        const roundTemplate =
             document.getElementById("roundTemplate");
 
-        const addButton =
+        const questionTemplate =
+            document.getElementById("questionTemplate");
+
+        const addRoundButton =
             document.getElementById("addRound");
 
-        const getRounds = () =>
-            [...container.querySelectorAll(".game-round")];
+        const gameName =
+            document.getElementById("gameName");
 
-        function refreshPositions() {
-            const rounds = getRounds();
+        const preview =
+            document.getElementById("gamePreview");
 
-            rounds.forEach((round, index) => {
-                round.querySelector(".round-title")
-                    .textContent = `Manche ${index + 1}`;
+        // -------------------------------------------------
+        // 1. Accès aux manches et aux questions
+        // -------------------------------------------------
 
-                round.querySelector('[data-action="up"]')
-                    .disabled = index === 0;
-
-                round.querySelector('[data-action="down"]')
-                    .disabled = index === rounds.length - 1;
-
-                // On garde au moins une manche.
-                round.querySelector('[data-action="remove"]')
-                    .disabled = rounds.length === 1;
-            });
+        function getRounds() {
+            return [
+                ...container.querySelectorAll(
+                    ":scope > .game-round"
+                )
+            ];
         }
 
-        addButton.addEventListener("click", () => {
-            const fragment = template.content.cloneNode(true);
+        function getQuestions(round) {
+            return [
+                ...round.querySelectorAll(
+                    ".round-question-list > .game-question"
+                )
+            ];
+        }
 
-            container.appendChild(fragment);
+        // -------------------------------------------------
+        // 2. Construire le JSON de composition
+        // -------------------------------------------------
 
-            refreshPositions();
+        function buildGameRequest() {
+            return {
+                name: gameName.value.trim(),
+
+                rounds: getRounds().map(
+                    (round, roundIndex) => {
+                        return {
+                            position: roundIndex + 1,
+
+                            questions: getQuestions(round).map(
+                                (question, questionIndex) => {
+                                    const id = Number(
+                                        question.dataset.questionId
+                                    );
+
+                                    const entry = {
+                                        position: questionIndex + 1
+                                    };
+
+                                    if (question.dataset.type === "QCM") {
+                                        entry.idQCMQuestion = id;
+                                    }
+                                    else if (
+                                        question.dataset.type ===
+                                        "QuestionAnswer"
+                                    ) {
+                                        entry.idQuestionAnswer = id;
+                                    }
+
+                                    return entry;
+                                }
+                            )
+                        };
+                    }
+                )
+            };
+        }
+
+        // -------------------------------------------------
+        // 3. Actualiser positions et boutons
+        // -------------------------------------------------
+
+        function refresh() {
+            const rounds = getRounds();
+
+            rounds.forEach((round, roundIndex) => {
+                const questions = getQuestions(round);
+
+                round.querySelector(".round-title")
+                    .textContent =
+                    `Manche ${roundIndex + 1}`;
+
+                round.querySelector(".round-count")
+                    .textContent =
+                    `${questions.length} question(s)`;
+
+                round.querySelector(
+                    '[data-action="up-round"]'
+                ).disabled = roundIndex === 0;
+
+                round.querySelector(
+                    '[data-action="down-round"]'
+                ).disabled =
+                    roundIndex === rounds.length - 1;
+
+                round.querySelector(
+                    '[data-action="remove-round"]'
+                ).disabled =
+                    rounds.length === 1 ||
+                    questions.length > 0;
+
+                questions.forEach((question, index) => {
+                    question.querySelector(".question-number")
+                        .textContent = `${index + 1}.`;
+
+                    question.querySelector(
+                        '[data-action="up-question"]'
+                    ).disabled = index === 0;
+
+                    question.querySelector(
+                        '[data-action="down-question"]'
+                    ).disabled =
+                        index === questions.length - 1;
+                });
+            });
+
+            preview.textContent = JSON.stringify(
+                buildGameRequest(),
+                null,
+                2
+            );
+        }
+
+        // -------------------------------------------------
+        // 4. Ajouter une manche
+        // -------------------------------------------------
+
+        addRoundButton.addEventListener("click", () => {
+            const newRound = roundTemplate.content
+                .firstElementChild
+                .cloneNode(true);
+
+            container.appendChild(newRound);
+
+            refresh();
         });
+
+        // -------------------------------------------------
+        // 5. Actualiser le nom du Game
+        // -------------------------------------------------
+
+        gameName.addEventListener("input", refresh);
+
+        // -------------------------------------------------
+        // 6. Actions sur les manches et questions
+        // -------------------------------------------------
 
         container.addEventListener("click", event => {
             const button = event.target.closest(
@@ -176,46 +427,143 @@
             if (!button || !container.contains(button))
                 return;
 
-            const round = button.closest(".game-round");
             const action = button.dataset.action;
+            const round = button.closest(".game-round");
 
-            if (action === "up" &&
-                round.previousElementSibling) {
+            if (!round)
+                return;
+
+            const questionList =
+                round.querySelector(".round-question-list");
+
+            // Ajouter une question dans une manche
+            if (action === "add-question") {
+                const picker =
+                    round.querySelector(".question-picker");
+
+                if (!picker.value)
+                    return;
+
+                const [type, rawId] =
+                    picker.value.split(":");
+
+                const questionId = Number(rawId);
+
+                if (
+                    !["QuestionAnswer", "QCM"].includes(type) ||
+                    !Number.isSafeInteger(questionId) ||
+                    questionId <= 0
+                ) {
+                    return;
+                }
+
+                // Une même question ne peut apparaître
+                // qu'une seule fois dans cette manche.
+                const alreadyExists = getQuestions(round)
+                    .some(q =>
+                        q.dataset.type === type &&
+                        Number(q.dataset.questionId) === questionId
+                    );
+
+                if (alreadyExists) {
+                    alert(
+                        "Cette question est déjà présente " +
+                        "dans cette manche."
+                    );
+                    return;
+                }
+
+                const newQuestion = questionTemplate.content
+                    .firstElementChild
+                    .cloneNode(true);
+
+                newQuestion.dataset.type = type;
+                newQuestion.dataset.questionId =
+                    String(questionId);
+
+                newQuestion.dataset.entryId = "0";
+
+                newQuestion.querySelector(".question-label")
+                    .textContent =
+                    picker.selectedOptions[0]
+                        .textContent.trim();
+
+                questionList.appendChild(newQuestion);
+
+                picker.value = "";
+
+                refresh();
+                return;
+            }
+
+            // Monter une manche
+            if (
+                action === "up-round" &&
+                round.previousElementSibling
+            ) {
                 container.insertBefore(
                     round,
                     round.previousElementSibling
                 );
             }
 
-            if (action === "down" &&
-                round.nextElementSibling) {
+            // Descendre une manche
+            if (
+                action === "down-round" &&
+                round.nextElementSibling
+            ) {
                 container.insertBefore(
                     round.nextElementSibling,
                     round
                 );
             }
 
-            if (action === "remove") {
-                if (getRounds().length <= 1)
-                    return;
-
-                // Ne pas retirer pour l'instant une manche
-                // qui contient des questions existantes.
-                if (Number(round.dataset.questionCount) > 0) {
-                    alert(
-                        "Cette manche contient des questions. " +
-                        "Leur gestion sera ajoutée au TP suivant."
-                    );
-                    return;
+            // Retirer une manche uniquement si elle est vide
+            if (action === "remove-round") {
+                if (
+                    getRounds().length > 1 &&
+                    getQuestions(round).length === 0
+                ) {
+                    round.remove();
                 }
-
-                round.remove();
             }
 
-            refreshPositions();
+            // Actions sur une question
+            const question = button.closest(".game-question");
+
+            if (question) {
+                if (
+                    action === "up-question" &&
+                    question.previousElementSibling
+                ) {
+                    questionList.insertBefore(
+                        question,
+                        question.previousElementSibling
+                    );
+                }
+
+                if (
+                    action === "down-question" &&
+                    question.nextElementSibling
+                ) {
+                    questionList.insertBefore(
+                        question.nextElementSibling,
+                        question
+                    );
+                }
+
+                if (action === "remove-question") {
+                    question.remove();
+                }
+            }
+
+            refresh();
         });
 
-        refreshPositions();
+        // -------------------------------------------------
+        // 7. Initialisation
+        // -------------------------------------------------
+
+        refresh();
     })();
 </script>
-

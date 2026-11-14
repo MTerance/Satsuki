@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.Xml;
 using System.Text;
+using YesSql.Services;
 
 namespace AkibaQuiz.Api.Controllers
 {
@@ -327,24 +328,93 @@ namespace AkibaQuiz.Api.Controllers
         public async Task<IActionResult> GameEditor(long? id, CancellationToken ct)
         {
             var model = new GameEditorVm();
+
+            var questions = await _questionService.GetAllAsync(ct);
+            var qcms = await _qcmService.GetAllAsync(ct);
+
+            model.QuestionBank = questions.Select(q => new GameQuestionBankItemVm
+            {
+                Id = q.Id,
+                TypeQuestion = "Question",
+                Label = q.Question
+            }).Concat(qcms.Select(q => new GameQuestionBankItemVm
+            {
+                Id = q.Id,
+                TypeQuestion = "QCM",
+                Label = q.Question
+            }))
+            .OrderBy(q => q.TypeQuestion)
+            .ThenBy(q => q.Label)
+            .ToList();
+
+            var questionById = questions.ToDictionary(q => q.Id);
+            var qcmById = qcms.ToDictionary(q => q.Id);
+
             if (id.HasValue)
             {
-                var game = await _gameService.GetByIdAsync(id.Value, ct);
-                if (game == null)
-                {
+                var full = await _gameService.GetFullAsync(id.Value, ct);
+
+                if (full is null)
                     return NotFound();
-                }
-                model = new GameEditorVm
+
+                model.Id = full.Game.Id;
+                model.Name = full.Game.Name;
+
+                foreach (var round in full.Rounds.OrderBy(r => r.Position).ThenBy(r => r.Id))
                 {
-                    Id = game.Id,
-                    Name = game.Name,
-                    Rounds = game.Rounds.Select(r => new GameRoundEditorVm
+                    var gRound = new GameRoundEditorVm
                     {
-                        Id = r.Id,
-                        Position = r.Position,
-                        QuestionCount = r.Questions.Count
-                    }).OrderBy(r => r.Position).ToList()
-                };
+                        Id = round.Id,
+                        Position = model.Rounds.Count + 1
+                    };
+
+                    foreach (var entry in round.Questions
+                        .OrderBy(q => q.Position)
+                        .ThenBy(q => q.Id))
+                    {
+                        bool isQuestion = entry.IdQuestionAnswer is > 0;
+                        bool isQcm = entry.IdQCMQuestion is > 0;
+                        if ((!isQuestion && !isQcm) || (isQuestion && isQcm))
+                        {
+                            return Conflict($"Type de question inconnu : {entry.Id}");
+                        }
+                        string type;
+                        long questionId;
+                        string label;
+
+                        if (isQuestion)
+                        {
+                            questionId = entry.IdQuestionAnswer!.Value;
+                            if (!questionById.TryGetValue(questionId, out var q))
+                            {
+                                return Conflict(
+                                    $"QuestionAnswer #{questionId} introuvable.");
+                            }
+                            type = "QuestionAnswer";
+                            label = q.Question;
+                        }
+                        else
+                        {
+                            questionId = entry.IdQCMQuestion!.Value;
+                            if (!qcmById.TryGetValue(questionId, out var q))
+                            {
+                                return Conflict(
+                                    $"QCM #{questionId} introuvable.");
+                            }
+                            type = "QCM";
+                            label = q.Question;
+                        }
+                        gRound.Questions.Add(new GameQuestionEditorVm
+                        {
+                            Id = entry.Id,
+                            Position = entry.Position,
+                            TypeQuestion = type,
+                            QuestionId = isQuestion ? questionId : (long?)null,
+                            QcmQuestionId = isQcm ? questionId : (long?)null,
+                            Label = label
+                        });
+                    }
+                }
             }
             if (model.Rounds.Count == 0)
             {
@@ -354,9 +424,12 @@ namespace AkibaQuiz.Api.Controllers
                     QuestionCount = 0
                 });
             }
+            Console.WriteLine(
+                $"GameEditor : Game={model.Id}, " +
+                $"Manches={model.Rounds.Count}, " +
+                $"Questions={model.Rounds.Sum(r => r.Questions.Count)}");
             return View(model);
         }
-
         #endregion
     }
 }
