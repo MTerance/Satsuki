@@ -359,7 +359,6 @@ namespace AkibaQuiz.Api.Controllers
 
                 model.Id = full.Game.Id;
                 model.Name = full.Game.Name;
-
                 foreach (var round in full.Rounds.OrderBy(r => r.Position).ThenBy(r => r.Id))
                 {
                     var gRound = new GameRoundEditorVm
@@ -413,6 +412,7 @@ namespace AkibaQuiz.Api.Controllers
                             QcmQuestionId = isQcm ? questionId : (long?)null,
                             Label = label
                         });
+                        model.Rounds.Add(gRound);
                     }
                 }
             }
