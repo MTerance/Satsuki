@@ -73,10 +73,13 @@
 
                         @foreach (var question in round.Questions)
                         {
+                            var questionId = question.TypeQuestion == "QCM" 
+                            ? question.QcmQuestionId 
+                            : question.QuestionId;
                             <div class="game-question border rounded p-2 mb-2"
-                                 data-entry-id="@question.Id"
+                                 data-entry-id="@questionId"
                                  data-type="@question.TypeQuestion"
-                                 data-question-id="@question.QuestionId">
+                                 data-question-id="@questionId">
 
                                 <div class="d-flex align-items-center gap-2">
 
@@ -147,7 +150,42 @@
 
     <pre id="gamePreview"
          class="border rounded p-3"
-         style="max-height: 350px; overflow: auto;"></pre>
+         style="max-height: 350px; overflow: auto;">
+    </pre>
+
+    <div id="saveGameFeedback"
+         class="mb-3"
+         role="alert"
+         aria-live="polite"></div>
+
+    <form id="saveGameForm"
+          method="post"
+          action="@Url.Action(
+              "SaveGame",
+              "QuizStudio",
+              new { area = "AkibaQuiz.Api" })">
+
+        @Html.AntiForgeryToken()
+
+        <input type="hidden"
+               name="Id"
+               value="@Model.Id" />
+
+        <input type="hidden"
+               name="Revision"
+               value="@Model.Revision" />
+
+        <input type="hidden"
+               name="Payload"
+               id="gamePayload" />
+
+        <button type="submit"
+                id="saveGameButton"
+                class="btn btn-primary">
+            Enregistrer le Game
+        </button>
+    </form>
+
 
     <a class="btn btn-secondary"
        href="@Url.Action(
@@ -258,91 +296,162 @@
 
 <hr />
 
+
 <script>
     (() => {
-        const container =
-            document.getElementById("gameRounds");
+        "use strict";
 
-        const roundTemplate =
-            document.getElementById("roundTemplate");
+        // =====================================================
+        // 1. INITIALISATION
+        // =====================================================
 
-        const questionTemplate =
-            document.getElementById("questionTemplate");
+        const container = document.getElementById("gameRounds");
+        const roundTemplate = document.getElementById("roundTemplate");
+        const questionTemplate = document.getElementById("questionTemplate");
 
-        const addRoundButton =
-            document.getElementById("addRound");
+        const addRoundButton = document.getElementById("addRound");
+        const gameName = document.getElementById("gameName");
+        const preview = document.getElementById("gamePreview");
 
-        const gameName =
-            document.getElementById("gameName");
+        const saveForm = document.getElementById("saveGameForm");
+        const saveButton = document.getElementById("saveGameButton");
+        const payloadInput = document.getElementById("gamePayload");
+        const feedback = document.getElementById("saveGameFeedback");
 
-        const preview =
-            document.getElementById("gamePreview");
+        const requiredElements = {
+            container,
+            roundTemplate,
+            questionTemplate,
+            addRoundButton,
+            gameName,
+            preview,
+            saveForm,
+            saveButton,
+            payloadInput,
+            feedback
+        };
 
-        // -------------------------------------------------
-        // 1. Accès aux manches et aux questions
-        // -------------------------------------------------
+        for (const [name, element] of Object.entries(requiredElements)) {
+            if (!element) {
+                console.error(
+                    `GameEditor : élément HTML manquant : ${name}`
+                );
+                return;
+            }
+        }
+
+        // =====================================================
+        // 2. ACCÈS AUX MANCHES ET QUESTIONS
+        // =====================================================
 
         function getRounds() {
-            return [
-                ...container.querySelectorAll(
-                    ":scope > .game-round"
-                )
-            ];
+            return [...container.children]
+                .filter(element =>
+                    element.classList.contains("game-round")
+                );
+        }
+
+        function getQuestionList(round) {
+            return round.querySelector(".round-question-list");
         }
 
         function getQuestions(round) {
-            return [
-                ...round.querySelectorAll(
-                    ".round-question-list > .game-question"
-                )
-            ];
+            const list = getQuestionList(round);
+
+            if (!list) {
+                throw new Error(
+                    "Une manche ne possède pas de liste de questions."
+                );
+            }
+
+            return [...list.children]
+                .filter(element =>
+                    element.classList.contains("game-question")
+                );
         }
 
-        // -------------------------------------------------
-        // 2. Construire le JSON de composition
-        // -------------------------------------------------
+        // =====================================================
+        // 3. GESTION DES MESSAGES
+        // =====================================================
+
+        function showError(message) {
+            feedback.textContent = message;
+            feedback.className = "alert alert-danger mb-3";
+        }
+
+        function clearMessage() {
+            feedback.textContent = "";
+            feedback.className = "mb-3";
+        }
+
+        function showSuccess(message) {
+            feedback.textContent = message;
+            feedback.className = "alert alert-success mb-3";
+        }
+
+        // =====================================================
+        // 4. CONSTRUCTION DU SAVE GAME REQUEST
+        // =====================================================
 
         function buildGameRequest() {
+            const rounds = getRounds();
+
             return {
                 name: gameName.value.trim(),
 
-                rounds: getRounds().map(
-                    (round, roundIndex) => {
-                        return {
-                            position: roundIndex + 1,
+                rounds: rounds.map((round, roundIndex) => {
+                    const questions = getQuestions(round);
 
-                            questions: getQuestions(round).map(
-                                (question, questionIndex) => {
-                                    const id = Number(
-                                        question.dataset.questionId
+                    return {
+                        position: roundIndex + 1,
+
+                        questions: questions.map(
+                            (question, questionIndex) => {
+
+                                const type = question.dataset.type;
+
+                                const questionId = Number(
+                                    question.dataset.questionId
+                                );
+
+                                if (
+                                    !Number.isSafeInteger(questionId) ||
+                                    questionId <= 0
+                                ) {
+                                    throw new Error(
+                                        `Identifiant invalide : ` +
+                                        `manche ${roundIndex + 1}, ` +
+                                        `question ${questionIndex + 1}.`
                                     );
-
-                                    const entry = {
-                                        position: questionIndex + 1
-                                    };
-
-                                    if (question.dataset.type === "QCM") {
-                                        entry.idQCMQuestion = id;
-                                    }
-                                    else if (
-                                        question.dataset.type ===
-                                        "QuestionAnswer"
-                                    ) {
-                                        entry.idQuestionAnswer = id;
-                                    }
-
-                                    return entry;
                                 }
-                            )
-                        };
-                    }
-                )
+
+                                const entry = {
+                                    position: questionIndex + 1
+                                };
+
+                                if (type === "QuestionAnswer") {
+                                    entry.idQuestionAnswer = questionId;
+                                }
+                                else if (type === "QCM") {
+                                    entry.idQCMQuestion = questionId;
+                                }
+                                else {
+                                    throw new Error(
+                                        `Type de question inconnu : ${type}`
+                                    );
+                                }
+
+                                return entry;
+                            }
+                        )
+                    };
+                })
             };
         }
 
-        // -------------------------------------------------
-        // 3. Actualiser positions et boutons
-        // -------------------------------------------------
+        // =====================================================
+        // 5. ACTUALISATION DE L'INTERFACE
+        // =====================================================
 
         function refresh() {
             const rounds = getRounds();
@@ -350,54 +459,60 @@
             rounds.forEach((round, roundIndex) => {
                 const questions = getQuestions(round);
 
+                // Numérotation des manches
                 round.querySelector(".round-title")
-                    .textContent =
-                    `Manche ${roundIndex + 1}`;
+                    .textContent = `Manche ${roundIndex + 1}`;
 
                 round.querySelector(".round-count")
-                    .textContent =
-                    `${questions.length} question(s)`;
+                    .textContent = `${questions.length} question(s)`;
 
-                round.querySelector(
-                    '[data-action="up-round"]'
-                ).disabled = roundIndex === 0;
+                // Boutons des manches
+                round.querySelector('[data-action="up-round"]')
+                    .disabled = roundIndex === 0;
 
-                round.querySelector(
-                    '[data-action="down-round"]'
-                ).disabled =
-                    roundIndex === rounds.length - 1;
+                round.querySelector('[data-action="down-round"]')
+                    .disabled = roundIndex === rounds.length - 1;
 
-                round.querySelector(
-                    '[data-action="remove-round"]'
-                ).disabled =
-                    rounds.length === 1 ||
+                round.querySelector('[data-action="remove-round"]')
+                    .disabled =
+                    rounds.length <= 1 ||
                     questions.length > 0;
 
-                questions.forEach((question, index) => {
+                // Numérotation et boutons des questions
+                questions.forEach((question, questionIndex) => {
                     question.querySelector(".question-number")
-                        .textContent = `${index + 1}.`;
+                        .textContent = `${questionIndex + 1}.`;
 
                     question.querySelector(
                         '[data-action="up-question"]'
-                    ).disabled = index === 0;
+                    ).disabled = questionIndex === 0;
 
                     question.querySelector(
                         '[data-action="down-question"]'
                     ).disabled =
-                        index === questions.length - 1;
+                        questionIndex === questions.length - 1;
                 });
             });
 
-            preview.textContent = JSON.stringify(
-                buildGameRequest(),
-                null,
-                2
-            );
+            // Prévisualisation du JSON
+            console.log("GameEditor - Prévisualisation JSON :", buildGameRequest());
+            try {
+                preview.textContent = JSON.stringify(
+                    buildGameRequest(),
+                    null,
+                    2
+                );
+            }
+            catch (error) {
+                console.error("GameEditor - Erreur de prévisualisation JSON :", error);
+                preview.textContent =
+                    `Erreur dans la composition : ${error.message}`;
+            }
         }
 
-        // -------------------------------------------------
-        // 4. Ajouter une manche
-        // -------------------------------------------------
+        // =====================================================
+        // 6. AJOUT D'UNE MANCHE
+        // =====================================================
 
         addRoundButton.addEventListener("click", () => {
             const newRound = roundTemplate.content
@@ -407,19 +522,26 @@
             container.appendChild(newRound);
 
             refresh();
+            clearMessage();
         });
 
-        // -------------------------------------------------
-        // 5. Actualiser le nom du Game
-        // -------------------------------------------------
+        // =====================================================
+        // 7. MODIFICATION DU NOM DU GAME
+        // =====================================================
 
-        gameName.addEventListener("input", refresh);
+        gameName.addEventListener("input", () => {
+            refresh();
+            clearMessage();
+        });
 
-        // -------------------------------------------------
-        // 6. Actions sur les manches et questions
-        // -------------------------------------------------
+        // =====================================================
+        // 8. ACTIONS SUR LES MANCHES ET QUESTIONS
+        // =====================================================
 
         container.addEventListener("click", event => {
+            if (!(event.target instanceof Element))
+                return;
+
             const button = event.target.closest(
                 "button[data-action]"
             );
@@ -428,47 +550,49 @@
                 return;
 
             const action = button.dataset.action;
+
             const round = button.closest(".game-round");
 
             if (!round)
                 return;
 
-            const questionList =
-                round.querySelector(".round-question-list");
+            const questionList = getQuestionList(round);
 
-            // Ajouter une question dans une manche
+            // ---------------------------------------------
+            // AJOUTER UNE QUESTION
+            // ---------------------------------------------
+
             if (action === "add-question") {
-                const picker =
-                    round.querySelector(".question-picker");
+                const picker = round.querySelector(
+                    ".question-picker"
+                );
 
-                if (!picker.value)
+                if (!picker || !picker.value)
                     return;
 
-                const [type, rawId] =
-                    picker.value.split(":");
+                const [type, idText] = picker.value.split(":");
 
-                const questionId = Number(rawId);
+                const questionId = Number(idText);
 
                 if (
                     !["QuestionAnswer", "QCM"].includes(type) ||
                     !Number.isSafeInteger(questionId) ||
                     questionId <= 0
                 ) {
+                    showError("Référence de question invalide.");
                     return;
                 }
 
-                // Une même question ne peut apparaître
-                // qu'une seule fois dans cette manche.
-                const alreadyExists = getQuestions(round)
-                    .some(q =>
-                        q.dataset.type === type &&
-                        Number(q.dataset.questionId) === questionId
-                    );
+                // Éviter les doublons dans une même manche
+                const exists = getQuestions(round).some(
+                    question =>
+                        question.dataset.type === type &&
+                        Number(question.dataset.questionId) === questionId
+                );
 
-                if (alreadyExists) {
-                    alert(
-                        "Cette question est déjà présente " +
-                        "dans cette manche."
+                if (exists) {
+                    showError(
+                        "Cette question est déjà présente dans cette manche."
                     );
                     return;
                 }
@@ -477,93 +601,310 @@
                     .firstElementChild
                     .cloneNode(true);
 
-                newQuestion.dataset.type = type;
-                newQuestion.dataset.questionId =
-                    String(questionId);
-
                 newQuestion.dataset.entryId = "0";
+                newQuestion.dataset.type = type;
+                newQuestion.dataset.questionId = String(questionId);
 
                 newQuestion.querySelector(".question-label")
                     .textContent =
-                    picker.selectedOptions[0]
-                        .textContent.trim();
+                    picker.selectedOptions[0].textContent.trim();
 
                 questionList.appendChild(newQuestion);
 
                 picker.value = "";
 
                 refresh();
+                clearMessage();
                 return;
             }
 
-            // Monter une manche
-            if (
-                action === "up-round" &&
-                round.previousElementSibling
-            ) {
-                container.insertBefore(
-                    round,
-                    round.previousElementSibling
-                );
-            }
+            // ---------------------------------------------
+            // MONTER UNE MANCHE
+            // ---------------------------------------------
 
-            // Descendre une manche
-            if (
-                action === "down-round" &&
-                round.nextElementSibling
-            ) {
-                container.insertBefore(
-                    round.nextElementSibling,
-                    round
-                );
-            }
+            if (action === "up-round") {
+                const previous = round.previousElementSibling;
 
-            // Retirer une manche uniquement si elle est vide
-            if (action === "remove-round") {
-                if (
-                    getRounds().length > 1 &&
-                    getQuestions(round).length === 0
-                ) {
-                    round.remove();
+                if (previous) {
+                    container.insertBefore(round, previous);
                 }
             }
 
-            // Actions sur une question
+            // ---------------------------------------------
+            // DESCENDRE UNE MANCHE
+            // ---------------------------------------------
+
+            if (action === "down-round") {
+                const next = round.nextElementSibling;
+
+                if (next) {
+                    container.insertBefore(next, round);
+                }
+            }
+
+            // ---------------------------------------------
+            // RETIRER UNE MANCHE VIDE
+            // ---------------------------------------------
+
+            if (action === "remove-round") {
+                if (
+                    getRounds().length <= 1 ||
+                    getQuestions(round).length > 0
+                ) {
+                    return;
+                }
+
+                round.remove();
+            }
+
+            // ---------------------------------------------
+            // ACTIONS SUR UNE QUESTION
+            // ---------------------------------------------
+
             const question = button.closest(".game-question");
 
             if (question) {
-                if (
-                    action === "up-question" &&
-                    question.previousElementSibling
-                ) {
-                    questionList.insertBefore(
-                        question,
-                        question.previousElementSibling
-                    );
+
+                // Monter la question
+                if (action === "up-question") {
+                    const previous = question.previousElementSibling;
+
+                    if (previous) {
+                        questionList.insertBefore(
+                            question,
+                            previous
+                        );
+                    }
                 }
 
-                if (
-                    action === "down-question" &&
-                    question.nextElementSibling
-                ) {
-                    questionList.insertBefore(
-                        question.nextElementSibling,
-                        question
-                    );
+                // Descendre la question
+                if (action === "down-question") {
+                    const next = question.nextElementSibling;
+
+                    if (next) {
+                        questionList.insertBefore(
+                            next,
+                            question
+                        );
+                    }
                 }
 
+                // Retirer la question
                 if (action === "remove-question") {
                     question.remove();
                 }
             }
 
             refresh();
+            clearMessage();
         });
 
-        // -------------------------------------------------
-        // 7. Initialisation
-        // -------------------------------------------------
+        // =====================================================
+        // 9. VALIDATION AVANT ENREGISTREMENT
+        // =====================================================
+
+        function validateGame(request) {
+
+            if (request.name.length < 2) {
+                throw new Error(
+                    "Le nom du Game doit contenir au moins 2 caractères."
+                );
+            }
+
+            if (request.rounds.length === 0) {
+                throw new Error(
+                    "Le Game doit contenir au moins une manche."
+                );
+            }
+
+            for (const round of request.rounds) {
+                if (round.questions.length === 0) {
+                    throw new Error(
+                        `La manche ${round.position} est vide.`
+                    );
+                }
+
+                const seen = new Set();
+
+                for (const question of round.questions) {
+                    const type = question.idQCMQuestion != null
+                        ? "QCM"
+                        : "QuestionAnswer";
+
+                    const id = question.idQCMQuestion
+                        ?? question.idQuestionAnswer;
+
+                    const key = `${type}:${id}`;
+
+                    if (seen.has(key)) {
+                        throw new Error(
+                            `Question dupliquée dans la manche ` +
+                            `${round.position}.`
+                        );
+                    }
+
+                    seen.add(key);
+                }
+            }
+        }
+
+        // =====================================================
+        // 10. ENREGISTREMENT DU GAME
+        // =====================================================
+
+        saveForm.addEventListener("submit", async event => {
+            event.preventDefault();
+
+            if (saveButton.disabled)
+                return;
+
+            clearMessage();
+
+            let request;
+
+            try {
+                // Construire et valider toute la composition
+                request = buildGameRequest();
+
+                validateGame(request);
+            }
+            catch (error) {
+                showError(error.message);
+                return;
+            }
+
+            // ---------------------------------------------
+            // IMPORTANT : renseigner Payload AVANT FormData
+            // ---------------------------------------------
+
+            const payload = JSON.stringify(request);
+
+            payloadInput.value = payload;
+
+            const formData = new FormData(saveForm);
+
+            // Garantir la présence du JSON dans FormData
+            formData.set("Payload", payload);
+
+            const gameId = formData.get("Id");
+            const revision = formData.get("Revision");
+
+            // ---------------------------------------------
+            // Contrôle de Revision pour une modification
+            // ---------------------------------------------
+
+            if (gameId && !revision) {
+                showError(
+                    "L'empreinte Revision du Game existant est absente. " +
+                    "Recharge la page avant d'enregistrer."
+                );
+                return;
+            }
+
+            // ---------------------------------------------
+            // Diagnostic dans la console du navigateur
+            // ---------------------------------------------
+
+            console.debug("SaveGame - ID :", gameId);
+            console.debug("SaveGame - Revision :", revision);
+            console.debug("SaveGame - Payload :", payload);
+
+            saveButton.disabled = true;
+            saveButton.textContent = "Enregistrement...";
+
+            try {
+                // -----------------------------------------
+                // Envoi POST MVC avec jeton antiforgery
+                // -----------------------------------------
+
+                const response = await fetch(saveForm.action, {
+                    method: "POST",
+                    body: formData,
+                    credentials: "same-origin",
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                });
+
+                // -----------------------------------------
+                // Lecture de la réponse
+                // -----------------------------------------
+
+                const contentType =
+                    response.headers.get("content-type") ?? "";
+
+                let result = null;
+
+                if (contentType.includes("json")) {
+                    result = await response.json();
+                }
+
+                // -----------------------------------------
+                // Gestion des erreurs HTTP
+                // -----------------------------------------
+
+                if (!response.ok) {
+                    let errorMessage =
+                        result?.error ??
+                        result?.title ??
+                        `Erreur HTTP ${response.status}.`;
+
+                    if (result?.errors) {
+                        const details = Object.entries(result.errors)
+                            .flatMap(([field, errors]) =>
+                                errors.map(e => `${field} : ${e}`)
+                            );
+
+                        if (details.length > 0) {
+                            errorMessage = details.join("\n");
+                        }
+                    }
+
+                    console.error("SaveGame :", result);
+
+                    showError(errorMessage);
+                    return;
+                }
+
+                // -----------------------------------------
+                // Vérification de la réponse du serveur
+                // -----------------------------------------
+
+                if (!result?.redirectUrl) {
+                    showError(
+                        "Le serveur n'a pas retourné l'URL du Game enregistré."
+                    );
+                    return;
+                }
+
+                showSuccess("Game enregistré avec succès.");
+
+                // -----------------------------------------
+                // Recharger depuis SQLite
+                // -----------------------------------------
+
+                window.location.assign(result.redirectUrl);
+            }
+            catch (error) {
+                console.error("SaveGame :", error);
+
+                showError(
+                    "Erreur de communication avec le serveur : " +
+                    error.message
+                );
+            }
+            finally {
+                saveButton.disabled = false;
+                saveButton.textContent = "Enregistrer le Game";
+            }
+        });
+
+        // =====================================================
+        // 11. INITIALISATION
+        // =====================================================
 
         refresh();
+
     })();
 </script>
+

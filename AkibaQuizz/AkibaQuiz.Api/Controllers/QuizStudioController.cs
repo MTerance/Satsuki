@@ -1,15 +1,21 @@
 ﻿using AkibaQuiz.Api.Admin;
 using AkibaQuiz.Application.Interfaces;
 using AkibaQuiz.Contracts;
+using AkibaQuiz.Contracts.Models;
 using AkibaQuiz.Contracts.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.Sqlite;
 using OrchardCore.Admin;
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Security.Cryptography.Xml;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using YesSql.Services;
+using static Azure.Core.HttpHeader;
 
 namespace AkibaQuiz.Api.Controllers
 {
@@ -335,7 +341,7 @@ namespace AkibaQuiz.Api.Controllers
             model.QuestionBank = questions.Select(q => new GameQuestionBankItemVm
             {
                 Id = q.Id,
-                TypeQuestion = "Question",
+                TypeQuestion = "QuestionAnswer",
                 Label = q.Question
             }).Concat(qcms.Select(q => new GameQuestionBankItemVm
             {
@@ -359,6 +365,8 @@ namespace AkibaQuiz.Api.Controllers
 
                 model.Id = full.Game.Id;
                 model.Name = full.Game.Name;
+                model.Revision = ComputeGameRevision(await _gameService.GetByIdAsync(id.Value, ct));
+
                 foreach (var round in full.Rounds.OrderBy(r => r.Position).ThenBy(r => r.Id))
                 {
                     var gRound = new GameRoundEditorVm
@@ -411,9 +419,9 @@ namespace AkibaQuiz.Api.Controllers
                             QuestionId = isQuestion ? questionId : (long?)null,
                             QcmQuestionId = isQcm ? questionId : (long?)null,
                             Label = label
-                        });
-                        model.Rounds.Add(gRound);
+                        });                        
                     }
+                    model.Rounds.Add(gRound);
                 }
             }
             if (model.Rounds.Count == 0)
@@ -424,12 +432,227 @@ namespace AkibaQuiz.Api.Controllers
                     QuestionCount = 0
                 });
             }
-            Console.WriteLine(
-                $"GameEditor : Game={model.Id}, " +
-                $"Manches={model.Rounds.Count}, " +
-                $"Questions={model.Rounds.Sum(r => r.Questions.Count)}");
             return View(model);
         }
+
+        [Admin("AkibaQuiz/Studio/SaveGame")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveGame([FromForm] GameSaveFormVm gameSave, CancellationToken ct)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            if (gameSave.Id is <= 0)
+                return BadRequest(new { error = "Id invalide." });
+
+            if (string.IsNullOrWhiteSpace(gameSave.Payload))
+            {
+
+                return BadRequest(new 
+                { 
+                    error = "Payload invalide.",
+                    champsRecus = Request.Form.Keys.ToArray()
+                });
+            }
+
+            SaveGameRequest? input;
+
+            try
+            {
+                input = JsonSerializer.Deserialize<SaveGameRequest>(gameSave.Payload,
+                    new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            }
+            catch (JsonException)
+            {
+                return BadRequest(new { error = "Payload invalide." });
+            }
+
+            if (input is null)
+            {
+                return BadRequest(new
+                {
+                    error = "Aucune composition de Game reçue."
+                });
+            }
+
+            var name = input?.Name?.Trim() ?? "";
+
+            if (input.Name.Length < 2)
+            {
+                return BadRequest(new { error = "Le nom du jeu doit contenir au moins 2 caractères." });
+            }
+
+            if (input?.Rounds is null || input.Rounds.Count == 0)
+                return BadRequest(new { error = "Le jeu doit contenir au moins un tour." });
+            if (gameSave.Id.HasValue)
+            {
+                if (string.IsNullOrWhiteSpace(gameSave.Revision))
+                    return BadRequest(new { error = "Revision invalide." });
+
+                var existing = await _gameService.GetByIdAsync(gameSave.Id.Value, ct);
+                if (existing is null)
+                    return NotFound();
+
+
+                if (!string.Equals(ComputeGameRevision(existing),
+                    gameSave.Revision, StringComparison.OrdinalIgnoreCase))
+                {
+                    return Conflict(new { error = "Le jeu a été modifié par un autre utilisateur. Veuillez recharger la page et réessayer." });
+                }
+            }
+
+            var validQuestions = (await _questionService.GetAllAsync(ct)).Select(q => q.Id).ToHashSet();
+            var validQcms = (await _qcmService.GetAllAsync(ct)).Select(q => q.Id).ToHashSet();
+
+            var request = new SaveGameRequest
+            {
+                Name = name
+            };
+
+            for (int i = 0; i < input.Rounds.Count; i++)
+            {
+                var round = input.Rounds[i];
+
+                if (round is null ||
+                    round.Position != i + 1 ||
+                    round.Questions is null ||
+                    round.Questions.Count == 0)
+                {
+                    return BadRequest(new { error = $"Le tour {i + 1} est invalide." });
+                }
+
+                var newRound = new SaveGameRoundRequest { Position = i + 1 };
+
+                var seen = new HashSet<(string Type, long Id)>();
+
+                for (int j = 0; j < round.Questions.Count; j++)
+                {
+                    var question = round.Questions[j];
+
+                    if (question is null ||
+                        question.Position != j + 1)
+                    {
+                        return BadRequest(new { error = $"La question {j + 1} du tour {i + 1} est invalide." });
+                    }
+
+                    bool isQa = question.IdQuestionAnswer is > 0;
+                    bool isQcm = question.IdQCMQuestion is > 0;
+
+                    if (isQa == isQcm || 
+                        question.IdQuestionAnswer is <= 0 ||
+                        question.IdQCMQuestion is <= 0)
+                    {
+                        return BadRequest(new { error = $"La question {j + 1} du tour {i + 1} doit être soit une question à réponse ouverte, soit une question QCM." });
+                    }
+
+                    string type = isQa ? "QuestionAnswer" : "QCM";
+
+                    long id = isQa ? question.IdQuestionAnswer!.Value : question.IdQCMQuestion!.Value;
+
+                    if (!seen.Add((type, id)))
+                    {
+                        return BadRequest(new { error = $"La question {j + 1} du tour {i + 1} est dupliquée." });
+                    }
+
+                    if (isQa && !validQuestions.Contains(id))
+                    {
+                        return BadRequest(new { error = $"La question {j + 1} du tour {i + 1} est invalide." });
+                    }
+
+                    if (isQcm && !validQcms.Contains(id))
+                    {
+                        return BadRequest(new { error = $"La question {j + 1} du tour {i + 1} est invalide." });
+                    }
+
+                    newRound.Questions.Add(
+                        new SaveRoundQuestionRequest
+                        {
+                            Position = j + 1,
+                            IdQuestionAnswer = isQa ? id : (long?)null,
+                            IdQCMQuestion = isQcm ? id : (long?)null
+                        });
+                }
+                request.Rounds.Add(newRound);
+            }
+            try
+            {
+                var saved = await _gameService.SaveAsync(
+                            gameSave.Id,
+                            request,
+                            User.Identity?.Name ?? "Administrator",
+                            ct);
+
+                return Ok(new
+                {
+                    id = saved.Id,
+                    redirectUrl = Url.Action(
+                        "GameEditor",
+                        "QuizStudio",
+                        new
+                        {
+                            area = "AkibaQuiz.Api",
+                            id = saved.Id
+                        })
+                });
+            }
+            catch (ApiValidationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (ApiConflictException ex)
+            {
+                return Conflict(new { error = ex.Message });
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new
+                {
+                    error = "Le Game n'existe plus."
+                });
+            }
+            catch (SqliteException ex) when (ex.SqliteErrorCode == 19)
+            {
+                return Conflict(new
+                {
+                    error = "Contrainte SQLite : une référence n'est plus valide."
+                });
+            }
+        }
+
+
         #endregion
+
+        private static string ComputeGameRevision(GameModel game)
+        {
+            var snapshot = new
+            {
+                game.Id,
+                game.Name,
+                Rounds = game.Rounds
+                .OrderBy(r => r.Position)
+                .ThenBy(r => r.Id)
+                .Select(r => new
+                {
+                    r.Id,
+                    r.Position,
+                    Questions = r.Questions
+                    .OrderBy(q => q.Position)
+                    .ThenBy(q => q.Id)
+                    .Select(q => new
+                    {
+                        q.Id,
+                        q.Position,
+                        q.IdQuestionAnswer,
+                        q.IdQCMQuestion
+                    })
+                    .ToArray()
+                })
+
+            };
+            var json = System.Text.Json.JsonSerializer.Serialize(snapshot);
+            var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(json));
+
+            return Convert.ToHexString(bytes);
+        }
     }
 }

@@ -40,5 +40,15 @@ namespace AkibaQuiz.Api.Admin
         public string Name { get; set; } = "";
         public List<GameRoundEditorVm> Rounds { get; set; } = [];
         public List<GameQuestionBankItemVm> QuestionBank { get; set; } = [];
+        public string Revision { get; set; } = "";
+    }
+
+    public sealed class GameSaveFormVm
+    {
+        public long? Id { get; set; }
+        public string? Revision { get; set; }
+        [Required(ErrorMessage = "composition obligatoire.")]
+        public string Payload { get; set; } = "";
+
     }
 }
