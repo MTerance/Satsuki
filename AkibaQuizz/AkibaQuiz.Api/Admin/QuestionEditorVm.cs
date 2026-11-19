@@ -17,5 +17,7 @@ namespace AkibaQuiz.Api.Admin
         public IReadOnlyList<TagModel> AvailablesTags { get; set; } = [];
         public IReadOnlyList<QuizMediaModel> ExistingMedia { get; set; } = [];
 
+        public string? MediaAssociationsJson { get; set; }
+
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using OrchardCore.Admin;
+using OrchardCore.Media;
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
@@ -25,15 +26,20 @@ namespace AkibaQuiz.Api.Controllers
         private readonly IQuestionService _questionService;
         private readonly IQcmService _qcmService;
         private readonly IGameService _gameService;
+        private readonly IMediaCatalogService _mediaCatalogService;
+
+        private readonly IMediaFileStore _mediaFileStore;
 
         private readonly IReferenceService _referenceService;
 
-        public QuizStudioController(IQuestionService questionService, IQcmService qcmService, IGameService gameService, IReferenceService referenceService)
+        public QuizStudioController(IQuestionService questionService, IQcmService qcmService, IGameService gameService, IReferenceService referenceService, IMediaCatalogService mediaCatalogService, IMediaFileStore mediaFileStore)
         {
             _questionService = questionService;
             _qcmService = qcmService;
             _referenceService = referenceService;
             _gameService = gameService;
+            _mediaCatalogService = mediaCatalogService;
+            _mediaFileStore = mediaFileStore;
         }
 
         [HttpGet]
@@ -171,24 +177,33 @@ namespace AkibaQuiz.Api.Controllers
             if (!ModelState.IsValid)
                 return View("QuestionEditor", input);
 
-            var request = new SaveQuestionAnswerRequest
-            {
-                Question = input.Question,
-                Answer = input.Answer,
-                IdCategory = input.IdCategory,
-                TagIds = tagIds,
-
-                Medias = input.ExistingMedia
-                    .Select(m => new SaveMediaAssociationRequest
-                    {
-                        IdMedia = m.IdMedia,
-                        TypeDisplay = m.TypeDisplay
-                    })
-                    .ToList()
-            };
-
             try
             {
+                // Récupérer les associations déjà enregistrées
+                // uniquement pour la question en cours de modification.
+                var previousQuestion = input.Id.HasValue
+                    ? await _questionService.GetByIdAsync(input.Id.Value, ct)
+                    : null;
+
+                if (input.Id.HasValue && previousQuestion is null)
+                    return NotFound();
+
+                // Transformer les sélections Orchard en IdMedia.
+                var mediaAssociations = await ResolveMediaSelectionsAsync(
+                    input.MediaAssociationsJson,
+                    previousQuestion?.Medias ?? [],
+                    ct);
+
+                var request = new SaveQuestionAnswerRequest
+                {
+                    Question = input.Question,
+                    Answer = input.Answer,
+                    IdCategory = input.IdCategory,
+                    TagIds = tagIds,
+
+                    Medias = mediaAssociations
+                };
+
                 await _questionService.SaveAsync(
                     input.Id,
                     request,
@@ -276,6 +291,19 @@ namespace AkibaQuiz.Api.Controllers
             await FillQcmReferenceAsync(input, ct);
             if (!ModelState.IsValid)
                 return View("QcmEditor", input);
+
+            var previousQcm = input.Id.HasValue
+                ? await _qcmService.GetByIdAsync(input.Id.Value, ct)
+                : null;
+
+            if (input.Id.HasValue && previousQcm is null)
+                return NotFound();
+
+            var mediaAssociations = await ResolveMediaSelectionsAsync(
+                input.MediaAssociationsJson,
+                previousQcm?.Medias ?? [],
+                ct);
+
             var request = new SaveQcmRequest
             {
                 Question = input.Question,
@@ -286,11 +314,7 @@ namespace AkibaQuiz.Api.Controllers
                 }).ToList(),
                 IdCategory = input.IdCategory,
                 TagIds = input.TagIds.Distinct().ToList(),
-                Medias = input.ExistingMedias.Select(m => new SaveMediaAssociationRequest
-                {
-                    IdMedia = m.IdMedia,
-                    TypeDisplay = m.TypeDisplay
-                }).ToList()
+                Medias = mediaAssociations
             };
             try
             {
@@ -419,7 +443,7 @@ namespace AkibaQuiz.Api.Controllers
                             QuestionId = isQuestion ? questionId : (long?)null,
                             QcmQuestionId = isQcm ? questionId : (long?)null,
                             Label = label
-                        });                        
+                        });
                     }
                     model.Rounds.Add(gRound);
                 }
@@ -448,8 +472,8 @@ namespace AkibaQuiz.Api.Controllers
             if (string.IsNullOrWhiteSpace(gameSave.Payload))
             {
 
-                return BadRequest(new 
-                { 
+                return BadRequest(new
+                {
                     error = "Payload invalide.",
                     champsRecus = Request.Form.Keys.ToArray()
                 });
@@ -538,7 +562,7 @@ namespace AkibaQuiz.Api.Controllers
                     bool isQa = question.IdQuestionAnswer is > 0;
                     bool isQcm = question.IdQCMQuestion is > 0;
 
-                    if (isQa == isQcm || 
+                    if (isQa == isQcm ||
                         question.IdQuestionAnswer is <= 0 ||
                         question.IdQCMQuestion is <= 0)
                     {
@@ -621,6 +645,155 @@ namespace AkibaQuiz.Api.Controllers
 
 
         #endregion
+
+        private async Task<List<SaveMediaAssociationRequest>>
+    ResolveMediaSelectionsAsync(
+        string? json,
+        IReadOnlyList<QuizMediaModel> existingMedias,
+        CancellationToken ct)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+                throw new ApiValidationException(
+                    "La liste des médias est absente.");
+
+            List<MediaSelectionVm>? selected;
+
+            try
+            {
+                selected = JsonSerializer.Deserialize<List<MediaSelectionVm>>(
+                    json,
+                    new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            }
+            catch (JsonException)
+            {
+                throw new ApiValidationException(
+                    "Le JSON des médias est invalide.");
+            }
+
+            if (selected is null || selected.Count > 30)
+                throw new ApiValidationException(
+                    "Liste de médias invalide (maximum 30 associations).");
+
+            var allowedPhases = new HashSet<string>(
+                StringComparer.Ordinal)
+    {
+        "BeforeQuestion",
+        "DuringQuestion",
+        "BeforeAnswer",
+        "DuringAnswer",
+        "AfterAnswer"
+    };
+
+            var previousIds = existingMedias
+                .Select(m => m.IdMedia)
+                .ToHashSet();
+
+            // Première passe : vérifier toutes les entrées
+            // avant de créer une référence dans Medias.
+            var validated = new List<(MediaSelectionVm Item, string? Kind)>();
+
+            foreach (var item in selected)
+            {
+                if (item is null)
+                    throw new ApiValidationException(
+                        "Association média invalide.");
+
+                bool originalPhase = item.IdMedia is > 0 &&
+                    existingMedias.Any(m =>
+                        m.IdMedia == item.IdMedia &&
+                        m.TypeDisplay == item.TypeDisplay);
+
+                if (!allowedPhases.Contains(item.TypeDisplay) &&
+                    !originalPhase)
+                {
+                    throw new ApiValidationException(
+                        $"Phase média inconnue : {item.TypeDisplay}");
+                }
+
+                if (item.IdMedia.HasValue)
+                {
+                    if (item.IdMedia.Value <= 0 ||
+                        !previousIds.Contains(item.IdMedia.Value))
+                    {
+                        throw new ApiValidationException(
+                            "Référence média existante non autorisée.");
+                    }
+
+                    validated.Add((item, null));
+                    continue;
+                }
+
+                var path = item.Path?.Trim() ?? "";
+
+                // Accepter uniquement les chemins relatifs Orchard.
+                if (string.IsNullOrWhiteSpace(path) ||
+                    path.Length > 512 ||
+                    path.Contains('\\') ||
+                    path.Contains(':') ||
+                    path.Contains('?') ||
+                    path.Contains('#') ||
+                    path.Split('/').Any(
+                        part => part is "" or "." or ".."))
+                {
+                    throw new ApiValidationException(
+                        "Chemin média Orchard invalide.");
+                }
+
+                string kind = Path.GetExtension(path)
+                    .ToLowerInvariant() switch
+                {
+                    ".png" or ".jpg" or ".jpeg"
+                        or ".gif" or ".webp" => "Image",
+
+                    ".mp3" or ".ogg" or ".wav"
+                        or ".m4a" => "Audio",
+
+                    ".mp4" or ".webm" or ".mov" => "Video",
+
+                    _ => throw new ApiValidationException(
+                        "Format média non pris en charge.")
+                };
+
+                var file = await _mediaFileStore.GetFileInfoAsync(path);
+
+                if (file is null || file.IsDirectory)
+                    throw new ApiValidationException(
+                        $"Fichier Orchard introuvable : {path}");
+
+                item.Path = path;
+                validated.Add((item, kind));
+            }
+
+            // Deuxième passe : résoudre les identifiants métier.
+            var result = new List<SaveMediaAssociationRequest>();
+            var seen = new HashSet<(long Id, string Phase)>();
+
+            foreach (var (item, kind) in validated)
+            {
+                long idMedia = item.IdMedia ??
+                    await _mediaCatalogService.ResolveOrCreateAsync(
+                        item.Path!,
+                        kind!,
+                        ct);
+
+                if (!seen.Add((idMedia, item.TypeDisplay)))
+                {
+                    throw new ApiValidationException(
+                        "Le même média est associé deux fois " +
+                        "à la même phase.");
+                }
+
+                result.Add(new SaveMediaAssociationRequest
+                {
+                    IdMedia = idMedia,
+                    TypeDisplay = item.TypeDisplay
+                });
+            }
+
+            return result;
+        }
+
+
 
         private static string ComputeGameRevision(GameModel game)
         {

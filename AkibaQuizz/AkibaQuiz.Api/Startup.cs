@@ -24,6 +24,8 @@ public sealed class Startup : StartupBase
 
         services.AddSingleton(
             new SqliteConnectionFactory(connectionString));
+        services.AddScoped<IMediaCatalogRepository, MediaCatalogRepository>();
+        services.AddScoped<IMediaCatalogService, MediaCatalogService>();
         services.AddScoped<IQcmRepository, QcmRepository>();
         services.AddScoped<IReferenceRepository, ReferenceRepository>();
         services.AddScoped<IQuestionRepository, QuestionRepository>();

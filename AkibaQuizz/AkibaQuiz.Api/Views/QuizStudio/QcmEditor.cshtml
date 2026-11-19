@@ -6,6 +6,21 @@
     ViewData["Title"] = Model.Id.HasValue ? "Edit QCM" : "Create QCM";
 }
 
+@using System.Text.Json
+
+@{
+    var mediaJson =
+        !string.IsNullOrWhiteSpace(Model.MediaAssociationsJson)
+        ? Model.MediaAssociationsJson
+        : JsonSerializer.Serialize(
+            Model.ExistingMedias.Select(m => new
+            {
+                idMedia = m.IdMedia,
+                filename = m.Filename,
+                typeDisplay = m.TypeDisplay
+            }));
+}
+
 <div class="container-fluid">
     <h1>@ViewData["Title"]</h1>
 
@@ -141,6 +156,32 @@
                 </ul>
             }
 
+            <section class="card mb-4">
+                <div class="card-body">
+                    <h2 class="h5">Medias associes</h2>
+
+                    <p class="text-muted">Sélectionnez les médias à associer à ce jeu.</p>
+
+
+                    <input type="hidden"
+                           id="akibaMediaAssociationsJson"
+                           name="MediaAssociationsJson"
+                           value="@mediaJson" />
+
+                    <div id="akibaMediaAssociationList"
+                         class="mt-3">
+                    </div>
+
+                    <button type="button" id="akibaOpenMedia" class="btn btn-outline-primary" disabled>
+                        + Ajouter un média
+                    </button>
+                    <div id="akibaSelectedMediaPreview" class="mt-3">
+                    </div>
+                </div>
+            </section>
+
+
+
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-primary">
                     Enregistrer le QCM
@@ -154,6 +195,7 @@
             </div>
         </div>
     </form>
+    @await Html.PartialAsync("_AkibaMediaPicker")
 </div>
 
 <script>
@@ -201,6 +243,7 @@
                     updateAddButton();
                 });
             });
+
         updateAddButton();
     })();
 </script>

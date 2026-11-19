@@ -1,0 +1,579 @@
+﻿@addTagHelper *, OrchardCore.ResourceManagement
+
+@* Resource management for media picker *@
+
+<style asp-name="media" at="Head"></style>
+<script asp-name="media" at="Foot"></script>
+
+@* Configuration utilisée par notre JavaScript *@
+
+<div id="akibaMediaPickerConfig"
+     data-media-app-url="@Url.Action(
+         "MediaApplication",
+         "Admin",
+         new { area = "OrchardCore.Media" })"
+     data-path-base="@Context.Request.PathBase">
+</div>
+
+@* Fenêtre de sélection des médias *@
+
+<div class="modal fade"
+     id="akibaMediaModal"
+     tabindex="-1"
+     aria-labelledby="akibaMediaModalTitle"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-xl modal-dialog-scrollable media-modal">
+
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"
+                    id="akibaMediaModalTitle">
+                    Médiathèque AkibaQuizz
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Fermer">
+                </button>
+            </div>
+            <div class="modal-body">
+                @* L'application Orchard Media sera
+                   déplacée dynamiquement ici. *@
+            </div>
+            <div class="modal-footer">
+                <span id="akibaMediaPickerError"
+                      class="text-danger me-auto">
+                </span>
+
+                <button type="button"
+                        id="akibaConfirmMedia"
+                        class="btn btn-primary">
+                    Utiliser la sélection
+                </button>
+
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Annuler
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script at="Foot" depends-on="media">
+    (() => {
+        "use strict";
+
+        const config = document.getElementById(
+            "akibaMediaPickerConfig"
+        );
+
+        const openButton = document.getElementById(
+            "akibaOpenMedia"
+        );
+
+        const modalElement = document.getElementById(
+            "akibaMediaModal"
+        );
+
+        const confirmButton = document.getElementById(
+            "akibaConfirmMedia"
+        );
+
+        const errorElement = document.getElementById(
+            "akibaMediaPickerError"
+        );
+
+        const pathsInput = document.getElementById(
+            "akibaSelectedMediaPaths"
+        );
+
+        const previewElement = document.getElementById(
+            "akibaSelectedMediaPreview"
+        );
+
+       
+        const associationsInput = document.getElementById(
+            "akibaMediaAssociationsJson"
+        );
+
+        const associationsList = document.getElementById(
+            "akibaMediaAssociationList"
+        );
+
+        // Éléments indispensables pour le TP 5.3.6.3.
+        const required = {
+            config,
+            openButton,
+            modalElement,
+            confirmButton,
+            errorElement,
+            associationsInput,
+            associationsList
+        };
+
+        // Les anciens éléments sont facultatifs.
+        const optional = {
+            pathsInput,
+            previewElement
+        };
+
+        console.table(
+            Object.entries({ ...required, ...optional })
+                .map(([name, element]) => ({
+                    Element: name,
+                    Present: !!element,
+                    Required: name in required
+                }))
+        );
+
+        const missing = Object.entries(required)
+            .filter(([, element]) => !element)
+            .map(([name]) => name);
+
+        if (missing.length > 0) {
+            console.error(
+                "AkibaMediaPicker : éléments obligatoires absents :",
+                missing
+            );
+            return;
+        }
+
+
+        // ---------------------------------------------
+        // 1. Initialisation de la médiathèque Orchard
+        // ---------------------------------------------
+
+        if (typeof initializeMediaApplication !== "function") {
+            console.error(
+                "Le script OrchardCore.Media n'est pas chargé."
+            );
+            return;
+        }
+
+        // L'application native recherche un conteneur
+        // .ta-content pour y placer son interface.
+        if (!document.querySelector(".ta-content")) {
+            const host = document.createElement("div");
+            host.className = "ta-content";
+            host.hidden = true;
+            document.body.appendChild(host);
+        }
+
+        $(document).on("mediaApp:ready.akiba", () => {
+            openButton.disabled = false;
+            console.debug("AkibaMediaPicker : prêt.");
+        });
+
+        initializeMediaApplication(
+            false,
+            config.dataset.mediaAppUrl,
+            config.dataset.pathBase || ""
+        );
+
+        if (typeof mediaApp !== "undefined" && mediaApp) {
+            openButton.disabled = false;
+        }
+
+        const modal = bootstrap.Modal.getOrCreateInstance(
+            modalElement
+        );
+
+        // ---------------------------------------------
+        // 2. Ouvrir la médiathèque
+        // ---------------------------------------------
+
+        openButton.addEventListener("click", () => {
+            errorElement.textContent = "";
+
+            if (typeof mediaApp === "undefined" || !mediaApp) {
+                errorElement.textContent =
+                    "La médiathèque n'est pas initialisée.";
+                return;
+            }
+
+            const appElement = document.getElementById(
+                "mediaApp"
+            );
+
+            if (!appElement) {
+                errorElement.textContent =
+                    "L'interface Media Library est introuvable.";
+                return;
+            }
+
+            const body = modalElement.querySelector(
+                ".modal-body"
+            );
+
+            // Déplacer l'application Orchard
+            // dans notre fenêtre modale.
+            body.appendChild(appElement);
+
+            // Réinitialiser la sélection précédente
+            // dans la fenêtre Orchard.
+            mediaApp.selectedMedias = [];
+
+            // Actualiser la bibliothèque.
+            mediaApp.refresh();
+
+            modal.show();
+
+            setTimeout(() => {
+                appElement.classList.remove("d-none");
+            }, 100);
+        });
+
+        // ---------------------------------------------
+        // 3. Récupérer la sélection
+        // ---------------------------------------------
+
+        confirmButton.addEventListener("click", () => {
+            errorElement.textContent = "";
+
+            if (typeof mediaApp === "undefined" || !mediaApp)
+                return;
+
+            const selected = [...mediaApp.selectedMedias]
+                .filter(item =>
+                    !item.isDirectory &&
+                    typeof item.mediaPath === "string" &&
+                    item.mediaPath.trim().length > 0
+                );
+
+            if (selected.length === 0) {
+                errorElement.textContent =
+                    "Sélectionne au moins un fichier.";
+                return;
+            }
+
+            const unique = [
+                ...new Map(
+                    selected.map(item => [
+                        item.mediaPath,
+                        item
+                    ])
+                ).values()
+            ];
+
+            // Valeur qui pourra être enregistrée
+            // dans notre modèle métier au TP suivant.
+
+            // Conserver la compatibilité avec le TP 5.3.6.2.
+            if (pathsInput) {
+                pathsInput.value = JSON.stringify(
+                    unique.map(item => item.mediaPath)
+                );
+            }
+
+            // Ancien aperçu facultatif.
+            if (previewElement) {
+                renderPreviews(unique);
+            }
+
+            // Vérifier que l'éditeur d'associations est initialisé.
+            if (typeof window.akibaAddSelectedMedia !== "function") {
+                errorElement.textContent =
+                    "L'éditeur d'associations médias n'est pas initialisé.";
+
+                console.error(
+                    "AkibaMediaPicker : akibaAddSelectedMedia introuvable."
+                );
+
+                return;
+            }
+
+            // Transmettre la sélection au TP 5.3.6.3.
+            window.akibaAddSelectedMedia(unique);
+
+            // Réinitialiser la sélection Orchard.
+            mediaApp.selectedMedias = [];
+
+            modal.hide();
+
+        });
+
+        // ---------------------------------------------
+        // 4. Restituer l'interface Orchard
+        // ---------------------------------------------
+
+        modalElement.addEventListener(
+            "hidden.bs.modal",
+            () => {
+                const appElement = document.getElementById(
+                    "mediaApp"
+                );
+
+                if (appElement) {
+                    appElement.classList.add("d-none");
+                    document.body.appendChild(appElement);
+                }
+            }
+        );
+
+        // ---------------------------------------------
+        // 5. Aperçu des fichiers sélectionnés
+        // ---------------------------------------------
+
+        function renderPreviews(items) {
+            if (!previewElement)
+                return;
+            previewElement.replaceChildren();
+
+            const list = document.createElement("div");
+            list.className = "d-flex flex-column gap-3";
+
+            for (const item of items) {
+                const card = document.createElement("div");
+                card.className = "border rounded p-3";
+
+                const name = document.createElement("div");
+                name.className = "fw-semibold mb-2";
+                name.textContent = item.mediaPath;
+
+                card.appendChild(name);
+
+                // URL retournée par Orchard Core
+                const rawUrl = item.url;
+
+                if (rawUrl) {
+                    try {
+                        const url = new URL(
+                            rawUrl,
+                            document.baseURI
+                        );
+
+                        if (url.protocol !== "http:" &&
+                            url.protocol !== "https:") {
+                            throw new Error("URL non prise en charge");
+                        }
+
+                        const mime = item.mime || "";
+
+                        let player = null;
+
+                        if (mime.startsWith("image/")) {
+                            player = document.createElement("img");
+                            player.className = "img-fluid rounded";
+                            player.style.maxHeight = "200px";
+                            player.alt = item.name || "Aperçu média";
+                        }
+                        else if (mime.startsWith("audio/")) {
+                            player = document.createElement("audio");
+                            player.controls = true;
+                            player.preload = "none";
+                        }
+                        else if (mime.startsWith("video/")) {
+                            player = document.createElement("video");
+                            player.controls = true;
+                            player.preload = "none";
+                            player.style.maxWidth = "100%";
+                            player.style.maxHeight = "240px";
+                        }
+
+                        if (player) {
+                            player.src = url.href;
+                            card.appendChild(player);
+                        }
+                    }
+                    catch (error) {
+                        console.warn(
+                            "Aperçu indisponible :",
+                            item.mediaPath,
+                            error
+                        );
+                    }
+                }
+
+                list.appendChild(card);
+            }
+
+            previewElement.appendChild(list);
+        }
+    })();
+
+    (() => {
+        "use strict";
+
+        const input = document.getElementById(
+            "akibaMediaAssociationsJson"
+        );
+
+        const container = document.getElementById(
+            "akibaMediaAssociationList"
+        );
+
+        if (!input || !container) return;
+
+        const phases = [
+            "BeforeQuestion",
+            "DuringQuestion",
+            "BeforeAnswer",
+            "DuringAnswer",
+            "AfterAnswer"
+        ];
+
+        const phaseLabels = {
+            BeforeQuestion: "Avant la question",
+            DuringQuestion: "Pendant la question",
+            BeforeAnswer: "Avant la réponse",
+            DuringAnswer: "Pendant la réponse",
+            AfterAnswer: "Après la réponse"
+        };
+
+        let items;
+
+        try {
+            items = JSON.parse(input.value || "[]");
+
+            if (!Array.isArray(items))
+                throw new Error("Liste invalide");
+        }
+        catch (error) {
+            console.error("Médias :", error);
+            container.textContent =
+                "Impossible de charger les associations médias.";
+            return;
+        }
+
+        // L'ancien aperçu reste présent pour le Media Picker,
+        // mais la liste ci-dessous devient l'interface d'édition.
+        const oldPreview = document.getElementById(
+            "akibaSelectedMediaPreview"
+        );
+
+        if (oldPreview) oldPreview.hidden = true;
+
+        function sameFile(a, b) {
+            if (a.idMedia && b.idMedia)
+                return Number(a.idMedia) === Number(b.idMedia);
+
+            const aPath = a.path || a.filename;
+            const bPath = b.path || b.filename;
+
+            return !!aPath && !!bPath && aPath === bPath;
+        }
+
+        function sync() {
+            input.value = JSON.stringify(items);
+        }
+
+        function render() {
+            container.replaceChildren();
+
+            items.forEach((item, index) => {
+                const card = document.createElement("div");
+                card.className =
+                    "border rounded p-3 mb-2 d-flex " +
+                    "align-items-center gap-2 flex-wrap";
+
+                const name = document.createElement("span");
+                name.className = "flex-grow-1";
+
+                name.textContent =
+                    item.filename ||
+                    item.path ||
+                    `Média #${item.idMedia}`;
+
+                const select = document.createElement("select");
+                select.className = "form-select";
+                select.style.maxWidth = "230px";
+
+                // Conserver également une ancienne phase
+                // qui ne figure pas dans les cinq phases actuelles.
+                const options = phases.includes(item.typeDisplay)
+                    ? phases
+                    : [...phases, item.typeDisplay];
+
+                for (const phase of options) {
+                    const option = document.createElement("option");
+                    option.value = phase;
+                    option.textContent =
+                        phaseLabels[phase] || phase;
+
+                    select.appendChild(option);
+                }
+
+                select.value = item.typeDisplay;
+
+                select.addEventListener("change", () => {
+                    item.typeDisplay = select.value;
+                    sync();
+                });
+
+                const duplicate = document.createElement("button");
+                duplicate.type = "button";
+                duplicate.className =
+                    "btn btn-sm btn-outline-secondary";
+                duplicate.textContent = "Autre phase";
+
+                duplicate.addEventListener("click", () => {
+                    const available = phases.find(phase =>
+                        !items.some(existing =>
+                            sameFile(existing, item) &&
+                            existing.typeDisplay === phase
+                        )
+                    );
+
+                    if (!available) return;
+
+                    items.splice(index + 1, 0, {
+                        ...item,
+                        typeDisplay: available
+                    });
+
+                    render();
+                });
+
+                const remove = document.createElement("button");
+                remove.type = "button";
+                remove.className =
+                    "btn btn-sm btn-outline-danger";
+                remove.textContent = "Retirer";
+
+                remove.addEventListener("click", () => {
+                    items.splice(index, 1);
+                    render();
+                });
+
+                card.append(name, select, duplicate, remove);
+                container.appendChild(card);
+            });
+
+            sync();
+        }
+
+        // Appelé par le Media Picker du TP 5.3.6.2
+        window.akibaAddSelectedMedia = selected => {
+            for (const media of selected) {
+                const path = media.mediaPath;
+
+                if (typeof path !== "string" || !path.trim())
+                    continue;
+
+                // Ne pas ajouter deux fois le même fichier
+                // lors d'une sélection répétée.
+                const exists = items.some(item =>
+                    item.path === path ||
+                    item.filename === path
+                );
+
+                if (exists) continue;
+
+                items.push({
+                    path: path,
+                    filename: path,
+                    typeDisplay: "DuringQuestion"
+                });
+            }
+
+            render();
+        };
+
+        render();
+    })();
+</script>
+
