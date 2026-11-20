@@ -17,6 +17,7 @@ services:
       AKIBA_DB_PATH: /app/QuizData/Quizz.db
       AKIBA_ADMIN_API_KEY: ${AKIBA_ADMIN_API_KEY:?API key required}
       ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      AKIBA_PUBLIC_BASE_URL: ${AKIBA_PUBLIC_BASE_URL}
 
     volumes:
       - orchard-data:/app/App_Data
