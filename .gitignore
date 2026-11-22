@@ -407,3 +407,4 @@ FodyWeavers.xsd
 /AkibaQuizz/akiba-admin-key.local
 /AkibaQuizz/compose.benchmark.yaml
 /AkibaQuizz/data/Quizz.Bench.db
+/AkibaQuizz/.env
