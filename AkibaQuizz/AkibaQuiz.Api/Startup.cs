@@ -25,6 +25,7 @@ public sealed class Startup : StartupBase
 
         services.AddSingleton(
             new SqliteConnectionFactory(connectionString));
+        services.AddScoped<CielCatalogApiKeyFilter>();
         services.AddScoped<IPermissionProvider, QuizPermissionProvider>();
         services.AddScoped<IMediaCatalogRepository, MediaCatalogRepository>();
         services.AddScoped<IMediaCatalogService, MediaCatalogService>();

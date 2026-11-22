@@ -12,7 +12,7 @@ namespace AkibaQuiz.Api.Controllers
 {
     [ApiController]
     [Route("api/catalog/games/{id:long:min(1)}/media")]
-    [TypeFilter(typeof(AdminApiKeyFilter))]
+    [TypeFilter(typeof(CielCatalogApiKeyFilter))]
     [TypeFilter(typeof(ApiExceptionFilter))]
     public sealed class GameMediaManifestController : ControllerBase
     {

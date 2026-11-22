@@ -18,6 +18,8 @@ services:
       AKIBA_ADMIN_API_KEY: ${AKIBA_ADMIN_API_KEY:?API key required}
       ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
       AKIBA_PUBLIC_BASE_URL: ${AKIBA_PUBLIC_BASE_URL}
+      AKIBA_CIEL_READ_API_KEY: ${AKIBA_CIEL_READ_API_KEY:?Ciel read key required}
+
 
     volumes:
       - orchard-data:/app/App_Data

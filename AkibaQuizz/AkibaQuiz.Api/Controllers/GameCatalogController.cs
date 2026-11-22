@@ -7,7 +7,7 @@ namespace AkibaQuiz.Api.Controllers;
 
 [ApiController]
 [Route("api/catalog/games")]
-[TypeFilter(typeof(AdminApiKeyFilter))]
+[TypeFilter(typeof(CielCatalogApiKeyFilter))]
 [TypeFilter(typeof(ApiExceptionFilter))]
 public sealed class GameCatalogController(IGameService games) : ControllerBase
 {
