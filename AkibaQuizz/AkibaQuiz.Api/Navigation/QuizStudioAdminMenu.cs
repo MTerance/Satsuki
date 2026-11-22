@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Localization;
+using AkibaQuiz.Api.Security;
 using OrchardCore.Navigation;
 using System;
 using System.Collections.Generic;
@@ -27,11 +28,7 @@ namespace AkibaQuiz.Api.Navigation
                 menu
                     .Add(_localizer["Banque de contenu"], "1", item => item
                         .Action("Index", "QuizStudio", new { area = "AkibaQuiz.Api" })
-                        /*
-                        .Permission(Permissions.ManageQuizStudio)
-                        .LocalNav());
-                        */
-                        );
+                        .Permission(QuizPermissions.ViewQuizCatalog));
             });
             return ValueTask.CompletedTask;
         }

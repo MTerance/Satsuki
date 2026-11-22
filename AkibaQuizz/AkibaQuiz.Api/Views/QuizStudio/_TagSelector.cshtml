@@ -1,0 +1,276 @@
+﻿@model AkibaQuiz.Api.Admin.TagSelectorVm
+@{
+    var tags = Model.AvailableTags
+            .OrderBy(
+                t => t.Name,
+                StringComparer.CurrentCultureIgnoreCase)
+            .ToArray();
+
+    var selectedIds = Model.SelectedIds
+        .Where(id => id > 0)
+        .Distinct()
+        .ToArray();
+
+    var selectedSet = selectedIds.ToHashSet();
+
+    var labels = tags.ToDictionary(
+        t => t.Id,
+        t => t.Name);
+}
+
+<div class="card mb-4"
+     data-akiba-tag-selector
+     data-field-name="@Model.FieldName">
+
+    <div class="card-body">
+
+        <h2 class="h5">Tags associés</h2>
+
+        <p class="text-muted">
+            Recherchez les tags à associer à cette question.
+            Cliquez sur un tag sélectionné pour le retirer.
+        </p>
+
+        @* Champs soumis au contrôleur MVC *@
+        <div data-tag-inputs>
+            @foreach (var id in selectedIds)
+            {
+                <input type="hidden"
+                       name="@Model.FieldName"
+                       value="@id" />
+            }
+        </div>
+
+        @* Tags déjà sélectionnés *@
+        <div class="d-flex flex-wrap gap-2 mb-3"
+             data-selected-tags>
+
+            @foreach (var id in selectedIds)
+            {
+                var label = labels.TryGetValue(
+                    id, out var name)
+                    ? name
+                    : $"Tag #{id}";
+
+                <button type="button"
+                        class="btn btn-sm btn-outline-primary"
+                        data-remove-tag="@id"
+                        aria-label="Retirer le tag @label">
+                    @label ×
+                </button>
+            }
+
+        </div>
+
+        <label class="form-label"
+               for="@Model.SearchId">
+            Rechercher un tag
+        </label>
+
+        <input type="search"
+               id="@Model.SearchId"
+               class="form-control mb-2"
+               placeholder="Nom du tag..."
+               autocomplete="off"
+               data-tag-search />
+
+        @* Liste défilante des tags disponibles *@
+        <div class="border rounded p-2"
+             data-tag-options
+             style="max-height: 220px;
+            overflow-y: auto;">
+
+            @foreach (var tag in tags)
+            {
+                <button type="button"
+                        class="btn btn-sm
+                    btn-outline-secondary
+                    d-block w-100 text-start mb-1
+                    @(selectedSet.Contains(tag.Id)
+    ? "d-none" : "")"
+                        data-tag-option="@tag.Id"
+                        data-tag-name="@tag.Name">
+                    @tag.Name
+                </button>
+            }
+
+        </div>
+
+        <div class="form-text mt-2"
+             role="status"
+             aria-live="polite"
+             data-tag-status>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    (() => {
+        const root =
+            document.currentScript?.previousElementSibling;
+
+        if (!root ||
+            !root.matches("[data-akiba-tag-selector]")) {
+            return;
+        }
+
+        const inputsHost =
+            root.querySelector("[data-tag-inputs]");
+
+        const selectedHost =
+            root.querySelector("[data-selected-tags]");
+
+        const optionsHost =
+            root.querySelector("[data-tag-options]");
+
+        const searchInput =
+            root.querySelector("[data-tag-search]");
+
+        const status =
+            root.querySelector("[data-tag-status]");
+
+        const options = [
+            ...root.querySelectorAll(
+                "button[data-tag-option]")
+        ];
+
+        const fieldName =
+            root.dataset.fieldName || "TagIds";
+
+        const labels = new Map(
+            options.map(button => [
+                button.dataset.tagOption,
+                button.dataset.tagName
+            ])
+        );
+
+        const selected = new Set(
+            [...inputsHost.querySelectorAll(
+                'input[type="hidden"]')]
+                .map(input => input.value)
+        );
+
+        function normalize(value) {
+            return String(value || "")
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLocaleLowerCase();
+        }
+
+        function render() {
+            // Synchroniser les champs envoyés
+            // dans le formulaire MVC.
+            inputsHost.replaceChildren();
+            selectedHost.replaceChildren();
+
+            for (const id of selected) {
+                const name =
+                    labels.get(id) || `Tag #${id}`;
+
+                const input =
+                    document.createElement("input");
+
+                input.type = "hidden";
+                input.name = fieldName;
+                input.value = id;
+
+                inputsHost.appendChild(input);
+
+                const chip =
+                    document.createElement("button");
+
+                chip.type = "button";
+                chip.className =
+                    "btn btn-sm btn-outline-primary";
+
+                chip.dataset.removeTag = id;
+                chip.textContent = `${name} ×`;
+
+                chip.setAttribute(
+                    "aria-label",
+                    `Retirer le tag ${name}`
+                );
+
+                selectedHost.appendChild(chip);
+            }
+
+            // Recherche sans requête serveur.
+            const term = normalize(
+                searchInput.value.trim()
+            );
+
+            let availableCount = 0;
+
+            for (const option of options) {
+                const id = option.dataset.tagOption;
+                const name = option.dataset.tagName;
+
+                const visible =
+                    !selected.has(id) &&
+                    normalize(name).includes(term);
+
+                option.classList.toggle(
+                    "d-none",
+                    !visible
+                );
+
+                if (visible)
+                    availableCount++;
+            }
+
+            status.textContent =
+                `${selected.size} tag(s) sélectionné(s). ` +
+                `${availableCount} tag(s) disponible(s).`;
+        }
+
+        // Ajouter un tag.
+        optionsHost.addEventListener(
+            "click",
+            event => {
+                const button = event.target.closest(
+                    "button[data-tag-option]"
+                );
+
+                if (!button ||
+                    !optionsHost.contains(button)) {
+                    return;
+                }
+
+                selected.add(
+                    button.dataset.tagOption
+                );
+
+                searchInput.value = "";
+                render();
+                searchInput.focus();
+            }
+        );
+
+        // Retirer un tag.
+        selectedHost.addEventListener(
+            "click",
+            event => {
+                const button = event.target.closest(
+                    "button[data-remove-tag]"
+                );
+
+                if (!button)
+                    return;
+
+                selected.delete(
+                    button.dataset.removeTag
+                );
+
+                render();
+            }
+        );
+
+        searchInput.addEventListener(
+            "input",
+            render
+        );
+
+        render();
+    })();
+</script>

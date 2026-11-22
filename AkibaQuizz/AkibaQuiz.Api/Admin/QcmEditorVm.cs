@@ -8,7 +8,7 @@ namespace AkibaQuiz.Api.Admin
 {
     public sealed class  QcmAnswerEditorVm
     {
-        public string Answer { get; set; }
+        public string? Answer { get; set; }
         public bool IsTrue { get; set; }
     }
 

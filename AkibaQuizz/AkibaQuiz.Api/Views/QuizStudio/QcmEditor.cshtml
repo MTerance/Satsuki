@@ -1,14 +1,10 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@using AkibaQuiz.Api.Admin
 @model AkibaQuiz.Api.Admin.QcmEditorVm
-@{
-    ViewData["Title"] = Model.Id.HasValue ? "Edit QCM" : "Create QCM";
-}
-
 @using System.Text.Json
 
 @{
+    ViewData["Title"] = Model.Id.HasValue ? "Edit QCM" : "Create QCM";
+
     var mediaJson =
         !string.IsNullOrWhiteSpace(Model.MediaAssociationsJson)
         ? Model.MediaAssociationsJson
@@ -26,11 +22,12 @@
 
     <form method="post" action="@Url.Action("SaveQcm", "QuizStudio", new { area = "AkibaQuiz.Api" })">
         @Html.AntiForgeryToken()
+        @Html.ValidationSummary(false, "", new { @class = "text-danger mb-3" })
         <input type="hidden"
                name="Id"
                value="@Model.Id" />
 
-        <div class="text-danger mb-3">
+        <div class="mb-3">
             <label for="question" class="form-label">Enoncé du QCM</label>
             <textarea id="question"
                       name="Question"
@@ -123,24 +120,15 @@
                 + Ajouter une proposition
             </button>
 
-            <fieldset class="mb-4">
-                <legend class="h5">Tags</legend>
-
-                @foreach (var tag in Model.AvailablesTags)
-                {
-                    <label class="form-check form-check-inline">
-                        <input type="checkbox"
-                               class="form-check-input"
-                               name="TagIds"
-                               value="@tag.Id"
-                               checked="@(Model.TagIds.Contains(tag.Id))" />
-
-                        <span class="form-check-label">
-                            @tag.Name
-                        </span>
-                    </label>
-                }
-            </fieldset>
+            @await Html.PartialAsync(
+                 "_TagSelector",
+                 new TagSelectorVm
+                 {
+                     AvailableTags = Model.AvailablesTags,
+                     SelectedIds = Model.TagIds,
+                     FieldName = "TagsIds",
+                     SearchId = "qcm-tag-search"
+                 })
 
             @if (Model.ExistingMedias.Count > 0)
             {

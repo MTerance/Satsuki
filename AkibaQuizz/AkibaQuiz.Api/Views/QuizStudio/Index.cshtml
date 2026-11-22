@@ -1,116 +1,505 @@
-﻿@model AkibaQuiz.Api.Admin.QuizStudioIndexVm
+﻿@using Microsoft.AspNetCore.Authorization
+@inject Microsoft.AspNetCore.Authorization.IAuthorizationService AuthorizationService
+@using AkibaQuiz.Api.Security
+@model AkibaQuiz.Api.Admin.QuizStudioIndexVm
 @{
     ViewData["Title"] = "Quiz Studio";
+
+    var filters = Model.Filters;
+    var catalog = Model.Catalog;
+
+    var currentPage = catalog.Page;
+    var totalPages = catalog.TotalPages;
+
+    long firstResult = catalog.Items.Count == 0
+        ? 0
+        : ((long)currentPage - 1) * catalog.PageSize + 1;
+
+    long lastResult = catalog.Items.Count == 0
+        ? 0
+        : Math.Min(
+            catalog.TotalCount,
+            (long)currentPage * catalog.PageSize);
+
+    // Construire un lien en conservant tous les filtres.
+    Func<int, string> pageUrl = page =>
+        Url.Action(
+            "Index",
+            "QuizStudio",
+            new
+            {
+                area = "AkibaQuiz.Api",
+                Text = filters.Text,
+                Kind = filters.Kind,
+                CategoryId = filters.CategoryId,
+                TagId = filters.TagId,
+                Page = page,
+                PageSize = filters.PageSize
+            }) ?? "#";
+
+    var canEditQuestions =
+        (await AuthorizationService.AuthorizeAsync(
+        User,
+        QuizPermissions.ManageQuizQuestions));
+
+    var canEditGames =
+        (await AuthorizationService.AuthorizeAsync(
+            User,
+            QuizPermissions.ManageQuizGames));
+
+    var canManageReferences =
+        (await AuthorizationService.AuthorizeAsync(
+            User,
+            QuizPermissions.ManageQuizReferences));
 }
+
 <div class="container-fluid">
+
     <h1>Quiz Studio</h1>
-    <p>Gestions des Questions, QCM, Games</p>
 
-    <h2> Questions - reponses : (@Model.Questions.Count) </h2>
-    <a class="btn btn-primary mb-3"
-       href="@Url.Action("QuestionEditor", "QuizStudio",
-       new { area = "AkibaQuiz.Api" })">
-        Nouvelle QuestionAnswer
-    </a>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Question</th>
-                <th>Category</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var question in Model.Questions)
-            {
-                <tr>
-                    <td>@question.Id</td>
-                    <td>@question.Question</td>
-                    <td>@question.Category</td>
-                    <td>
-                        <a class="btn btn-sm btn-outline-primary"
-                           href="@Url.Action("QuestionEditor", "QuizStudio",
-                               new
-                               {
-                                   area = "AkibaQuiz.Api",
-                                   id = question.Id
-                               })">
-                            Modifier
-                        </a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <p class="text-muted">
+        Gestion des questions, QCM et Games.
+    </p>
 
-    <h2> QCM : (@Model.Qcms.Count) </h2>
-    <a class="btn btn-primary mb-3"
-       href="@Url.Action("QcmEditor", "QuizStudio",
-       new { area = "AkibaQuiz.Api" })">
-        Nouveau QCM
-    </a>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Question</th>
-                <th>Propositions</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var qcm in Model.Qcms)
-            {
-                <tr>
-                    <td>@qcm.Id</td>
-                    <td>@qcm.Question</td>
-                    <td>@qcm.AnswerCount</td>
-                    <td>
-                        <a class="btn btn-sm btn-outline-primary"
-                           href="@Url.Action("QcmEditor", "QuizStudio",
-                               new { area = "AkibaQuiz.Api", id = qcm.Id })">
-                            Modifier
-                        </a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
 
-    <h2> Games : (@Model.Games.Count) </h2>
-    <a class="btn btn-primary mb-3"
-       href="@Url.Action("GameEditor", "QuizStudio",
-       new { area = "AkibaQuiz.Api" })">
-        Nouvelle Session
-    </a>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Nom</th>
-                <th>Manches</th>
-                <th>Questions</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var game in Model.Games)
-            {
-                <tr>
-                    <td>@game.Id</td>
-                    <td>@game.Name</td>
-                    <td>@game.RoundCount</td>
-                    <td>@game.QuestionCount</td>
-                    <td>
-                        <a class="btn btn-sm btn-outline-primary"
-                           href="@Url.Action("GameEditor", "QuizStudio",
-                           new { area = "AkibaQuiz.Api", id = game.Id })">
-                            Modifier
-                        </a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="d-flex flex-wrap gap-2 mb-4">
+
+        @if (canEditQuestions)
+        {
+        <a class="btn btn-primary"
+           href="@Url.Action(
+               "QuestionEditor",
+               "QuizStudio",
+               new { area = "AkibaQuiz.Api" })">
+            Nouvelle QuestionAnswer
+        </a>
+    
+        <a class="btn btn-primary"
+           href="@Url.Action(
+               "QcmEditor",
+               "QuizStudio",
+               new { area = "AkibaQuiz.Api" })">
+            Nouveau QCM
+        </a>
+    }
+
+    @if (canManageReferences)
+    {
+        <a class="btn btn-outline-secondary"
+           href="@Url.Action(
+               "Index",
+               "QuizReferences",
+               new { area = "AkibaQuiz.Api" })">
+            Catégories et tags
+        </a>
+    }
+    </div>
+
+    @* =========================================
+       RECHERCHE ET FILTRAGE
+       ========================================= *@
+
+    <section class="card mb-4">
+        <div class="card-body">
+
+            <h2 class="h5 mb-3">
+                Rechercher des questions
+            </h2>
+
+            <form method="get"
+                  action="@Url.Action(
+                      "Index",
+                      "QuizStudio",
+                      new { area = "AkibaQuiz.Api" })">
+
+                <input type="hidden"
+                       name="Page"
+                       value="1" />
+
+                <div class="row g-3">
+
+                    <div class="col-12 col-lg-4">
+
+                        <label for="catalogText"
+                               class="form-label">
+                            Recherche
+                        </label>
+
+                        <input id="catalogText"
+                               type="search"
+                               name="Text"
+                               class="form-control"
+                               value="@filters.Text"
+                               maxlength="160"
+                               placeholder="Texte de la question..." />
+
+                    </div>
+
+                    <div class="col-6 col-lg-2">
+
+                        <label for="catalogKind"
+                               class="form-label">
+                            Type
+                        </label>
+
+                        <select id="catalogKind"
+                                name="Kind"
+                                class="form-select">
+
+                            <option value="All"
+                                    selected="@(filters.Kind == "All")">
+                                Tous
+                            </option>
+
+                            <option value="QuestionAnswer"
+                                    selected="@(filters.Kind == "QuestionAnswer")">
+                                QuestionAnswer
+                            </option>
+
+                            <option value="QCM"
+                                    selected="@(filters.Kind == "QCM")">
+                                QCM
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-6 col-lg-2">
+
+                        <label for="catalogCategory"
+                               class="form-label">
+                            Catégorie
+                        </label>
+
+                        <select id="catalogCategory"
+                                name="CategoryId"
+                                class="form-select">
+
+                            <option value="">
+                                Toutes
+                            </option>
+
+                            @foreach (var category in Model.Categories)
+                            {
+                                <option value="@category.Id"
+                                        selected="@(filters.CategoryId == category.Id)">
+                                    @category.Name
+                                </option>
+                            }
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-6 col-lg-2">
+
+                        <label for="catalogTag"
+                               class="form-label">
+                            Tag
+                        </label>
+
+                        <select id="catalogTag"
+                                name="TagId"
+                                class="form-select">
+
+                            <option value="">
+                                Tous
+                            </option>
+
+                            @foreach (var tag in Model.Tags)
+                            {
+                                <option value="@tag.Id"
+                                        selected="@(filters.TagId == tag.Id)">
+                                    @tag.Name
+                                </option>
+                            }
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-6 col-lg-2">
+
+                        <label for="catalogPageSize"
+                               class="form-label">
+                            Par page
+                        </label>
+
+                        <select id="catalogPageSize"
+                                name="PageSize"
+                                class="form-select">
+
+                            @foreach (int size in new[] { 10, 25, 50, 100 })
+                            {
+                                <option value="@size"
+                                        selected="@(filters.PageSize == size)">
+                                    @size
+                                </option>
+                            }
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 mt-3">
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Rechercher
+                    </button>
+
+                    <a class="btn btn-outline-secondary"
+                       href="@Url.Action(
+                           "Index",
+                           "QuizStudio",
+                           new { area = "AkibaQuiz.Api" })">
+                        Réinitialiser
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+    </section>
+
+    @* =========================================
+       CATALOGUE PAGINÉ
+       ========================================= *@
+
+    <section class="card mb-4">
+
+        <div class="card-body">
+
+            <div class="d-flex flex-wrap
+                justify-content-between
+                align-items-center mb-3">
+
+                <h2 class="h5 mb-0">
+                    Banque de questions
+                </h2>
+
+                <span class="text-muted">
+                    @catalog.TotalCount résultat(s)
+                </span>
+
+            </div>
+
+            <div class="table-responsive">
+
+                <table class="table table-striped
+                    table-hover align-middle">
+
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Type</th>
+                            <th>Question</th>
+                            <th>Catégorie</th>
+                            <th>Propositions</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var item in catalog.Items)
+                        {
+                            var editorAction =
+                                item.Type == "QCM"
+                                    ? "QcmEditor"
+                                    : "QuestionEditor";
+
+                            <tr>
+
+                                <td>@item.Id</td>
+
+                                <td>
+                                    <span class="badge bg-secondary">
+                                        @item.Type
+                                    </span>
+                                </td>
+
+                                <td style="min-width: 250px;">
+                                    @item.Question
+                                </td>
+
+                                <td>
+                                    @item.CategoryName
+                                </td>
+
+                                <td>
+                                    @(item.Type == "QCM"
+                                        ? item.AnswerCount.ToString()
+                                        : "—")
+                                </td>
+
+                                <td>
+                                    <a class="btn btn-sm
+                                        btn-outline-primary"
+                                       href="@Url.Action(
+                                           editorAction,
+                                           "QuizStudio",
+                                           new
+                                           {
+                                               area = "AkibaQuiz.Api",
+                                               id = item.Id
+                                           })">
+                                        Modifier
+                                    </a>
+                                </td>
+
+                            </tr>
+                        }
+
+                        @if (catalog.Items.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="6"
+                                    class="text-center text-muted py-4">
+                                    Aucune question ne correspond
+                                    aux critères de recherche.
+                                </td>
+                            </tr>
+                        }
+
+                    </tbody>
+                </table>
+
+            </div>
+
+            @* =====================================
+               PAGINATION
+               ===================================== *@
+
+            <div class="d-flex flex-wrap
+                justify-content-between
+                align-items-center gap-3 mt-3">
+
+                <span class="text-muted">
+
+                    Affichage :
+                    @firstResult - @lastResult
+                    sur @catalog.TotalCount
+
+                </span>
+
+                <nav aria-label="Pagination du catalogue">
+
+                    <div class="d-flex align-items-center gap-2">
+
+                        @if (currentPage > 1)
+                        {
+                            <a class="btn btn-sm btn-outline-secondary"
+                               href="@pageUrl(1)">
+                                Première
+                            </a>
+
+                            <a class="btn btn-sm btn-outline-primary"
+                               href="@pageUrl(currentPage - 1)">
+                                Précédente
+                            </a>
+                        }
+
+                        <span class="mx-2">
+                            Page @currentPage /
+                            @(Math.Max(1, totalPages))
+                        </span>
+
+                        @if (currentPage < totalPages)
+                        {
+                            <a class="btn btn-sm btn-outline-primary"
+                               href="@pageUrl(currentPage + 1)">
+                                Suivante
+                            </a>
+
+                            <a class="btn btn-sm btn-outline-secondary"
+                               href="@pageUrl(checked((int)totalPages))">
+                                Dernière
+                            </a>
+                        }
+
+                    </div>
+
+                </nav>
+
+            </div>
+
+        </div>
+    </section>
+
+    @* =========================================
+       GAMES
+       ========================================= *@
+
+    <section class="card mb-4">
+
+        <div class="card-body">
+
+            <div class="d-flex justify-content-between
+                align-items-center mb-3">
+
+                <h2 class="h5 mb-0">
+                    Games (@Model.Games.Count)
+                </h2>
+
+                <a class="btn btn-primary"
+                   href="@Url.Action(
+                       "GameEditor",
+                       "QuizStudio",
+                       new { area = "AkibaQuiz.Api" })">
+                    Nouveau Game
+                </a>
+
+            </div>
+
+            <div class="table-responsive">
+
+                <table class="table table-striped">
+
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nom</th>
+                            <th>Manches</th>
+                            <th>Questions</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var game in Model.Games)
+                        {
+                            <tr>
+                                <td>@game.Id</td>
+                                <td>@game.Name</td>
+                                <td>@game.RoundCount</td>
+                                <td>@game.QuestionCount</td>
+                                <td>
+                                    <a class="btn btn-sm
+                                        btn-outline-primary"
+                                       href="@Url.Action(
+                                           "GameEditor",
+                                           "QuizStudio",
+                                           new
+                                           {
+                                               area = "AkibaQuiz.Api",
+                                               id = game.Id
+                                           })">
+                                        Modifier
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+            </div>
+
+        </div>
+    </section>
 </div>

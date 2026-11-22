@@ -1,15 +1,9 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@using AkibaQuiz.Api.Admin
+﻿@using AkibaQuiz.Api.Admin
+@using System.Text.Json
 @model AkibaQuiz.Api.Admin.QuestionEditorVm
 @{
     ViewData["Title"] = Model.Id.HasValue ? "Edit Question" : "Create Question";
-}
 
-@using System.Text.Json
-
-@{
     var mediaJson =
         !string.IsNullOrWhiteSpace(Model.MediaAssociationsJson)
         ? Model.MediaAssociationsJson
@@ -91,24 +85,15 @@
             @Html.ValidationMessageFor(m => m.IdCategory)
         </div>
 
-        <fieldset class="mb-3">
-            <legend class="h5">Tags</legend>
-
-            @foreach (var tag in Model.AvailablesTags)
+        @await Html.PartialAsync(
+            "_TagSelector",
+            new TagSelectorVm
             {
-                <label class="form-check form-check-inline">
-                    <input type="checkbox"
-                           class="form-check-input"
-                           name="TagIds"
-                           value="@tag.Id"
-                           checked="@(Model.TagsId.Contains(tag.Id))" />
-
-                    <span class="form-check-label">
-                        @tag.Name
-                    </span>
-                </label>
-            }
-        </fieldset>
+                AvailableTags = Model.AvailablesTags,
+                SelectedIds = Model.TagsIds,
+                FieldName = "TagsIds",
+                SearchId = "question-tag-search"
+            })
 
         @if (Model.ExistingMedia.Count > 0)
         {

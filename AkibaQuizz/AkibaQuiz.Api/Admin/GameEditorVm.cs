@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using AkibaQuiz.Contracts.Models;
 using System.Text;
 
 namespace AkibaQuiz.Api.Admin
@@ -39,7 +40,9 @@ namespace AkibaQuiz.Api.Admin
         [MinLength(1, ErrorMessage = "Le nom est obligatoire.")]
         public string Name { get; set; } = "";
         public List<GameRoundEditorVm> Rounds { get; set; } = [];
+        public IReadOnlyList<CategoryModel> Categories { get; set; } = [];
         public List<GameQuestionBankItemVm> QuestionBank { get; set; } = [];
+        public IReadOnlyList<TagModel> Tags { get; set; } = [];
         public string Revision { get; set; } = "";
     }
 

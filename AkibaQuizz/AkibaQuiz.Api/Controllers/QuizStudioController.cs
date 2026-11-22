@@ -3,6 +3,7 @@ using AkibaQuiz.Application.Interfaces;
 using AkibaQuiz.Contracts;
 using AkibaQuiz.Contracts.Models;
 using AkibaQuiz.Contracts.Requests;
+using AkibaQuiz.Api.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
@@ -20,9 +21,11 @@ using static Azure.Core.HttpHeader;
 
 namespace AkibaQuiz.Api.Controllers
 {
-    [Authorize(Roles = "Administrator")]
+    [Authorize]
     public sealed class QuizStudioController : Controller
     {
+        private readonly IQuestionCatalogService _questionCatalogService;
+        private readonly IAuthorizationService _authorizationService;
         private readonly IQuestionService _questionService;
         private readonly IQcmService _qcmService;
         private readonly IGameService _gameService;
@@ -32,7 +35,7 @@ namespace AkibaQuiz.Api.Controllers
 
         private readonly IReferenceService _referenceService;
 
-        public QuizStudioController(IQuestionService questionService, IQcmService qcmService, IGameService gameService, IReferenceService referenceService, IMediaCatalogService mediaCatalogService, IMediaFileStore mediaFileStore)
+        public QuizStudioController(IQuestionService questionService, IQcmService qcmService, IGameService gameService, IReferenceService referenceService, IMediaCatalogService mediaCatalogService, IMediaFileStore mediaFileStore, IQuestionCatalogService questionCatalogService, IAuthorizationService authorizationService)
         {
             _questionService = questionService;
             _qcmService = qcmService;
@@ -40,38 +43,82 @@ namespace AkibaQuiz.Api.Controllers
             _gameService = gameService;
             _mediaCatalogService = mediaCatalogService;
             _mediaFileStore = mediaFileStore;
+            _authorizationService = authorizationService;
+            _questionCatalogService = questionCatalogService;
         }
 
         [HttpGet]
         [Admin("AkibaQuiz/Studio/Index")]
-        public async Task<IActionResult> Index(CancellationToken ct)
+        public async Task<IActionResult> Index(
+            [FromQuery] QuestionCatalogQuery query,
+            CancellationToken ct)
         {
-            var questions = await _questionService.GetAllAsync(ct);
-            var qcms = await _qcmService.GetAllAsync(ct);
-            var games = await _gameService.GetAllAsync(ct);
+            if (!await _authorizationService.AuthorizeAsync(
+                User, QuizPermissions.ViewQuizCatalog))
+            {
+                return Forbid();
+            }
 
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            QuestionCatalogPage catalog;
+
+            try
+            {
+                // 1. Recherche paginée en base SQLite.
+                catalog = await _questionCatalogService
+                    .SearchAsync(query, ct);
+
+                // 2. Si une suppression a rendu la page
+                // demandée inexistante, revenir à la dernière
+                // page disponible.
+                if (catalog.TotalPages > 0 &&
+                    query.Page > catalog.TotalPages)
+                {
+                    query.Page = checked((int)catalog.TotalPages);
+
+                    catalog = await _questionCatalogService
+                        .SearchAsync(query, ct);
+                }
+            }
+            catch (ApiValidationException ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                return BadRequest(ModelState);
+            }
+
+            // 3. Références pour les filtres.
+            var categories = await _referenceService
+                .GetCategoriesAsync(ct);
+
+            var tags = await _referenceService
+                .GetTagsAsync(ct);
+
+            // 4. Résumés des Games :
+            // ne pas utiliser GetAllAsync().
+            var gameSummaries = await _gameService
+                .GetSummariesAsync(ct);
+
+            // 5. Construire le modèle d'affichage.
             var model = new QuizStudioIndexVm
             {
-                Questions = questions.Select(q => new QuestionRowVm
-                {
-                    Id = q.Id,
-                    Question = q.Question,
-                    Category = q.CategoryName ?? ""
-                }).ToList(),
-                Qcms = qcms.Select(q => new QcmRowVm
-                {
-                    Id = q.Id,
-                    Question = q.Question,
-                    AnswerCount = q.Answers.Count
-                }).ToList(),
-                Games = games.Select(g => new GameRowVm
+                Filters = query,
+                Catalog = catalog,
+
+                Categories = categories,
+                Tags = tags,
+
+                Games = gameSummaries.Select(g => new GameRowVm
                 {
                     Id = g.Id,
                     Name = g.Name,
-                    RoundCount = g.Rounds.Count,
-                    QuestionCount = g.Rounds.Sum(r => r.Questions.Count)
+                    RoundCount = g.RoundCount,
+                    QuestionCount = g.QuestionCount
                 }).ToList()
             };
+
             return View(model);
         }
 
@@ -81,6 +128,12 @@ namespace AkibaQuiz.Api.Controllers
         [Admin("AkibaQuiz/Studio/QuestionEditor")]
         public async Task<IActionResult> QuestionEditor(long? id, CancellationToken ct)
         {
+            if (!await _authorizationService.AuthorizeAsync(
+                User,
+                QuizPermissions.ManageQuizQuestions))
+            {
+                return Forbid();
+            }
             var categories = await _referenceService.GetCategoriesAsync(ct);
             var tags = await _referenceService.GetTagsAsync(ct);
             if (id.HasValue)
@@ -96,7 +149,7 @@ namespace AkibaQuiz.Api.Controllers
                     Question = question.Question,
                     Answer = question.Answer,
                     IdCategory = question.IdCategory,
-                    TagsId = question.Tags.Select(t => t.Id).ToList(),
+                    TagsIds = question.Tags.Select(t => t.Id).ToList(),
                     Categories = categories,
                     AvailablesTags = tags,
                     ExistingMedia = question.Medias
@@ -119,6 +172,13 @@ namespace AkibaQuiz.Api.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveQuestion(QuestionEditorVm input, CancellationToken ct)
         {
+            if (!await _authorizationService.AuthorizeAsync(
+                User,
+                QuizPermissions.ManageQuizQuestions))
+            {
+                return Forbid();
+            }
+
             input.Question = input.Question?.Trim() ?? "";
             input.Answer = input.Answer?.Trim() ?? "";
 
@@ -153,7 +213,7 @@ namespace AkibaQuiz.Api.Controllers
                     "Catégorie inexistante.");
             }
 
-            var tagIds = (input.TagsId ?? [])
+            var tagIds = (input.TagsIds ?? [])
                 .Distinct()
                 .ToList();
 
@@ -161,7 +221,7 @@ namespace AkibaQuiz.Api.Controllers
                 !input.AvailablesTags.Any(t => t.Id == id)))
             {
                 ModelState.AddModelError(
-                    nameof(input.TagsId),
+                    nameof(input.TagsIds),
                     "Un ou plusieurs tags sont invalides.");
             }
 
@@ -233,6 +293,12 @@ namespace AkibaQuiz.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> QcmEditor(long? id, CancellationToken ct)
         {
+            if (!await _authorizationService.AuthorizeAsync(
+                User,
+                QuizPermissions.ManageQuizQuestions))
+            {
+                return Forbid();
+            }
             var tags = await _referenceService.GetTagsAsync(ct);
             var categories = await _referenceService.GetCategoriesAsync(ct);
             var model = new QcmEditorVm();
@@ -268,6 +334,12 @@ namespace AkibaQuiz.Api.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveQcm(QcmEditorVm input, CancellationToken ct)
         {
+            if (!await _authorizationService.AuthorizeAsync(
+                User,
+                QuizPermissions.ManageQuizQuestions))
+            {
+                return Forbid();
+            }
             input.Question = input.Question?.Trim() ?? "";
             if (string.IsNullOrWhiteSpace(input.Question) ||
                 input.Question.Length < 3)
@@ -288,6 +360,39 @@ namespace AkibaQuiz.Api.Controllers
                     nameof(input.Answers),
                     "Au moins une réponse correcte est requise.");
             }
+            var validAnswers = input.Answers
+                .Where(a => !string.IsNullOrWhiteSpace(a.Answer))
+                .Select(a => new SaveQcmPropositionRequest
+                {
+                    Answer = a.Answer!.Trim(),
+                    IsTrue = a.IsTrue
+                }).ToList();
+
+            if (input.Answers.Any(a =>
+                a.IsTrue && string.IsNullOrWhiteSpace(a.Answer)))
+            {
+                ModelState.AddModelError(
+                    nameof(input.Answers),
+                    "Une réponse vide ne peut pas être correcte.");
+            }
+
+            if (validAnswers.Count is < 2 or > 8)
+            {
+                ModelState.AddModelError(
+                    nameof(input.Answers),
+                    "Le QCM doit contenir entre 2 et 8 réponses.");
+            }
+
+            if (!validAnswers.Any(a => a.IsTrue))
+            {
+                ModelState.AddModelError(
+                    nameof(input.Answers),
+                    "Au moins une réponse doit être correcte.");
+            }
+
+
+
+
             await FillQcmReferenceAsync(input, ct);
             if (!ModelState.IsValid)
                 return View("QcmEditor", input);
@@ -307,13 +412,9 @@ namespace AkibaQuiz.Api.Controllers
             var request = new SaveQcmRequest
             {
                 Question = input.Question,
-                Answers = input.Answers.Select(a => new SaveQcmPropositionRequest
-                {
-                    Answer = a.Answer,
-                    IsTrue = a.IsTrue
-                }).ToList(),
+                Answers = validAnswers,
                 IdCategory = input.IdCategory,
-                TagIds = input.TagIds.Distinct().ToList(),
+                TagIds = (input.TagIds ?? []).Distinct().ToList(),
                 Medias = mediaAssociations
             };
             try
@@ -355,45 +456,67 @@ namespace AkibaQuiz.Api.Controllers
 
         [Admin("AkibaQuiz/Studio/GameEditor")]
         [HttpGet]
-        public async Task<IActionResult> GameEditor(long? id, CancellationToken ct)
+        public async Task<IActionResult> GameEditor(
+            long? id,
+            CancellationToken ct)
         {
-            var model = new GameEditorVm();
-
-            var questions = await _questionService.GetAllAsync(ct);
-            var qcms = await _qcmService.GetAllAsync(ct);
-
-            model.QuestionBank = questions.Select(q => new GameQuestionBankItemVm
+            if (!await _authorizationService.AuthorizeAsync(
+                User,
+                QuizPermissions.ManageQuizGames))
             {
-                Id = q.Id,
-                TypeQuestion = "QuestionAnswer",
-                Label = q.Question
-            }).Concat(qcms.Select(q => new GameQuestionBankItemVm
-            {
-                Id = q.Id,
-                TypeQuestion = "QCM",
-                Label = q.Question
-            }))
-            .OrderBy(q => q.TypeQuestion)
-            .ThenBy(q => q.Label)
-            .ToList();
+                return Forbid();
+            }
 
-            var questionById = questions.ToDictionary(q => q.Id);
-            var qcmById = qcms.ToDictionary(q => q.Id);
+            var model = new GameEditorVm
+            {
+                Categories = await _referenceService
+                    .GetCategoriesAsync(ct),
+
+                Tags = await _referenceService
+                    .GetTagsAsync(ct)
+            };
 
             if (id.HasValue)
             {
-                var full = await _gameService.GetFullAsync(id.Value, ct);
+                if (id.Value <= 0)
+                    return BadRequest("Identifiant de Game invalide.");
 
-                if (full is null)
+                var game = await _gameService.GetByIdAsync(
+                    id.Value, ct);
+
+                if (game is null)
                     return NotFound();
 
-                model.Id = full.Game.Id;
-                model.Name = full.Game.Name;
-                model.Revision = ComputeGameRevision(await _gameService.GetByIdAsync(id.Value, ct));
+                model.Id = game.Id;
+                model.Name = game.Name;
+                model.Revision = ComputeGameRevision(game);
 
-                foreach (var round in full.Rounds.OrderBy(r => r.Position).ThenBy(r => r.Id))
+                var entries = game.Rounds
+                    .SelectMany(r => r.Questions)
+                    .ToList();
+
+                // Ne garder que les identifiants des
+                // questions utilisées par CE Game.
+                var qaIds = entries
+                    .Where(q => q.IdQuestionAnswer is > 0)
+                    .Select(q => q.IdQuestionAnswer!.Value);
+
+                var qcmIds = entries
+                    .Where(q => q.IdQCMQuestion is > 0)
+                    .Select(q => q.IdQCMQuestion!.Value);
+
+                var labels = await _questionCatalogService
+                    .GetLabelsByIdsAsync(qaIds, qcmIds, ct);
+
+                var labelLookup = labels.ToDictionary(
+                    x => (x.Type, x.Id),
+                    x => x.Question);
+
+                foreach (var round in game.Rounds
+                    .OrderBy(r => r.Position)
+                    .ThenBy(r => r.Id))
                 {
-                    var gRound = new GameRoundEditorVm
+                    var roundVm = new GameRoundEditorVm
                     {
                         Id = round.Id,
                         Position = model.Rounds.Count + 1
@@ -403,51 +526,64 @@ namespace AkibaQuiz.Api.Controllers
                         .OrderBy(q => q.Position)
                         .ThenBy(q => q.Id))
                     {
-                        bool isQuestion = entry.IdQuestionAnswer is > 0;
-                        bool isQcm = entry.IdQCMQuestion is > 0;
-                        if ((!isQuestion && !isQcm) || (isQuestion && isQcm))
-                        {
-                            return Conflict($"Type de question inconnu : {entry.Id}");
-                        }
-                        string type;
-                        long questionId;
-                        string label;
+                        bool isQa =
+                            entry.IdQuestionAnswer is > 0;
 
-                        if (isQuestion)
+                        bool isQcm =
+                            entry.IdQCMQuestion is > 0;
+
+                        if (isQa == isQcm ||
+                            entry.IdListQuestionsAnswers.HasValue)
                         {
-                            questionId = entry.IdQuestionAnswer!.Value;
-                            if (!questionById.TryGetValue(questionId, out var q))
-                            {
-                                return Conflict(
-                                    $"QuestionAnswer #{questionId} introuvable.");
-                            }
-                            type = "QuestionAnswer";
-                            label = q.Question;
+                            return Conflict(
+                                $"Référence invalide : {entry.Id}");
                         }
-                        else
+
+                        string type = isQa
+                            ? "QuestionAnswer"
+                            : "QCM";
+
+                        long questionId = isQa
+                            ? entry.IdQuestionAnswer!.Value
+                            : entry.IdQCMQuestion!.Value;
+
+                        if (!labelLookup.TryGetValue(
+                            (type, questionId),
+                            out var label))
                         {
-                            questionId = entry.IdQCMQuestion!.Value;
-                            if (!qcmById.TryGetValue(questionId, out var q))
-                            {
-                                return Conflict(
-                                    $"QCM #{questionId} introuvable.");
-                            }
-                            type = "QCM";
-                            label = q.Question;
+                            return Conflict(
+                                $"Question introuvable : " +
+                                $"{type} #{questionId}");
                         }
-                        gRound.Questions.Add(new GameQuestionEditorVm
-                        {
-                            Id = entry.Id,
-                            Position = entry.Position,
-                            TypeQuestion = type,
-                            QuestionId = isQuestion ? questionId : (long?)null,
-                            QcmQuestionId = isQcm ? questionId : (long?)null,
-                            Label = label
-                        });
+
+                        roundVm.Questions.Add(
+                            new GameQuestionEditorVm
+                            {
+                                Id = entry.Id,
+                                Position = entry.Position,
+                                TypeQuestion = type,
+
+                                QuestionId = isQa
+                                    ? questionId
+                                    : null,
+
+                                QcmQuestionId = isQcm
+                                    ? questionId
+                                    : null,
+
+                                Label = label
+                            });
                     }
-                    model.Rounds.Add(gRound);
+
+                    roundVm.QuestionCount =
+                        roundVm.Questions.Count;
+
+                    model.Rounds.Add(roundVm);
                 }
             }
+
+            // Le modèle reste compatible avec l'éditeur
+            // de manches existant.
             if (model.Rounds.Count == 0)
             {
                 model.Rounds.Add(new GameRoundEditorVm
@@ -456,6 +592,7 @@ namespace AkibaQuiz.Api.Controllers
                     QuestionCount = 0
                 });
             }
+
             return View(model);
         }
 
@@ -464,6 +601,13 @@ namespace AkibaQuiz.Api.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveGame([FromForm] GameSaveFormVm gameSave, CancellationToken ct)
         {
+            if (!await _authorizationService.AuthorizeAsync(
+                User,
+                QuizPermissions.ManageQuizGames))
+            {
+                return Forbid();
+            }
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
             if (gameSave.Id is <= 0)
@@ -501,7 +645,7 @@ namespace AkibaQuiz.Api.Controllers
 
             var name = input?.Name?.Trim() ?? "";
 
-            if (input.Name.Length < 2)
+            if (name.Length < 2)
             {
                 return BadRequest(new { error = "Le nom du jeu doit contenir au moins 2 caractères." });
             }
@@ -525,8 +669,9 @@ namespace AkibaQuiz.Api.Controllers
                 }
             }
 
-            var validQuestions = (await _questionService.GetAllAsync(ct)).Select(q => q.Id).ToHashSet();
-            var validQcms = (await _qcmService.GetAllAsync(ct)).Select(q => q.Id).ToHashSet();
+
+
+
 
             var request = new SaveGameRequest
             {
@@ -576,16 +721,6 @@ namespace AkibaQuiz.Api.Controllers
                     if (!seen.Add((type, id)))
                     {
                         return BadRequest(new { error = $"La question {j + 1} du tour {i + 1} est dupliquée." });
-                    }
-
-                    if (isQa && !validQuestions.Contains(id))
-                    {
-                        return BadRequest(new { error = $"La question {j + 1} du tour {i + 1} est invalide." });
-                    }
-
-                    if (isQcm && !validQcms.Contains(id))
-                    {
-                        return BadRequest(new { error = $"La question {j + 1} du tour {i + 1} est invalide." });
                     }
 
                     newRound.Questions.Add(
@@ -645,6 +780,45 @@ namespace AkibaQuiz.Api.Controllers
 
 
         #endregion
+
+        [Admin("AkibaQuiz/Studio/GameQuestionSearch")]
+        [HttpGet]
+        public async Task<IActionResult> GameQuestionSearch([FromQuery] QuestionCatalogQuery query,
+            CancellationToken ct)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                var page = await _questionCatalogService
+                    .SearchAsync(query, ct);
+
+                return Json(new
+                {
+                    items = page.Items.Select(q => new
+                    {
+                        id = q.Id,
+                        type = q.Type,
+                        question = q.Question,
+                        categoryName = q.CategoryName
+                    }),
+                    totalCount = page.TotalCount,
+                    page = page.Page,
+                    pageSize = page.PageSize,
+                    totalPages = page.TotalPages
+                });
+            }
+            catch (ApiValidationException ex)
+            {
+                return BadRequest(new
+                {
+                    error = ex.Message
+                });
+            }
+        }
+
+        #region Private methods
 
         private async Task<List<SaveMediaAssociationRequest>>
     ResolveMediaSelectionsAsync(
@@ -827,5 +1001,7 @@ namespace AkibaQuiz.Api.Controllers
 
             return Convert.ToHexString(bytes);
         }
+
+        #endregion
     }
 }

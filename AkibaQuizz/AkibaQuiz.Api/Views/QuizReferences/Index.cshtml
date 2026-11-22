@@ -1,0 +1,271 @@
+﻿@inject Microsoft.AspNetCore.Authorization.IAuthorizationService AuthorizationService
+@model AkibaQuiz.Api.Admin.ReferenceAdminVm
+@using Microsoft.AspNetCore.Authorization
+@using AkibaQuiz.Api.Security;
+@{
+    ViewData["Title"] = "Références AkibaQuizz";
+    var area = new { area = "AkibaQuiz.Api" };
+
+    var canEditQuestions =
+        await AuthorizationService.AuthorizeAsync(
+            User,
+            QuizPermissions.ManageQuizQuestions);
+
+    var canEditGames =
+        await AuthorizationService.AuthorizeAsync(
+            User,
+            QuizPermissions.ManageQuizGames);
+
+    var canManageReferences =
+        await AuthorizationService.AuthorizeAsync(
+            User,
+            QuizPermissions.ManageQuizReferences);
+}
+}
+
+<div class="container-fluid">
+    <h1>Catégories et tags</h1>
+
+    <p class="text-muted">
+        Administration des références utilisées
+        dans les QuestionAnswers et les QCM.
+    </p>
+
+    <a class="btn btn-outline-secondary mb-4"
+       href="@Url.Action("Index", "QuizStudio", area)">
+        Retour à Quiz Studio
+    </a>
+
+    @if (TempData["ReferenceNotice"] is string notice)
+    {
+        <div class="alert alert-success">
+            @notice
+        </div>
+    }
+
+    @if (TempData["ReferenceError"] is string error)
+    {
+        <div class="alert alert-danger">
+            @error
+        </div>
+    }
+
+    <div class="row g-4">
+
+        @* ================================
+           CATEGORIES
+           ================================ *@
+
+        <div class="col-12 col-xl-6">
+            <section class="card">
+                <div class="card-body">
+
+                    <h2 class="h4">
+                        Catégories (@Model.Categories.Count)
+                    </h2>
+
+                    <form method="post"
+                          class="d-flex gap-2 mb-4"
+                          action="@Url.Action(
+                              "CreateCategory",
+                              "QuizReferences", area)">
+
+                        @Html.AntiForgeryToken()
+
+                        <input type="text"
+                               name="name"
+                               class="form-control"
+                               minlength="2"
+                               maxlength="80"
+                               placeholder="Nouvelle catégorie"
+                               required />
+
+                        <button class="btn btn-primary"
+                                type="submit">
+                            Ajouter
+                        </button>
+                    </form>
+
+                    @foreach (var category in Model.Categories)
+                    {
+                        <div class="border rounded p-3 mb-2">
+
+                            <div class="small text-muted mb-2">
+                                ID : @category.Id
+                            </div>
+
+                            <form method="post"
+                                  class="d-flex gap-2 mb-2"
+                                  action="@Url.Action(
+                                      "RenameCategory",
+                                      "QuizReferences", area)">
+
+                                @Html.AntiForgeryToken()
+
+                                <input type="hidden"
+                                       name="id"
+                                       value="@category.Id" />
+
+                                <input type="text"
+                                       name="name"
+                                       value="@category.Name"
+                                       class="form-control"
+                                       minlength="2"
+                                       maxlength="80"
+                                       required />
+
+                                <button type="submit"
+                                        class="btn btn-outline-primary">
+                                    Enregistrer
+                                </button>
+                            </form>
+
+                            <form method="post"
+                                  action="@Url.Action(
+                                      "DeleteCategory",
+                                      "QuizReferences", area)"
+                                  onsubmit="return confirm(
+                                'Supprimer cette catégorie ?');">
+
+                                @Html.AntiForgeryToken()
+
+                                <input type="hidden"
+                                       name="id"
+                                       value="@category.Id" />
+
+                                <button type="submit"
+                                        class="btn btn-sm btn-outline-danger">
+                                    Supprimer
+                                </button>
+                            </form>
+
+                        </div>
+                    }
+                </div>
+            </section>
+        </div>
+
+        @* ================================
+           TAGS
+           ================================ *@
+
+        <div class="col-12 col-xl-6">
+            <section class="card">
+                <div class="card-body">
+
+                    <h2 class="h4">
+                        Tags (@Model.Tags.Count)
+                    </h2>
+
+                    <form method="post"
+                          class="mb-4"
+                          action="@Url.Action(
+                              "CreateTag",
+                              "QuizReferences", area)">
+
+                        @Html.AntiForgeryToken()
+
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <input type="text"
+                                       name="name"
+                                       class="form-control"
+                                       minlength="2"
+                                       maxlength="80"
+                                       placeholder="Nom du tag"
+                                       required />
+                            </div>
+
+                            <div class="col-md-4">
+                                <input type="text"
+                                       name="color"
+                                       class="form-control"
+                                       maxlength="7"
+                                       pattern="#[0-9a-fA-F]{6}"
+                                       placeholder="#4287F5" />
+                            </div>
+
+                            <div class="col-md-2">
+                                <button type="submit"
+                                        class="btn btn-primary w-100">
+                                    Ajouter
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    @foreach (var tag in Model.Tags)
+                    {
+                        <div class="border rounded p-3 mb-2">
+
+                            <div class="small text-muted mb-2">
+                                ID : @tag.Id
+                            </div>
+
+                            <form method="post"
+                                  class="row g-2 mb-2"
+                                  action="@Url.Action(
+                                      "UpdateTag",
+                                      "QuizReferences", area)">
+
+                                @Html.AntiForgeryToken()
+
+                                <input type="hidden"
+                                       name="id"
+                                       value="@tag.Id" />
+
+                                <div class="col-md-6">
+                                    <input type="text"
+                                           name="name"
+                                           value="@tag.Name"
+                                           class="form-control"
+                                           minlength="2"
+                                           maxlength="80"
+                                           required />
+                                </div>
+
+                                <div class="col-md-3">
+                                    <input type="text"
+                                           name="color"
+                                           value="@tag.Color"
+                                           class="form-control"
+                                           maxlength="7"
+                                           pattern="#[0-9a-fA-F]{6}"
+                                           placeholder="Couleur" />
+                                </div>
+
+                                <div class="col-md-3">
+                                    <button type="submit"
+                                            class="btn btn-outline-primary w-100">
+                                        Modifier
+                                    </button>
+                                </div>
+                            </form>
+
+                            <form method="post"
+                                  action="@Url.Action(
+                                      "DeleteTag",
+                                      "QuizReferences", area)"
+                                  onsubmit="return confirm(
+                                'Supprimer ce tag ?');">
+
+                                @Html.AntiForgeryToken()
+
+                                <input type="hidden"
+                                       name="id"
+                                       value="@tag.Id" />
+
+                                <button type="submit"
+                                        class="btn btn-sm btn-outline-danger">
+                                    Supprimer
+                                </button>
+                            </form>
+
+                        </div>
+                    }
+                </div>
+            </section>
+        </div>
+
+    </div>
+</div>

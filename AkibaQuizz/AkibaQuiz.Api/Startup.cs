@@ -10,6 +10,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using OrchardCore.Modules;
 using OrchardCore.Navigation;
+using OrchardCore.Security.Permissions;
 namespace AkibaQuiz.Api;
 
 public sealed class Startup : StartupBase
@@ -24,8 +25,11 @@ public sealed class Startup : StartupBase
 
         services.AddSingleton(
             new SqliteConnectionFactory(connectionString));
+        services.AddScoped<IPermissionProvider, QuizPermissionProvider>();
         services.AddScoped<IMediaCatalogRepository, MediaCatalogRepository>();
         services.AddScoped<IMediaCatalogService, MediaCatalogService>();
+        services.AddScoped<IQuestionCatalogRepository, QuestionCatalogRepository>();
+        services.AddScoped<IQuestionCatalogService, QuestionCatalogService>();
         services.AddScoped<IQcmRepository, QcmRepository>();
         services.AddScoped<IReferenceRepository, ReferenceRepository>();
         services.AddScoped<IQuestionRepository, QuestionRepository>();

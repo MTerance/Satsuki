@@ -1,11 +1,7 @@
 ﻿@addTagHelper *, OrchardCore.ResourceManagement
 
-@* Resource management for media picker *@
-
 <style asp-name="media" at="Head"></style>
 <script asp-name="media" at="Foot"></script>
-
-@* Configuration utilisée par notre JavaScript *@
 
 <div id="akibaMediaPickerConfig"
      data-media-app-url="@Url.Action(
@@ -14,8 +10,6 @@
          new { area = "OrchardCore.Media" })"
      data-path-base="@Context.Request.PathBase">
 </div>
-
-@* Fenêtre de sélection des médias *@
 
 <div class="modal fade"
      id="akibaMediaModal"

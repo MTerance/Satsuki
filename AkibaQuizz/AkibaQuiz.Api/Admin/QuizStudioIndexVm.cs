@@ -1,4 +1,6 @@
-﻿using System;
+﻿using AkibaQuiz.Contracts.Models;
+using AkibaQuiz.Contracts.Requests;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -11,6 +13,14 @@ namespace AkibaQuiz.Api.Admin
         public List<QcmRowVm> Qcms { get; set; } = new();
 
         public List<GameRowVm> Games { get; set; } = new();
+
+        public QuestionCatalogQuery Filters { get; set; } = new();
+
+        public QuestionCatalogPage Catalog { get; set; } = new();
+
+        public IReadOnlyList<CategoryModel> Categories { get; set; } = [];
+
+        public IReadOnlyList<TagModel> Tags { get; set; } = [];
     }
 
     public sealed class QuestionRowVm

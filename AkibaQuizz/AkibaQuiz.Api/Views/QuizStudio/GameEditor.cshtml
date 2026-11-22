@@ -1,7 +1,4 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@model AkibaQuiz.Api.Admin.GameEditorVm
+﻿@model AkibaQuiz.Api.Admin.GameEditorVm
 @{
     ViewData["Title"] = Model.Id.HasValue ? "Edit Game" : "Create Game";
 }
@@ -115,25 +112,13 @@
 
                     <div class="input-group">
 
-                        <select class="form-select question-picker">
-
-                            <option value="">
-                                Choisir une question...
-                            </option>
-
-                            @foreach (var item in Model.QuestionBank)
-                            {
-                                <option value="@(item.TypeQuestion + ":" + item.Id)">
-                                    [@item.TypeQuestion] @item.Label
-                                </option>
-                            }
-                        </select>
-
-                        <button type="button"
-                                class="btn btn-outline-primary"
-                                data-action="add-question">
-                            Ajouter
-                        </button>
+                        <div class="mt-2">
+                            <button type="button"
+                                    class="btn btn-outline-primary"
+                                    data-action="open-picker">
+                                + Rechercher et ajouter une question
+                            </button>
+                        </div>
                     </div>
                 </div>
             </article>
@@ -197,6 +182,114 @@
 </div>
 
 <!-- Modèle HTML : nouvelle manche -->
+<dialog id="gameQuestionDialog"
+        data-search-url="@Url.Action(
+            "GameQuestionSearch",
+            "QuizStudio",
+            new { area = "AkibaQuiz.Api" })"
+        class="border rounded shadow p-4"
+        style="width: min(95vw, 900px);
+    max-height: 85vh;">
+
+    <div class="d-flex justify-content-between
+        align-items-center mb-3">
+        <h2 class="h5 mb-0">
+            Ajouter une question
+        </h2>
+
+        <form method="dialog">
+            <button type="submit"
+                    class="btn btn-sm btn-outline-secondary">
+                Fermer
+            </button>
+        </form>
+    </div>
+
+    <div class="row g-2 mb-3">
+
+        <div class="col-12">
+            <label for="pickerText" class="form-label">
+                Rechercher un énoncé
+            </label>
+            <input id="pickerText"
+                   type="search"
+                   class="form-control"
+                   maxlength="160"
+                   placeholder="Saisir un texte..." />
+        </div>
+
+        <div class="col-md-4">
+            <label for="pickerKind" class="form-label">
+                Type
+            </label>
+            <select id="pickerKind" class="form-select">
+                <option value="All">Tous</option>
+                <option value="QuestionAnswer">
+                    QuestionAnswer
+                </option>
+                <option value="QCM">QCM</option>
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <label for="pickerCategory" class="form-label">
+                Catégorie
+            </label>
+            <select id="pickerCategory" class="form-select">
+                <option value="">Toutes</option>
+                @foreach (var category in Model.Categories)
+                {
+                    <option value="@category.Id">
+                        @category.Name
+                    </option>
+                }
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <label for="pickerTag" class="form-label">
+                Tag
+            </label>
+            <select id="pickerTag" class="form-select">
+                <option value="">Tous</option>
+                @foreach (var tag in Model.Tags)
+                {
+                    <option value="@tag.Id">
+                        @tag.Name
+                    </option>
+                }
+            </select>
+        </div>
+
+    </div>
+
+    <p id="pickerStatus"
+       class="text-muted"
+       role="status"
+       aria-live="polite"></p>
+
+    <ul id="pickerResults"
+        class="list-group mb-3"></ul>
+
+    <div class="d-flex justify-content-between
+        align-items-center gap-2">
+
+        <button type="button"
+                id="pickerPrevious"
+                class="btn btn-outline-secondary">
+            Précédente
+        </button>
+
+        <span id="pickerPageLabel"></span>
+
+        <button type="button"
+                id="pickerNext"
+                class="btn btn-outline-secondary">
+            Suivante
+        </button>
+
+    </div>
+</dialog>
 
 <template id="roundTemplate">
 
@@ -236,25 +329,13 @@
 
             <div class="input-group">
 
-                <select class="form-select question-picker">
-
-                    <option value="">
-                        Choisir une question...
-                    </option>
-
-                    @foreach (var item in Model.QuestionBank)
-                    {
-                        <option value="@(item.TypeQuestion + ":" + item.Id)">
-                            [@item.TypeQuestion] @item.Label
-                        </option>
-                    }
-                </select>
-
-                <button type="button"
-                        class="btn btn-outline-primary"
-                        data-action="add-question">
-                    Ajouter
-                </button>
+                <div class="mt-2">
+                    <button type="button"
+                            class="btn btn-outline-primary"
+                            data-action="open-picker">
+                        + Rechercher et ajouter une question
+                    </button>
+                </div>
             </div>
         </div>
     </article>
@@ -538,6 +619,279 @@
         // 8. ACTIONS SUR LES MANCHES ET QUESTIONS
         // =====================================================
 
+        const pickerDialog =
+            document.getElementById("gameQuestionDialog");
+
+        const pickerText =
+            document.getElementById("pickerText");
+
+        const pickerKind =
+            document.getElementById("pickerKind");
+
+        const pickerCategory =
+            document.getElementById("pickerCategory");
+
+        const pickerTag =
+            document.getElementById("pickerTag");
+
+        const pickerStatus =
+            document.getElementById("pickerStatus");
+
+        const pickerResults =
+            document.getElementById("pickerResults");
+
+        const pickerPrevious =
+            document.getElementById("pickerPrevious");
+
+        const pickerNext =
+            document.getElementById("pickerNext");
+
+        const pickerPageLabel =
+            document.getElementById("pickerPageLabel");
+
+        let targetRound = null;
+        let pickerPage = 1;
+        let pickerTotalPages = 0;
+        let pickerAbort = null;
+        let searchTimer = null;
+
+        function openQuestionPicker(round) {
+            targetRound = round;
+            pickerPage = 1;
+
+            pickerDialog.showModal();
+            pickerText.focus();
+
+            loadQuestionPage();
+        }
+
+        async function loadQuestionPage() {
+            // Annuler l'ancienne recherche lorsque
+            // l'utilisateur modifie les filtres.
+            pickerAbort?.abort();
+            pickerAbort = new AbortController();
+
+            const parameters = new URLSearchParams({
+                Kind: pickerKind.value,
+                Page: String(pickerPage),
+                PageSize: "25"
+            });
+
+            const text = pickerText.value.trim();
+
+            if (text)
+                parameters.set("Text", text);
+
+            if (pickerCategory.value)
+                parameters.set(
+                    "CategoryId",
+                    pickerCategory.value
+                );
+
+            if (pickerTag.value)
+                parameters.set("TagId", pickerTag.value);
+
+            pickerStatus.textContent = "Recherche en cours...";
+            pickerResults.replaceChildren();
+
+            try {
+                const response = await fetch(
+                    pickerDialog.dataset.searchUrl +
+                    "?" + parameters.toString(),
+                    {
+                        method: "GET",
+                        credentials: "same-origin",
+                        headers: {
+                            "Accept": "application/json"
+                        },
+                        signal: pickerAbort.signal
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(
+                        `La recherche a échoué : HTTP ${response.status}`
+                    );
+                }
+
+                const result = await response.json();
+
+                pickerTotalPages = result.totalPages;
+
+                pickerStatus.textContent =
+                    `${result.totalCount} question(s) trouvée(s)`;
+
+                pickerPageLabel.textContent =
+                    `Page ${pickerPage} / ` +
+                    `${Math.max(1, pickerTotalPages)}`;
+
+                pickerPrevious.disabled =
+                    pickerPage <= 1;
+
+                pickerNext.disabled =
+                    pickerPage >= pickerTotalPages;
+
+                for (const item of result.items) {
+                    const row =
+                        document.createElement("li");
+
+                    row.className =
+                        "list-group-item d-flex " +
+                        "justify-content-between " +
+                        "align-items-center gap-3";
+
+                    const textBlock =
+                        document.createElement("div");
+
+                    textBlock.className = "flex-grow-1";
+
+                    const title =
+                        document.createElement("div");
+
+                    title.className = "fw-semibold";
+                    title.textContent = item.question;
+
+                    const details =
+                        document.createElement("small");
+
+                    details.className = "text-muted";
+                    details.textContent =
+                        `${item.type} #${item.id} · ` +
+                        item.categoryName;
+
+                    textBlock.append(title, details);
+
+                    const addButton =
+                        document.createElement("button");
+
+                    addButton.type = "button";
+                    addButton.className =
+                        "btn btn-sm btn-outline-primary";
+
+                    addButton.textContent = "Ajouter";
+
+                    addButton.dataset.type = item.type;
+                    addButton.dataset.id = String(item.id);
+                    addButton.dataset.label = item.question;
+
+                    row.append(textBlock, addButton);
+                    pickerResults.appendChild(row);
+                }
+            }
+            catch (error) {
+                if (error.name === "AbortError")
+                    return;
+
+                console.error("GameQuestionSearch", error);
+
+                pickerStatus.textContent =
+                    "Erreur lors de la recherche : " +
+                    error.message;
+            }
+        }
+
+        // Rechercher après une courte pause de saisie.
+        pickerText.addEventListener("input", () => {
+            clearTimeout(searchTimer);
+
+            searchTimer = setTimeout(() => {
+                pickerPage = 1;
+                loadQuestionPage();
+            }, 300);
+        });
+
+        // Les autres filtres rechargent immédiatement.
+        for (const element of [
+            pickerKind,
+            pickerCategory,
+            pickerTag
+        ]) {
+            element.addEventListener("change", () => {
+                pickerPage = 1;
+                loadQuestionPage();
+            });
+        }
+
+        pickerPrevious.addEventListener("click", () => {
+            if (pickerPage > 1) {
+                pickerPage--;
+                loadQuestionPage();
+            }
+        });
+
+        pickerNext.addEventListener("click", () => {
+            if (pickerPage < pickerTotalPages) {
+                pickerPage++;
+                loadQuestionPage();
+            }
+        });
+
+        // =====================================================
+        // AJOUT À LA MANCHE CIBLE
+        // =====================================================
+
+        pickerResults.addEventListener("click", event => {
+            if (!(event.target instanceof Element))
+                return;
+
+            const button = event.target.closest(
+                "button[data-id][data-type]"
+            );
+
+            if (!button || !targetRound)
+                return;
+
+            const type = button.dataset.type;
+            const id = Number(button.dataset.id);
+            const label = button.dataset.label;
+
+            if (
+                !["QuestionAnswer", "QCM"].includes(type) ||
+                !Number.isSafeInteger(id) ||
+                id <= 0
+            ) {
+                showError("Référence de question invalide.");
+                return;
+            }
+
+            const exists = getQuestions(targetRound).some(
+                question =>
+                    question.dataset.type === type &&
+                    Number(question.dataset.questionId) === id
+            );
+
+            if (exists) {
+                pickerStatus.textContent =
+                    "Cette question est déjà présente " +
+                    "dans cette manche.";
+                return;
+            }
+
+            const newQuestion = questionTemplate.content
+                .firstElementChild
+                .cloneNode(true);
+
+            newQuestion.dataset.entryId = "0";
+            newQuestion.dataset.type = type;
+            newQuestion.dataset.questionId = String(id);
+
+            newQuestion.querySelector(".question-label")
+                .textContent = `[${type}] ${label}`;
+
+            getQuestionList(targetRound)
+                .appendChild(newQuestion);
+
+            refresh();
+            clearMessage();
+            pickerDialog.close();
+        });
+
+        pickerDialog.addEventListener("close", () => {
+            pickerAbort?.abort();
+            clearTimeout(searchTimer);
+            targetRound = null;
+        });
+
         container.addEventListener("click", event => {
             if (!(event.target instanceof Element))
                 return;
@@ -562,59 +916,8 @@
             // AJOUTER UNE QUESTION
             // ---------------------------------------------
 
-            if (action === "add-question") {
-                const picker = round.querySelector(
-                    ".question-picker"
-                );
-
-                if (!picker || !picker.value)
-                    return;
-
-                const [type, idText] = picker.value.split(":");
-
-                const questionId = Number(idText);
-
-                if (
-                    !["QuestionAnswer", "QCM"].includes(type) ||
-                    !Number.isSafeInteger(questionId) ||
-                    questionId <= 0
-                ) {
-                    showError("Référence de question invalide.");
-                    return;
-                }
-
-                // Éviter les doublons dans une même manche
-                const exists = getQuestions(round).some(
-                    question =>
-                        question.dataset.type === type &&
-                        Number(question.dataset.questionId) === questionId
-                );
-
-                if (exists) {
-                    showError(
-                        "Cette question est déjà présente dans cette manche."
-                    );
-                    return;
-                }
-
-                const newQuestion = questionTemplate.content
-                    .firstElementChild
-                    .cloneNode(true);
-
-                newQuestion.dataset.entryId = "0";
-                newQuestion.dataset.type = type;
-                newQuestion.dataset.questionId = String(questionId);
-
-                newQuestion.querySelector(".question-label")
-                    .textContent =
-                    picker.selectedOptions[0].textContent.trim();
-
-                questionList.appendChild(newQuestion);
-
-                picker.value = "";
-
-                refresh();
-                clearMessage();
+            if (action === "open-picker") {
+                openQuestionPicker(round);
                 return;
             }
 
