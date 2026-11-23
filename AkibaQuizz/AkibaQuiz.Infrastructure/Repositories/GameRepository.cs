@@ -1,14 +1,15 @@
-using AkibaQuiz.Infrastructure;
 using AkibaQuiz.Application.Interfaces;
 using AkibaQuiz.Contracts.Models;
 using AkibaQuiz.Contracts.Requests;
+using AkibaQuiz.Infrastructure;
+using AkibaQuiz.Infrastructure.Auditing;
 using AkibaQuiz.Infrastructure.Database;
 using Dapper;
 using Microsoft.Data.Sqlite;
 
 namespace AkibaQuiz.Infrastructure.Repositories;
 
-public sealed class GameRepository(SqliteConnectionFactory factory) : IGameRepository
+public sealed class GameRepository(SqliteConnectionFactory factory, IAuditActorProvider auditActorProvider) : IGameRepository
 {
     private sealed class GameRow
     {
@@ -85,19 +86,27 @@ public sealed class GameRepository(SqliteConnectionFactory factory) : IGameRepos
                 new { roundId = round.Id }, cancellationToken: ct));
             list.Add(new GameRoundModel
             {
-                Id = round.Id, IdGame = round.IdGame, Position = checked((int)round.Position),
+                Id = round.Id,
+                IdGame = round.IdGame,
+                Position = checked((int)round.Position),
                 Questions = rows.Select(q => new RoundQuestionModel
                 {
-                    Id = q.Id, IdGameRound = q.IdGameRound, Position = q.Position,
-                    IdQuestionAnswer = q.IdQuestionAnswer, IdQCMQuestion = q.IdQCMQuestion,
+                    Id = q.Id,
+                    IdGameRound = q.IdGameRound,
+                    Position = q.Position,
+                    IdQuestionAnswer = q.IdQuestionAnswer,
+                    IdQCMQuestion = q.IdQCMQuestion,
                     IdListQuestionsAnswers = q.IdListQuestionsAnswers
                 }).ToList()
             });
         }
         return new GameModel
         {
-            Id = g.Id, Name = g.Name, Author = g.Author,
-            CreationDate = g.CreationDate, Rounds = list
+            Id = g.Id,
+            Name = g.Name,
+            Author = g.Author,
+            CreationDate = g.CreationDate,
+            Rounds = list
         };
     }
 
@@ -149,6 +158,7 @@ public sealed class GameRepository(SqliteConnectionFactory factory) : IGameRepos
                     new { position = q.Position, roundId, qa = q.IdQuestionAnswer, qcm = q.IdQCMQuestion },
                     tx, cancellationToken: ct));
         }
+        await AuditSqlWriter.WriteAsync(db, tx, auditActorProvider.GetCurrent(), "Game", key, id.HasValue ? "Update" : "Create", ct);
         await tx.CommitAsync(ct);
         return key;
     }
@@ -164,6 +174,8 @@ public sealed class GameRepository(SqliteConnectionFactory factory) : IGameRepos
             "DELETE FROM RoundQuestions WHERE IdGameRound IN(SELECT Id FROM GameRounds WHERE IdGame=@id); " +
             "DELETE FROM GameRounds WHERE IdGame=@id; DELETE FROM Games WHERE Id=@id",
             new { id }, tx, cancellationToken: ct));
+
+        await AuditSqlWriter.WriteAsync(db, tx, auditActorProvider.GetCurrent(), "Game", id, "Delete", ct);
         await tx.CommitAsync(ct);
         return true;
     }

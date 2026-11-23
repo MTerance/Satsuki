@@ -16,6 +16,10 @@ namespace AkibaQuiz.Api.Security
             var supplied = context.HttpContext.Request.Headers["X-Akiba-Admin-Key"].ToString();
             if (string.IsNullOrWhiteSpace(expected) || string.IsNullOrWhiteSpace(supplied)) context.Result = new UnauthorizedResult();
             else if (!CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(expected), Encoding.UTF8.GetBytes(supplied))) context.Result = new UnauthorizedResult();
+            if (context.Result is null)
+            {
+                context.HttpContext.Items[HttpAuditActorProvider.VerifiedApiClientKey] = "admin";
+            }
             return Task.CompletedTask;
         }
     }

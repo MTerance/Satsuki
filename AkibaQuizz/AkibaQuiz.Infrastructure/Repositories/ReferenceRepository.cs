@@ -1,11 +1,14 @@
 using AkibaQuiz.Application.Interfaces;
 using AkibaQuiz.Contracts.Models;
+using AkibaQuiz.Infrastructure.Auditing;
 using AkibaQuiz.Infrastructure.Database;
 using Dapper;
+using Microsoft.Data.Sqlite;
+using System.Data;
 
 namespace AkibaQuiz.Infrastructure.Repositories;
 
-public sealed class ReferenceRepository(SqliteConnectionFactory factory) : IReferenceRepository
+public sealed class ReferenceRepository(SqliteConnectionFactory factory, IAuditActorProvider auditActorProvider) : IReferenceRepository
 {
     public async Task<IReadOnlyList<CategoryModel>> GetCategoriesAsync(CancellationToken ct)
     {
@@ -25,20 +28,26 @@ public sealed class ReferenceRepository(SqliteConnectionFactory factory) : IRefe
     string name, CancellationToken ct)
     {
         await using var db = await factory.OpenAsync(ct);
+        await using var tx = await db.BeginTransactionAsync(ct);
 
-        return await db.ExecuteScalarAsync<long?>(
+        long key = await db.ExecuteScalarAsync<long>(
             new CommandDefinition(
                 """
-            INSERT INTO Categories (Name)
-            SELECT @Name
-            WHERE NOT EXISTS (
-                SELECT 1 FROM Categories
-                WHERE Name = @Name COLLATE NOCASE
-            )
-            RETURNING Id;
-            """,
+        INSERT INTO Categories(Name)
+        VALUES(@Name)
+        RETURNING Id;
+        """,
                 new { Name = name },
+                tx,
                 cancellationToken: ct));
+
+        await AuditCategoryAsync(
+            db, tx, key, "Create",
+            null, name, ct);
+
+        await tx.CommitAsync(ct);
+
+        return key;
     }
 
     public async Task<bool> RenameCategoryAsync(
@@ -159,4 +168,52 @@ public sealed class ReferenceRepository(SqliteConnectionFactory factory) : IRefe
 
         return affected == 1;
     }
+
+
+    private Task AuditCategoryAsync(
+        SqliteConnection db,
+        IDbTransaction tx,
+        long id,
+        string action,
+        string? oldName,
+        string? newName,
+        CancellationToken ct)
+    {
+        return AuditSqlWriter.WriteAsync(
+            db,
+            tx,
+            auditActorProvider.GetCurrent(),
+            "Category",
+            id,
+            action,
+            AuditDetailsFactory.ForCategory(
+                oldName,
+                newName), ct);
+    }
+
+    private Task AuditTagAsync(
+        SqliteConnection db,
+        IDbTransaction tx,
+        long id,
+        string action,
+        string? oldName,
+        string? oldColor,
+        string? newName,
+        string? newColor,
+        CancellationToken ct)
+    {
+        return AuditSqlWriter.WriteAsync(
+            db,
+            tx,
+            auditActorProvider.GetCurrent(),
+            "Tag",
+            id,
+            action,
+            AuditDetailsFactory.ForTag(
+                oldName,
+                oldColor,
+                newName,
+                newColor), ct);
+    }
+
 }

@@ -1,4 +1,5 @@
 using AkibaQuiz.Infrastructure;
+using AkibaQuiz.Infrastructure.Auditing;
 using AkibaQuiz.Application.Interfaces;
 using AkibaQuiz.Contracts.Models;
 using AkibaQuiz.Contracts.Requests;
@@ -8,7 +9,7 @@ using Microsoft.Data.Sqlite;
 
 namespace AkibaQuiz.Infrastructure.Repositories;
 
-public sealed class QcmRepository(SqliteConnectionFactory factory) : IQcmRepository
+public sealed class QcmRepository(SqliteConnectionFactory factory, IAuditActorProvider auditActorProvider) : IQcmRepository
 {
     private sealed class QcmRow
     {
@@ -61,13 +62,18 @@ public sealed class QcmRepository(SqliteConnectionFactory factory) : IQcmReposit
             new { id }, cancellationToken: ct));
         return new QcmModel
         {
-            Id = row.Id, Question = row.Question, IdCategory = row.IdCategory,
-            CategoryName = row.CategoryName, Author = row.Author,
+            Id = row.Id,
+            Question = row.Question,
+            IdCategory = row.IdCategory,
+            CategoryName = row.CategoryName,
+            Author = row.Author,
             CreationDate = ParseDate(row.CreationDate),
             LastUpdatedDate = ParseDate(row.LastUpdatedTDate),
             Answers = answers.Select(a => new QcmPropositionModel
             {
-                Id = a.Id, IdQCMAnswer = a.IdQCMAnswer, Answer = a.Answer,
+                Id = a.Id,
+                IdQCMAnswer = a.IdQCMAnswer,
+                Answer = a.Answer,
                 IsTrue = string.Equals(a.IsTrue, "TRUE", StringComparison.OrdinalIgnoreCase)
             }).ToList(),
             Tags = await SqlHelpers.Tags(db, id, true, ct),
@@ -84,14 +90,46 @@ public sealed class QcmRepository(SqliteConnectionFactory factory) : IQcmReposit
         await using var tx = await db.BeginTransactionAsync(ct);
         await SqlHelpers.ValidateLinks(db, tx, value.IdCategory, value.TagIds, value.Medias, ct);
         long key;
+        long? oldCategoryId = null;
+        long[] oldTagIds = [];
         List<long> previous = [];
         if (id.HasValue)
         {
+            oldCategoryId =
+    await db.QuerySingleOrDefaultAsync<long?>(
+        new CommandDefinition(
+            """
+                SELECT IdCategory
+                FROM QCMQuestion
+                WHERE Id = @id;
+                """,
+            new { id = id.Value },
+            tx,
+            cancellationToken: ct));
+
+            oldTagIds = (await db.QueryAsync<long>(
+                new CommandDefinition(
+                    """
+            SELECT DISTINCT IdTag
+            FROM TagQuizz
+            WHERE IdQCM = @id;
+            """,
+                    new { id = id.Value },
+                    tx,
+                    cancellationToken: ct)))
+                .ToArray();
+
+
             key = id.Value;
             var n = await db.ExecuteAsync(new CommandDefinition(
                 "UPDATE QCMQuestion SET Question=@question,IdCategory=@category,LastUpdatedTDate=@now WHERE Id=@key",
-                new { question = value.Question.Trim(), category = value.IdCategory,
-                    now = SqlHelpers.Now(), key }, tx, cancellationToken: ct));
+                new
+                {
+                    question = value.Question.Trim(),
+                    category = value.IdCategory,
+                    now = SqlHelpers.Now(),
+                    key
+                }, tx, cancellationToken: ct));
             if (n == 0) throw new KeyNotFoundException("QCM introuvable");
             previous = (await db.QueryAsync<long>(new CommandDefinition(
                 "SELECT IdQCMAnswer FROM QCMQuizz WHERE IdQCMQuestion=@key",
@@ -105,8 +143,13 @@ public sealed class QcmRepository(SqliteConnectionFactory factory) : IQcmReposit
             key = await db.ExecuteScalarAsync<long>(new CommandDefinition(
                 "INSERT INTO QCMQuestion(Question,CreationDate,LastUpdatedTDate,Author,IdCategory) " +
                 "VALUES(@question,@now,@now,@author,@category) RETURNING Id",
-                new { question = value.Question.Trim(), now = SqlHelpers.Now(), author,
-                    category = value.IdCategory }, tx, cancellationToken: ct));
+                new
+                {
+                    question = value.Question.Trim(),
+                    now = SqlHelpers.Now(),
+                    author,
+                    category = value.IdCategory
+                }, tx, cancellationToken: ct));
         }
         foreach (var answer in value.Answers)
         {
@@ -123,12 +166,22 @@ public sealed class QcmRepository(SqliteConnectionFactory factory) : IQcmReposit
                 "DELETE FROM QCMAnswer WHERE Id=@oldId " +
                 "AND NOT EXISTS(SELECT 1 FROM QCMQuizz WHERE IdQCMAnswer=@oldId)",
                 new { oldId }, tx, cancellationToken: ct));
+
+        var auditDetails = AuditDetailsFactory.ForQuestion(
+            oldCategoryId,
+            value.IdCategory,
+            oldTagIds,
+            value.TagIds);
+
+        await AuditSqlWriter.WriteAsync(db, tx, auditActorProvider.GetCurrent(), "QCM", key, id.HasValue ? "Update" : "Create", auditDetails, ct);
         await tx.CommitAsync(ct);
         return key;
     }
 
     public async Task<bool> DeleteAsync(long id, CancellationToken ct)
     {
+        long? oldCategoryId = null;
+        long[] oldTagIds = [];
         await using var db = await factory.OpenAsync(ct);
         await using var tx = await db.BeginTransactionAsync(ct);
         var n = await db.ExecuteScalarAsync<long>(new CommandDefinition(
@@ -138,6 +191,31 @@ public sealed class QcmRepository(SqliteConnectionFactory factory) : IQcmReposit
         var previous = (await db.QueryAsync<long>(new CommandDefinition(
             "SELECT IdQCMAnswer FROM QCMQuizz WHERE IdQCMQuestion=@id",
             new { id }, tx, cancellationToken: ct))).ToList();
+
+        oldCategoryId =
+ await db.QuerySingleOrDefaultAsync<long?>(
+     new CommandDefinition(
+         """
+                SELECT IdCategory
+                FROM QCMQuestion
+                WHERE Id = @id;
+                """,
+         new { id = id },
+         tx,
+         cancellationToken: ct));
+
+        oldTagIds = (await db.QueryAsync<long>(
+            new CommandDefinition(
+                """
+            SELECT DISTINCT IdTag
+            FROM TagQuizz
+            WHERE IdQCM = @id;
+            """,
+                new { id = id },
+                tx,
+                cancellationToken: ct)))
+            .ToArray();
+
         await db.ExecuteAsync(new CommandDefinition(
             "DELETE FROM QCMQuizz WHERE IdQCMQuestion=@id; " +
             "DELETE FROM TagQuizz WHERE IdQCM=@id; " +
@@ -148,6 +226,13 @@ public sealed class QcmRepository(SqliteConnectionFactory factory) : IQcmReposit
                 "DELETE FROM QCMAnswer WHERE Id=@oldId " +
                 "AND NOT EXISTS(SELECT 1 FROM QCMQuizz WHERE IdQCMAnswer=@oldId)",
                 new { oldId }, tx, cancellationToken: ct));
+
+        var auditDetails = AuditDetailsFactory.ForQuestion(
+            oldCategoryId,
+            null,
+            oldTagIds,
+            Array.Empty<long>());
+        await AuditSqlWriter.WriteAsync(db, tx, auditActorProvider.GetCurrent(), "QCM", id, "Delete",, ct);
         await tx.CommitAsync(ct);
         return true;
     }
