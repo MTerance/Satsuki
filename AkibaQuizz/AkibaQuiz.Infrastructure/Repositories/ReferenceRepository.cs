@@ -8,7 +8,7 @@ using System.Data;
 
 namespace AkibaQuiz.Infrastructure.Repositories;
 
-public sealed class ReferenceRepository(SqliteConnectionFactory factory, IAuditActorProvider auditActorProvider) : IReferenceRepository
+public sealed class ReferenceRepository(SqliteConnectionFactory factory, AuditTrail auditTrail) : IReferenceRepository
 {
     public async Task<IReadOnlyList<CategoryModel>> GetCategoriesAsync(CancellationToken ct)
     {
@@ -41,10 +41,8 @@ public sealed class ReferenceRepository(SqliteConnectionFactory factory, IAuditA
                 tx,
                 cancellationToken: ct));
 
-        await AuditCategoryAsync(
-            db, tx, key, "Create",
-            null, name, ct);
-
+        await auditTrail.RecordChangeAsync(db, tx, AuditEntityType.Category,
+            key, AuditOperation.Create, before: null, ct);
         await tx.CommitAsync(ct);
 
         return key;
@@ -54,6 +52,14 @@ public sealed class ReferenceRepository(SqliteConnectionFactory factory, IAuditA
         long id, string name, CancellationToken ct)
     {
         await using var db = await factory.OpenAsync(ct);
+        await using var tx = await db.BeginTransactionAsync(ct);
+
+        var before = await auditTrail.CaptureAsync(db, tx, AuditEntityType.Category, id, ct);
+        if (before is null)
+        {
+            throw new KeyNotFoundException(
+                $"Catégorie {id} introuvable.");
+        }
 
         var affected = await db.ExecuteAsync(
             new CommandDefinition(
@@ -70,6 +76,8 @@ public sealed class ReferenceRepository(SqliteConnectionFactory factory, IAuditA
                 new { Id = id, Name = name },
                 cancellationToken: ct));
 
+        await auditTrail.RecordChangeAsync(db, tx, AuditEntityType.Category, id, AuditOperation.Update, before, ct);
+        await tx.CommitAsync(ct);
         return affected == 1;
     }
 
@@ -77,6 +85,12 @@ public sealed class ReferenceRepository(SqliteConnectionFactory factory, IAuditA
         long id, CancellationToken ct)
     {
         await using var db = await factory.OpenAsync(ct);
+        await using var tx = await db.BeginTransactionAsync(ct);
+
+        var before = await auditTrail.CaptureAsync(db, tx, AuditEntityType.Category, id, ct);
+
+        if (before is null)
+            return false;
 
         var affected = await db.ExecuteAsync(
             new CommandDefinition(
@@ -95,6 +109,8 @@ public sealed class ReferenceRepository(SqliteConnectionFactory factory, IAuditA
                 new { Id = id },
                 cancellationToken: ct));
 
+        await auditTrail.RecordChangeAsync(db, tx, AuditEntityType.Category, id, AuditOperation.Delete, before, ct);
+        await tx.CommitAsync(ct);
         return affected == 1;
     }
 
@@ -102,8 +118,9 @@ public sealed class ReferenceRepository(SqliteConnectionFactory factory, IAuditA
         string name, string? color, CancellationToken ct)
     {
         await using var db = await factory.OpenAsync(ct);
+        await using var tx = await db.BeginTransactionAsync(ct);
 
-        return await db.ExecuteScalarAsync<long?>(
+        var response = await db.ExecuteScalarAsync<long?>(
             new CommandDefinition(
                 """
             INSERT INTO Tags (Name, Color)
@@ -116,6 +133,13 @@ public sealed class ReferenceRepository(SqliteConnectionFactory factory, IAuditA
             """,
                 new { Name = name, Color = color },
                 cancellationToken: ct));
+
+        await auditTrail.RecordChangeAsync(
+            db, tx, AuditEntityType.Tag, response.Value, AuditOperation.Create,
+        null, ct);
+
+        await tx.CommitAsync(ct);
+        return response;
     }
 
     public async Task<bool> UpdateTagAsync(
@@ -123,6 +147,12 @@ public sealed class ReferenceRepository(SqliteConnectionFactory factory, IAuditA
         CancellationToken ct)
     {
         await using var db = await factory.OpenAsync(ct);
+        await using var tx = await db.BeginTransactionAsync(ct);
+
+        var before = await auditTrail.CaptureAsync(db, tx, AuditEntityType.Tag, id, ct);
+
+        if (before is null)
+            throw new KeyNotFoundException("Tag introuvable.");
 
         var affected = await db.ExecuteAsync(
             new CommandDefinition(
@@ -145,6 +175,10 @@ public sealed class ReferenceRepository(SqliteConnectionFactory factory, IAuditA
                 },
                 cancellationToken: ct));
 
+        await auditTrail.RecordChangeAsync(
+            db, tx, AuditEntityType.Tag, id, AuditOperation.Update,
+            before, ct);
+        await tx.CommitAsync(ct);
         return affected == 1;
     }
 
@@ -152,6 +186,12 @@ public sealed class ReferenceRepository(SqliteConnectionFactory factory, IAuditA
         long id, CancellationToken ct)
     {
         await using var db = await factory.OpenAsync(ct);
+        await using var tx = await db.BeginTransactionAsync(ct);
+
+        var before = await auditTrail.CaptureAsync(db, tx, AuditEntityType.Tag, id, ct);
+
+        if (before is null)
+            throw new KeyNotFoundException("Tag introuvable.");
 
         var affected = await db.ExecuteAsync(
             new CommandDefinition(
@@ -166,54 +206,11 @@ public sealed class ReferenceRepository(SqliteConnectionFactory factory, IAuditA
                 new { Id = id },
                 cancellationToken: ct));
 
+        await auditTrail.RecordChangeAsync(
+            db, tx, AuditEntityType.Tag, id, AuditOperation.Delete,
+            before, ct);
+
+        await tx.CommitAsync(ct);
         return affected == 1;
     }
-
-
-    private Task AuditCategoryAsync(
-        SqliteConnection db,
-        IDbTransaction tx,
-        long id,
-        string action,
-        string? oldName,
-        string? newName,
-        CancellationToken ct)
-    {
-        return AuditSqlWriter.WriteAsync(
-            db,
-            tx,
-            auditActorProvider.GetCurrent(),
-            "Category",
-            id,
-            action,
-            AuditDetailsFactory.ForCategory(
-                oldName,
-                newName), ct);
-    }
-
-    private Task AuditTagAsync(
-        SqliteConnection db,
-        IDbTransaction tx,
-        long id,
-        string action,
-        string? oldName,
-        string? oldColor,
-        string? newName,
-        string? newColor,
-        CancellationToken ct)
-    {
-        return AuditSqlWriter.WriteAsync(
-            db,
-            tx,
-            auditActorProvider.GetCurrent(),
-            "Tag",
-            id,
-            action,
-            AuditDetailsFactory.ForTag(
-                oldName,
-                oldColor,
-                newName,
-                newColor), ct);
-    }
-
 }

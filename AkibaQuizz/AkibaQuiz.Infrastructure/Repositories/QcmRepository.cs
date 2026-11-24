@@ -9,7 +9,7 @@ using Microsoft.Data.Sqlite;
 
 namespace AkibaQuiz.Infrastructure.Repositories;
 
-public sealed class QcmRepository(SqliteConnectionFactory factory, IAuditActorProvider auditActorProvider) : IQcmRepository
+public sealed class QcmRepository(SqliteConnectionFactory factory, AuditTrail auditTrail) : IQcmRepository
 {
     private sealed class QcmRow
     {
@@ -88,6 +88,17 @@ public sealed class QcmRepository(SqliteConnectionFactory factory, IAuditActorPr
     {
         await using var db = await factory.OpenAsync(ct);
         await using var tx = await db.BeginTransactionAsync(ct);
+
+        var before = await auditTrail.CaptureAsync(
+            db,
+            tx,
+            AuditEntityType.QCM,
+            id,
+            ct);
+
+        if (id.HasValue && before is null)
+            throw new KeyNotFoundException("QCM introuvable.");
+
         await SqlHelpers.ValidateLinks(db, tx, value.IdCategory, value.TagIds, value.Medias, ct);
         long key;
         long? oldCategoryId = null;
@@ -161,19 +172,31 @@ public sealed class QcmRepository(SqliteConnectionFactory factory, IAuditActorPr
                 new { key, answerId, truth = answer.IsTrue ? "TRUE" : "FALSE" }, tx, cancellationToken: ct));
         }
         await SqlHelpers.ReplaceLinks(db, tx, key, true, value.TagIds, value.Medias, ct);
+        
         foreach (var oldId in previous.Distinct())
             await db.ExecuteAsync(new CommandDefinition(
                 "DELETE FROM QCMAnswer WHERE Id=@oldId " +
                 "AND NOT EXISTS(SELECT 1 FROM QCMQuizz WHERE IdQCMAnswer=@oldId)",
                 new { oldId }, tx, cancellationToken: ct));
 
-        var auditDetails = AuditDetailsFactory.ForQuestion(
-            oldCategoryId,
-            value.IdCategory,
-            oldTagIds,
-            value.TagIds);
+        var after = await auditTrail.CaptureAsync(
+            db,
+            tx,
+            AuditEntityType.QCM,
+            key,
+            ct);
 
-        await AuditSqlWriter.WriteAsync(db, tx, auditActorProvider.GetCurrent(), "QCM", key, id.HasValue ? "Update" : "Create", auditDetails, ct);
+        await auditTrail.RecordAsync(
+            db,
+            tx,
+            AuditEntityType.QCM,
+            key,
+            id.HasValue
+                ? AuditOperation.Update
+                : AuditOperation.Create,
+            before,
+            after,
+            ct);
         await tx.CommitAsync(ct);
         return key;
     }
@@ -184,9 +207,16 @@ public sealed class QcmRepository(SqliteConnectionFactory factory, IAuditActorPr
         long[] oldTagIds = [];
         await using var db = await factory.OpenAsync(ct);
         await using var tx = await db.BeginTransactionAsync(ct);
-        var n = await db.ExecuteScalarAsync<long>(new CommandDefinition(
-            "SELECT COUNT(*) FROM QCMQuestion WHERE Id=@id", new { id }, tx, cancellationToken: ct));
-        if (n == 0) return false;
+
+        var before = await auditTrail.CaptureAsync(
+            db,
+            tx,
+            AuditEntityType.QCM,
+            id,
+            ct);
+
+        if (before is null)
+            return false;
         await SqlHelpers.CheckUnused(db, tx, id, true, ct);
         var previous = (await db.QueryAsync<long>(new CommandDefinition(
             "SELECT IdQCMAnswer FROM QCMQuizz WHERE IdQCMQuestion=@id",
@@ -227,12 +257,15 @@ public sealed class QcmRepository(SqliteConnectionFactory factory, IAuditActorPr
                 "AND NOT EXISTS(SELECT 1 FROM QCMQuizz WHERE IdQCMAnswer=@oldId)",
                 new { oldId }, tx, cancellationToken: ct));
 
-        var auditDetails = AuditDetailsFactory.ForQuestion(
-            oldCategoryId,
+        await auditTrail.RecordAsync(
+            db,
+            tx,
+            AuditEntityType.QCM,
+            id,
+            AuditOperation.Delete,
+            before,
             null,
-            oldTagIds,
-            Array.Empty<long>());
-        await AuditSqlWriter.WriteAsync(db, tx, auditActorProvider.GetCurrent(), "QCM", id, "Delete",, ct);
+            ct);
         await tx.CommitAsync(ct);
         return true;
     }

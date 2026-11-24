@@ -9,7 +9,7 @@ using Microsoft.Data.Sqlite;
 
 namespace AkibaQuiz.Infrastructure.Repositories;
 
-public sealed class GameRepository(SqliteConnectionFactory factory, IAuditActorProvider auditActorProvider) : IGameRepository
+public sealed class GameRepository(SqliteConnectionFactory factory, AuditTrail auditTrail) : IGameRepository
 {
     private sealed class GameRow
     {
@@ -127,6 +127,13 @@ public sealed class GameRepository(SqliteConnectionFactory factory, IAuditActorP
     {
         await using var db = await factory.OpenAsync(ct);
         await using var tx = await db.BeginTransactionAsync(ct);
+
+        var before = await auditTrail.CaptureAsync(db, tx, AuditEntityType.Game, id, ct);
+
+        if (id.HasValue && before is null)
+            throw new KeyNotFoundException("Game introuvable.");
+
+
         await ValidateQuestions(db, tx, value, ct);
         long key;
         if (id.HasValue)
@@ -158,7 +165,12 @@ public sealed class GameRepository(SqliteConnectionFactory factory, IAuditActorP
                     new { position = q.Position, roundId, qa = q.IdQuestionAnswer, qcm = q.IdQCMQuestion },
                     tx, cancellationToken: ct));
         }
-        await AuditSqlWriter.WriteAsync(db, tx, auditActorProvider.GetCurrent(), "Game", key, id.HasValue ? "Update" : "Create", ct);
+        var after = await auditTrail.CaptureAsync(db, tx, AuditEntityType.Game, key, ct);
+
+        await auditTrail.RecordAsync(db, tx, AuditEntityType.Game, key, id.HasValue
+                ? AuditOperation.Update
+                : AuditOperation.Create,
+            before, after, ct);
         await tx.CommitAsync(ct);
         return key;
     }
@@ -167,15 +179,22 @@ public sealed class GameRepository(SqliteConnectionFactory factory, IAuditActorP
     {
         await using var db = await factory.OpenAsync(ct);
         await using var tx = await db.BeginTransactionAsync(ct);
-        var n = await db.ExecuteScalarAsync<long>(new CommandDefinition(
-            "SELECT COUNT(*) FROM Games WHERE Id=@id", new { id }, tx, cancellationToken: ct));
-        if (n == 0) return false;
+        var before = await auditTrail.CaptureAsync(
+            db,
+            tx,
+            AuditEntityType.Game,
+            id,
+            ct);
+
+        if (before is null)
+            return false;
         await db.ExecuteAsync(new CommandDefinition(
             "DELETE FROM RoundQuestions WHERE IdGameRound IN(SELECT Id FROM GameRounds WHERE IdGame=@id); " +
             "DELETE FROM GameRounds WHERE IdGame=@id; DELETE FROM Games WHERE Id=@id",
             new { id }, tx, cancellationToken: ct));
 
-        await AuditSqlWriter.WriteAsync(db, tx, auditActorProvider.GetCurrent(), "Game", id, "Delete", ct);
+        await auditTrail.RecordAsync(db, tx, AuditEntityType.Game, id,
+            AuditOperation.Delete, before, null, ct);
         await tx.CommitAsync(ct);
         return true;
     }

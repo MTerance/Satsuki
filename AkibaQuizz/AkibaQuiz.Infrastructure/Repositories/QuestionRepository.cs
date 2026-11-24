@@ -9,7 +9,7 @@ using Microsoft.Data.Sqlite;
 
 namespace AkibaQuiz.Infrastructure.Repositories;
 
-public sealed class QuestionRepository(SqliteConnectionFactory factory, IAuditActorProvider auditActorProvider) : IQuestionRepository
+public sealed class QuestionRepository(SqliteConnectionFactory factory, AuditTrail auditTrail) : IQuestionRepository
 {
     private sealed class QuestionRow
     {
@@ -69,6 +69,12 @@ public sealed class QuestionRepository(SqliteConnectionFactory factory, IAuditAc
 
         long? oldCategoryId = null;
         long[] oldTagIds = [];
+
+        var before = await auditTrail.CaptureAsync(db, tx, AuditEntityType.QuestionAnswer, id, ct);
+        if (id.HasValue && before is null)
+        {
+            throw new KeyNotFoundException("Question introuvable");
+        }
 
         await SqlHelpers.ValidateLinks(db, tx, value.IdCategory, value.TagIds, value.Medias, ct);
         long key;
@@ -133,14 +139,24 @@ public sealed class QuestionRepository(SqliteConnectionFactory factory, IAuditAc
             oldTagIds,
             value.TagIds);
 
-        await AuditSqlWriter.WriteAsync(
+        var after = await auditTrail.CaptureAsync(
             db,
             tx,
-            auditActorProvider.GetCurrent(),
-            "QuestionAnswer",
+            AuditEntityType.QuestionAnswer,
             key,
-            id.HasValue ? "Update" : "Create",           
-            auditDetails,ct);
+            ct);
+
+        await auditTrail.RecordAsync(
+            db,
+            tx,
+            AuditEntityType.QuestionAnswer,
+            key,
+            id.HasValue
+                ? AuditOperation.Update
+                : AuditOperation.Create,
+            before,
+            after,
+            ct);
 
         await tx.CommitAsync(ct);
         return key;
@@ -150,9 +166,11 @@ public sealed class QuestionRepository(SqliteConnectionFactory factory, IAuditAc
     {
         await using var db = await factory.OpenAsync(ct);
         await using var tx = await db.BeginTransactionAsync(ct);
-        var count = await db.ExecuteScalarAsync<long>(new CommandDefinition(
-            "SELECT COUNT(*) FROM QuestionsAnswers WHERE Id=@id", new { id }, tx, cancellationToken: ct));
-        if (count == 0) return false;
+        var before = await auditTrail.CaptureAsync(db, tx, AuditEntityType.QuestionAnswer, id, ct);
+
+        if (before is null)
+            return false;
+
         await SqlHelpers.CheckUnused(db, tx, id, false, ct);
 
         long? oldCategoryId = null;
@@ -166,7 +184,7 @@ public sealed class QuestionRepository(SqliteConnectionFactory factory, IAuditAc
                 FROM QuestionsAnswers
                 WHERE Id = @id;
                 """,
-            new { id = id},
+            new { id = id },
             tx,
             cancellationToken: ct));
 
@@ -177,7 +195,7 @@ public sealed class QuestionRepository(SqliteConnectionFactory factory, IAuditAc
             FROM TagQuizz
             WHERE IdQuestionAnswer = @id;
             """,
-                new { id = id},
+                new { id = id },
                 tx,
                 cancellationToken: ct)))
             .ToArray();
@@ -187,20 +205,10 @@ public sealed class QuestionRepository(SqliteConnectionFactory factory, IAuditAc
             "DELETE FROM TagQuizz WHERE IdQuestionAnswer=@id; " +
             "DELETE FROM MediaQuizz WHERE IdQuestionAnswer=@id; " +
             "DELETE FROM QuestionsAnswers WHERE Id=@id", new { id }, tx, cancellationToken: ct));
-        var auditDetails = AuditDetailsFactory.ForQuestion(
-            oldCategoryId,
-            null,
-            oldTagIds,
-            Array.Empty<long>());
 
-        await AuditSqlWriter.WriteAsync(
-            db,
-            tx,
-            auditActorProvider.GetCurrent(),
-            "QuestionAnswer",
-            id,
-            "Delete",
-            auditDetails,ct);
+        await auditTrail.RecordAsync(db, tx, AuditEntityType.QuestionAnswer, id, AuditOperation.Delete, before, null, ct);
+
+
         await tx.CommitAsync(ct);
         return true;
     }

@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OrchardCore.Modules;
 using OrchardCore.Navigation;
 using OrchardCore.Security.Permissions;
+using AkibaQuiz.Infrastructure.Auditing;
 namespace AkibaQuiz.Api;
 
 public sealed class Startup : StartupBase
@@ -25,8 +26,9 @@ public sealed class Startup : StartupBase
 
         services.AddSingleton(
             new SqliteConnectionFactory(connectionString));
-        services.AddScoped<CielCatalogApiKeyFilter>();
         services.AddHttpContextAccessor();
+        services.AddScoped<CielCatalogApiKeyFilter>();
+        services.AddScoped<AuditTrail>();
         services.AddScoped<IAuditActorProvider, HttpAuditActorProvider>();
         services.AddScoped<IPermissionProvider, QuizPermissionProvider>();
         services.AddScoped<IMediaCatalogRepository, MediaCatalogRepository>();

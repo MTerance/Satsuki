@@ -10,7 +10,7 @@ namespace AkibaQuiz.Infrastructure.Auditing
 {
     internal static class AuditSqlWriter
     {
-        public static async Task WriteAsync(SqliteConnection db, IDbTransaction transaction, AuditActor actor, string entityType, long entityId, string action, string? detailsJson = null, CancellationToken ct)
+        public static async Task WriteAsync(SqliteConnection db, IDbTransaction transaction, AuditActor actor, string entityType, long entityId, string action, CancellationToken ct, string? detailsJson = null)
         {
             ArgumentNullException.ThrowIfNull(actor);
             if (actor.ActorType is not "OrchardUser" or "AdminApi" or "System")
