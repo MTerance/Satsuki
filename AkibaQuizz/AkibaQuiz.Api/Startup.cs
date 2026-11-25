@@ -29,6 +29,7 @@ public sealed class Startup : StartupBase
         services.AddHttpContextAccessor();
         services.AddScoped<CielCatalogApiKeyFilter>();
         services.AddScoped<AuditTrail>();
+        services.AddScoped<IAuditEventReader, SqLiteAuditEventRepository>();
         services.AddScoped<IAuditActorProvider, HttpAuditActorProvider>();
         services.AddScoped<IPermissionProvider, QuizPermissionProvider>();
         services.AddScoped<IMediaCatalogRepository, MediaCatalogRepository>();

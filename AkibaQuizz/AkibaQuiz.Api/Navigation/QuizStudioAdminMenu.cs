@@ -28,7 +28,11 @@ namespace AkibaQuiz.Api.Navigation
                 menu
                     .Add(_localizer["Banque de contenu"], "1", item => item
                         .Action("Index", "QuizStudio", new { area = "AkibaQuiz.Api" })
-                        .Permission(QuizPermissions.ViewQuizCatalog));
+                        .Permission(QuizPermissions.ViewQuizCatalog))
+                    .Add(
+                        _localizer["Journal d'audit"], "2", item => item
+                        .Action("Index", "QuizAudit", new { area = "AkibaQuiz.Api" })
+                        .Permission(QuizPermissions.ViewQuizAudit));
             });
             return ValueTask.CompletedTask;
         }

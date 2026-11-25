@@ -1,0 +1,412 @@
+﻿@model AkibaQuiz.Api.Admin.QuizAuditIndexVm
+@using AkibaQuiz.Api.Admin
+
+@{
+    ViewData["Title"] = "Journal d'audit";
+
+    var f = Model.Filters;
+    var result = Model.Results;
+
+    var from = f.DateFrom?.ToString("yyyy-MM-dd");
+    var to = f.DateTo?.ToString("yyyy-MM-dd");
+
+    Func<int, string> pageUrl = page =>
+        Url.Action(
+            "Index",
+            "QuizAudit",
+            new
+            {
+                area = "AkibaQuiz.Api",
+
+                EntityType = f.EntityType,
+                EntityId = f.EntityId,
+                Action = f.Action,
+
+                ActorType = f.ActorType,
+                ActorId = f.ActorId,
+
+                CorrelationId = f.CorrelationId,
+
+                DateFrom = from,
+                DateTo = to,
+
+                Page = page,
+                PageSize = f.PageSize
+            }) ?? "#";
+}
+
+<div class="container-fluid">
+
+    <h1>Journal d'audit</h1>
+
+    <p class="text-muted">
+        Historique des modifications du catalogue
+        AkibaQuizz — consultation en lecture seule.
+    </p>
+
+    <div class="card mb-4">
+        <div class="card-body">
+
+            <h2 class="h5 mb-3">Recherche</h2>
+
+            <form method="get"
+                  action="@Url.Action(
+                      "Index",
+                      "QuizAudit",
+                      new { area = "AkibaQuiz.Api" })">
+
+                <div class="row g-3">
+
+                    <div class="col-md-3">
+                        <label class="form-label">
+                            Type d'entité
+                        </label>
+
+                        <select name="EntityType"
+                                class="form-select">
+
+                            <option value="">Toutes</option>
+
+                            @foreach (var type in new[]
+                            {
+                                "QuestionAnswer",
+                                "QCM",
+                                "Game",
+                                "Category",
+                                "Tag"
+                            })
+                            {
+                                <option value="@type"
+                                        selected="@(f.EntityType == type)">
+                                    @type
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">
+                            Action
+                        </label>
+
+                        <select name="Action"
+                                class="form-select">
+
+                            <option value="">Toutes</option>
+
+                            @foreach (var action in new[]
+                            {
+                                "Create",
+                                "Update",
+                                "Delete"
+                            })
+                            {
+                                <option value="@action"
+                                        selected="@(f.Action == action)">
+                                    @action
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">
+                            Type d'auteur
+                        </label>
+
+                        <select name="ActorType"
+                                class="form-select">
+
+                            <option value="">Tous</option>
+
+                            @foreach (var type in new[]
+                            {
+                                "OrchardUser",
+                                "AdminApi",
+                                "System"
+                            })
+                            {
+                                <option value="@type"
+                                        selected="@(f.ActorType == type)">
+                                    @type
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">
+                            Identifiant d'entité
+                        </label>
+
+                        <input type="number"
+                               class="form-control"
+                               name="EntityId"
+                               min="1"
+                               value="@f.EntityId" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">
+                            Auteur
+                        </label>
+
+                        <input type="text"
+                               name="ActorId"
+                               maxlength="128"
+                               class="form-control"
+                               value="@f.ActorId" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">
+                            Corrélation
+                        </label>
+
+                        <input type="text"
+                               name="CorrelationId"
+                               maxlength="128"
+                               class="form-control"
+                               value="@f.CorrelationId" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">
+                            Date de début (UTC)
+                        </label>
+
+                        <input type="date"
+                               name="DateFrom"
+                               class="form-control"
+                               value="@from" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">
+                            Date de fin (UTC)
+                        </label>
+
+                        <input type="date"
+                               name="DateTo"
+                               class="form-control"
+                               value="@to" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">
+                            Événements par page
+                        </label>
+
+                        <select name="PageSize"
+                                class="form-select">
+
+                            @foreach (var size in new[]
+                            {
+                                10, 25, 50, 100
+                            })
+                            {
+                                <option value="@size"
+                                        selected="@(f.PageSize == size)">
+                                    @size
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                </div>
+
+                <input type="hidden"
+                       name="Page"
+                       value="1" />
+
+                <div class="d-flex gap-2 mt-3">
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Rechercher
+                    </button>
+
+                    <a class="btn btn-outline-secondary"
+                       href="@Url.Action(
+                           "Index",
+                           "QuizAudit",
+                           new { area = "AkibaQuiz.Api" })">
+                        Réinitialiser
+                    </a>
+
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+
+            <div class="d-flex justify-content-between
+                align-items-center mb-3">
+
+                <h2 class="h5 mb-0">
+                    Événements enregistrés
+                </h2>
+
+                <span class="text-muted">
+                    @result.TotalCount résultat(s)
+                </span>
+
+            </div>
+
+            <div class="table-responsive">
+
+                <table class="table table-striped
+                    table-hover align-middle">
+
+                    <thead>
+                        <tr>
+                            <th>Date UTC</th>
+                            <th>Entité</th>
+                            <th>Action</th>
+                            <th>Auteur</th>
+                            <th>Détails</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var item in result.Items)
+                        {
+                            <tr>
+                                <td>
+                                    <small>
+                                        @item.OccurredAtUtc
+                                    </small>
+                                </td>
+
+                                <td>
+                                    <strong>
+                                        @item.EntityType
+                                    </strong>
+
+                                    <div class="text-muted">
+                                        #@item.EntityId
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <span class="badge bg-secondary">
+                                        @item.Action
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div>
+                                        @item.ActorType
+                                    </div>
+
+                                    <small class="text-muted">
+                                        @item.ActorId
+                                    </small>
+                                </td>
+
+                                <td>
+                                    <details>
+                                        <summary>
+                                            Voir les changements
+                                        </summary>
+
+                                        <ul class="mt-2">
+                                            @foreach (var line in
+                                                AuditDetailsFormatter.Describe(
+                                                    item.DetailsJson))
+                                            {
+                                                <li>@line</li>
+                                            }
+                                        </ul>
+
+                                        <details class="mt-2">
+                                            <summary>
+                                                JSON brut
+                                            </summary>
+
+                                            <pre class="small mt-2">@item.DetailsJson</pre>
+                                        </details>
+
+                                        @if (!string.IsNullOrWhiteSpace(
+                                            item.CorrelationId))
+                                        {
+                                            <small class="text-muted">
+                                                Corrélation :
+                                                @item.CorrelationId
+                                            </small>
+                                        }
+                                    </details>
+                                </td>
+                            </tr>
+                        }
+
+                        @if (result.Items.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="5"
+                                    class="text-center text-muted py-4">
+                                    Aucun événement trouvé.
+                                </td>
+                            </tr>
+                        }
+
+                    </tbody>
+                </table>
+
+            </div>
+
+            <div class="d-flex justify-content-between
+                align-items-center mt-3">
+
+                <span class="text-muted">
+                    Page @result.Page /
+                    @Math.Max(1L, result.TotalPages)
+                </span>
+
+                <nav aria-label="Pagination du journal">
+                    <div class="d-flex gap-2">
+
+                        @if (result.Page > 1)
+                        {
+                            <a class="btn btn-sm
+                                btn-outline-secondary"
+                               href="@pageUrl(1)">
+                                Première
+                            </a>
+
+                            <a class="btn btn-sm
+                                btn-outline-primary"
+                               href="@pageUrl(result.Page - 1)">
+                                Précédente
+                            </a>
+                        }
+
+                        @if (result.Page < result.TotalPages)
+                        {
+                            <a class="btn btn-sm
+                                btn-outline-primary"
+                               href="@pageUrl(result.Page + 1)">
+                                Suivante
+                            </a>
+
+                            @if (result.TotalPages <= int.MaxValue)
+                            {
+                                <a class="btn btn-sm
+                                    btn-outline-secondary"
+                                   href="@pageUrl((int)result.TotalPages)">
+                                    Dernière
+                                </a>
+                            }
+                        }
+
+                    </div>
+                </nav>
+            </div>
+
+        </div>
+    </div>
+
+</div>

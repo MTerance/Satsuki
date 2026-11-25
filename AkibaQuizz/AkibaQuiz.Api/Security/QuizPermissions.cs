@@ -13,6 +13,6 @@ namespace AkibaQuiz.Api.Security
         public static readonly Permission ManageQuizGames = new Permission("ManageQuizGames", "Gérer les parties AkibaQuiz");
         public static readonly Permission ManageQuizReferences = new Permission("ManageQuizReferences", "Gérer les références AkibaQuiz (catégories et tags)");
         public static readonly Permission DeleteQuizContent = new Permission("DeleteQuizContent", "Supprimer le contenu AkibaQuiz (questions, QCM, parties)");
-
+        public static readonly Permission ViewQuizAudit = new Permission("ViewQuizAudit", "Consulter le journal d'audit AkibaQuiz");
     }
 }
