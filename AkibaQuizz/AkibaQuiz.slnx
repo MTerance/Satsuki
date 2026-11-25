@@ -2,6 +2,7 @@
   <Project Path="AkibaQuiz.Api/AkibaQuiz.Api.csproj" />
   <Project Path="AkibaQuiz.Application/AkibaQuiz.Application.csproj" />
   <Project Path="AkibaQuiz.Contracts/AkibaQuiz.Contracts.csproj" />
+  <Project Path="AkibaQuiz.Infrastructure.Tests/AkibaQuiz.Infrastructure.Tests.csproj" Id="7f35c4c1-9d50-4ede-bcdf-f9dadf13e67a" />
   <Project Path="AkibaQuiz.Infrastructure/AkibaQuiz.Infrastructure.csproj" />
   <Project Path="AkibaQuiz.Web/AkibaQuiz.Web.csproj" />
 </Solution>
