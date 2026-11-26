@@ -18,6 +18,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using YesSql.Services;
 using static Azure.Core.HttpHeader;
+using System.Security.Claims;
 
 namespace AkibaQuiz.Api.Controllers
 {
@@ -134,6 +135,12 @@ namespace AkibaQuiz.Api.Controllers
             {
                 return Forbid();
             }
+
+            if (id is <= 0)
+            {
+                return BadRequest("Identifiant de question invalide.");
+            }
+
             var categories = await _referenceService.GetCategoriesAsync(ct);
             var tags = await _referenceService.GetTagsAsync(ct);
             if (id.HasValue)
@@ -239,19 +246,10 @@ namespace AkibaQuiz.Api.Controllers
 
             try
             {
-                // Récupérer les associations déjà enregistrées
-                // uniquement pour la question en cours de modification.
-                var previousQuestion = input.Id.HasValue
-                    ? await _questionService.GetByIdAsync(input.Id.Value, ct)
-                    : null;
-
-                if (input.Id.HasValue && previousQuestion is null)
-                    return NotFound();
-
                 // Transformer les sélections Orchard en IdMedia.
                 var mediaAssociations = await ResolveMediaSelectionsAsync(
                     input.MediaAssociationsJson,
-                    previousQuestion?.Medias ?? [],
+                    existing?.Medias ?? [],
                     ct);
 
                 var request = new SaveQuestionAnswerRequest
@@ -267,7 +265,7 @@ namespace AkibaQuiz.Api.Controllers
                 await _questionService.SaveAsync(
                     input.Id,
                     request,
-                    User.Identity?.Name ?? "Administrator",
+                    GetAuditActor(),
                     ct);
 
                 TempData["Notice"] = "Question enregistrée.";
@@ -291,7 +289,9 @@ namespace AkibaQuiz.Api.Controllers
 
         [Admin("AkibaQuiz/Studio/QcmEditor")]
         [HttpGet]
-        public async Task<IActionResult> QcmEditor(long? id, CancellationToken ct)
+        public async Task<IActionResult> QcmEditor(
+            long? id,
+            CancellationToken ct)
         {
             if (!await _authorizationService.AuthorizeAsync(
                 User,
@@ -299,29 +299,44 @@ namespace AkibaQuiz.Api.Controllers
             {
                 return Forbid();
             }
-            var tags = await _referenceService.GetTagsAsync(ct);
-            var categories = await _referenceService.GetCategoriesAsync(ct);
+
+            if (id is <= 0)
+            {
+                return BadRequest("Identifiant de QCM invalide.");
+            }
+
             var model = new QcmEditorVm();
 
             if (id.HasValue)
             {
-                var qcm = await _qcmService.GetByIdAsync(id.Value, ct);
-                if (qcm == null)
+                var qcm = await _qcmService.GetByIdAsync(
+                    id.Value,
+                    ct);
+
+                if (qcm is null)
                 {
                     return NotFound();
                 }
+
                 model = new QcmEditorVm
                 {
                     Id = qcm.Id,
                     Question = qcm.Question,
-                    Answers = qcm.Answers.Select(a => new QcmAnswerEditorVm
-                    {
-                        Answer = a.Answer,
-                        IsTrue = a.IsTrue
-                    }).ToList(),
+
+                    Answers = qcm.Answers
+                        .Select(a => new QcmAnswerEditorVm
+                        {
+                            Answer = a.Answer,
+                            IsTrue = a.IsTrue
+                        })
+                        .ToList(),
+
                     IdCategory = qcm.IdCategory,
-                    TagIds = qcm.Tags.Select(t => t.Id).ToList(),
-                    AvailablesTags = tags,
+
+                    TagIds = qcm.Tags
+                        .Select(t => t.Id)
+                        .ToList(),
+
                     ExistingMedias = qcm.Medias
                 };
             }
@@ -340,6 +355,12 @@ namespace AkibaQuiz.Api.Controllers
             {
                 return Forbid();
             }
+
+            if (input.Id is <= 0)
+            {
+                return BadRequest("Identifiant de QCM invalide.");
+            }
+
             input.Question = input.Question?.Trim() ?? "";
             if (string.IsNullOrWhiteSpace(input.Question) ||
                 input.Question.Length < 3)
@@ -404,27 +425,36 @@ namespace AkibaQuiz.Api.Controllers
             if (input.Id.HasValue && previousQcm is null)
                 return NotFound();
 
-            var mediaAssociations = await ResolveMediaSelectionsAsync(
-                input.MediaAssociationsJson,
-                previousQcm?.Medias ?? [],
-                ct);
+            input.ExistingMedias = previousQcm?.Medias ?? [];
 
-            var request = new SaveQcmRequest
-            {
-                Question = input.Question,
-                Answers = validAnswers,
-                IdCategory = input.IdCategory,
-                TagIds = (input.TagIds ?? []).Distinct().ToList(),
-                Medias = mediaAssociations
-            };
             try
             {
+                var mediaAssociations =
+                    await ResolveMediaSelectionsAsync(
+                        input.MediaAssociationsJson,
+                        previousQcm?.Medias ?? [],
+                        ct);
+
+                var request = new SaveQcmRequest
+                {
+                    Question = input.Question,
+                    Answers = validAnswers,
+                    IdCategory = input.IdCategory,
+                    TagIds = (input.TagIds ?? [])
+                        .Distinct()
+                        .ToList(),
+
+                    Medias = mediaAssociations
+                };
+
                 await _qcmService.SaveAsync(
                     input.Id,
                     request,
-                    User.Identity?.Name ?? "Administrator",
+                    GetAuditActor(),
                     ct);
+
                 TempData["Notice"] = "QCM enregistré.";
+
                 return RedirectToAction(nameof(Index));
             }
             catch (ApiValidationException ex)
@@ -435,6 +465,7 @@ namespace AkibaQuiz.Api.Controllers
             {
                 ModelState.AddModelError("", ex.Message);
             }
+
             return View("QcmEditor", input);
         }
 
@@ -615,12 +646,7 @@ namespace AkibaQuiz.Api.Controllers
 
             if (string.IsNullOrWhiteSpace(gameSave.Payload))
             {
-
-                return BadRequest(new
-                {
-                    error = "Payload invalide.",
-                    champsRecus = Request.Form.Keys.ToArray()
-                });
+                return BadRequest(new { error = "Aucun payload reçu." });
             }
 
             SaveGameRequest? input;
@@ -738,7 +764,7 @@ namespace AkibaQuiz.Api.Controllers
                 var saved = await _gameService.SaveAsync(
                             gameSave.Id,
                             request,
-                            User.Identity?.Name ?? "Administrator",
+                            GetAuditActor(),
                             ct);
 
                 return Ok(new
@@ -786,6 +812,12 @@ namespace AkibaQuiz.Api.Controllers
         public async Task<IActionResult> GameQuestionSearch([FromQuery] QuestionCatalogQuery query,
             CancellationToken ct)
         {
+            if (!await _authorizationService.AuthorizeAsync(
+                User, QuizPermissions.ManageQuizGames))
+            {
+                return Forbid();
+            }
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
@@ -967,6 +999,33 @@ namespace AkibaQuiz.Api.Controllers
             return result;
         }
 
+        private string GetAuditActor()
+        {
+            return User.Identity?.Name
+                ?? User.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? "UnknownAuthenticatedUser";
+        }
+
+        private Task<bool> CanViewCatalogAsync()
+        {
+            return _authorizationService.AuthorizeAsync(
+                User,
+                QuizPermissions.ViewQuizCatalog);
+        }
+
+        private Task<bool> CanManageQuestionsAsync()
+        {
+            return _authorizationService.AuthorizeAsync(
+                User,
+                QuizPermissions.ManageQuizQuestions);
+        }
+
+        private Task<bool> CanManageGamesAsync()
+        {
+            return _authorizationService.AuthorizeAsync(
+                User,
+                QuizPermissions.ManageQuizGames);
+        }
 
 
         private static string ComputeGameRevision(GameModel game)

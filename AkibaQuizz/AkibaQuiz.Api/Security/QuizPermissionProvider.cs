@@ -1,7 +1,5 @@
-﻿using OrchardCore.Security.Permissions;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿
+using OrchardCore.Security.Permissions;
 
 namespace AkibaQuiz.Api.Security
 {
@@ -11,12 +9,12 @@ namespace AkibaQuiz.Api.Security
         {
             return Task.FromResult<IEnumerable<Permission>>(new[]
             {
+                QuizPermissions.ViewQuizCatalog,
                 QuizPermissions.ManageQuizQuestions,
                 QuizPermissions.ManageQuizGames,
                 QuizPermissions.ManageQuizReferences,
                 QuizPermissions.DeleteQuizContent,
-                QuizPermissions.ViewQuizCatalog
-
+                QuizPermissions.ViewQuizAudit
             });
         }
 
