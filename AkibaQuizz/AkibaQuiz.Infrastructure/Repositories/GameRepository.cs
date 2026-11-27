@@ -67,46 +67,117 @@ public sealed class GameRepository(SqliteConnectionFactory factory, AuditTrail a
         return (await db.QueryAsync<GameSummaryModel>(new CommandDefinition(
             sql, cancellationToken: ct))).ToList();
     }
-
-    private static async Task<GameModel?> Load(SqliteConnection db, long id, CancellationToken ct)
+    private static async Task<GameModel?> Load(
+    SqliteConnection db,
+    long id,
+    CancellationToken ct)
     {
-        var g = await db.QuerySingleOrDefaultAsync<GameRow>(new CommandDefinition(
-            "SELECT Id,Name,Author,CreationDate FROM Games WHERE Id=@id",
-            new { id }, cancellationToken: ct));
-        if (g is null) return null;
-        var rounds = await db.QueryAsync<RoundRow>(new CommandDefinition(
-            "SELECT Id,IdGame,Position FROM GameRounds WHERE IdGame=@id ORDER BY Position,Id",
-            new { id }, cancellationToken: ct));
-        var list = new List<GameRoundModel>();
-        foreach (var round in rounds)
-        {
-            var rows = await db.QueryAsync<QuestionRow>(new CommandDefinition(
-                "SELECT Id,IdGameRound,Position,IdQuestionAnswer,IdQCMQuestion,IdListQuestionsAnswers " +
-                "FROM RoundQuestions WHERE IdGameRound=@roundId ORDER BY Position,Id",
-                new { roundId = round.Id }, cancellationToken: ct));
-            list.Add(new GameRoundModel
+        // ==========================================
+        // 1. Chargement du Game
+        // ==========================================
+
+        var game = await db.QuerySingleOrDefaultAsync<GameRow>(
+            new CommandDefinition(
+                """
+            SELECT Id, Name, Author, CreationDate
+            FROM Games
+            WHERE Id = @id;
+            """,
+                new { id },
+                cancellationToken: ct));
+
+        if (game is null)
+            return null;
+
+        // ==========================================
+        // 2. Chargement des manches
+        // ==========================================
+
+        var rounds = (
+            await db.QueryAsync<RoundRow>(
+                new CommandDefinition(
+                    """
+                SELECT Id, IdGame, Position
+                FROM GameRounds
+                WHERE IdGame = @id
+                ORDER BY Position, Id;
+                """,
+                    new { id },
+                    cancellationToken: ct))
+        ).ToList();
+
+        // ==========================================
+        // 3. Chargement groupe des questions
+        // ==========================================
+
+        var questionRows = await db.QueryAsync<QuestionRow>(
+            new CommandDefinition(
+                """
+            SELECT
+                rq.Id,
+                rq.IdGameRound,
+                rq.Position,
+                rq.IdQuestionAnswer,
+                rq.IdQCMQuestion,
+                rq.IdListQuestionsAnswers
+            FROM RoundQuestions rq
+            INNER JOIN GameRounds gr
+                ON gr.Id = rq.IdGameRound
+            WHERE gr.IdGame = @id
+            ORDER BY
+                rq.IdGameRound,
+                rq.Position,
+                rq.Id;
+            """,
+                new { id },
+                cancellationToken: ct));
+
+        // ==========================================
+        // 4. Indexation en memoire
+        // ==========================================
+
+        var questionsByRound = questionRows.ToLookup(
+            q => q.IdGameRound);
+
+        // ==========================================
+        // 5. Reconstruction du modele
+        // ==========================================
+
+        var gameRounds = rounds
+            .Select(round => new GameRoundModel
             {
                 Id = round.Id,
                 IdGame = round.IdGame,
+
                 Position = checked((int)round.Position),
-                Questions = rows.Select(q => new RoundQuestionModel
-                {
-                    Id = q.Id,
-                    IdGameRound = q.IdGameRound,
-                    Position = q.Position,
-                    IdQuestionAnswer = q.IdQuestionAnswer,
-                    IdQCMQuestion = q.IdQCMQuestion,
-                    IdListQuestionsAnswers = q.IdListQuestionsAnswers
-                }).ToList()
-            });
-        }
+
+                Questions = questionsByRound[round.Id]
+                    .Select(q => new RoundQuestionModel
+                    {
+                        Id = q.Id,
+                        IdGameRound = q.IdGameRound,
+                        Position = q.Position,
+
+                        IdQuestionAnswer =
+                            q.IdQuestionAnswer,
+
+                        IdQCMQuestion =
+                            q.IdQCMQuestion,
+
+                        IdListQuestionsAnswers =
+                            q.IdListQuestionsAnswers
+                    })
+                    .ToList()
+            })
+            .ToList();
+
         return new GameModel
         {
-            Id = g.Id,
-            Name = g.Name,
-            Author = g.Author,
-            CreationDate = g.CreationDate,
-            Rounds = list
+            Id = game.Id,
+            Name = game.Name,
+            Author = game.Author,
+            CreationDate = game.CreationDate,
+            Rounds = gameRounds
         };
     }
 

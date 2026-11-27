@@ -78,33 +78,153 @@ public sealed class GameService(
         return new GameFullModel { Game = game, Rounds = fullRounds };
     }
 
-    public async Task<GameModel> SaveAsync(long? id, SaveGameRequest value, string author, CancellationToken ct)
+
+    public async Task<GameModel> SaveAsync(
+        long? id,
+        SaveGameRequest value,
+        string author,
+        CancellationToken ct)
     {
-        ArgumentNullException.ThrowIfNull(value);
-        if (string.IsNullOrWhiteSpace(value.Name) || value.Rounds is null)
-            throw new ApiValidationException("Nom et manches obligatoires.");
-        if (value.Rounds.Any(r => r is null || r.Position < 0 || r.Questions is null)
-            || value.Rounds.Select(r => r.Position).Distinct().Count() != value.Rounds.Count)
-            throw new ApiValidationException("Positions de manches invalides ou dupliquées.");
-        foreach (var round in value.Rounds)
+        if (id is <= 0)
         {
-            if (round.Questions.Any(q => q is null || q.Position < 0)
-                || round.Questions.Select(q => q.Position).Distinct().Count() != round.Questions.Count)
-                throw new ApiValidationException("Positions de questions invalides ou dupliquées.");
-            foreach (var question in round.Questions)
-            {
-                var validQA = question.IdQuestionAnswer is > 0;
-                var validQcm = question.IdQCMQuestion is > 0;
-                if (question.IdListQuestionsAnswers.HasValue || validQA == validQcm
-                    || (question.IdQuestionAnswer.HasValue && !validQA)
-                    || (question.IdQCMQuestion.HasValue && !validQcm))
-                    throw new ApiValidationException("Utiliser exactement une référence QuestionAnswer ou QCM. IdListQuestionsAnswers n'est pas pris en charge.");
-            }
+            throw new ApiValidationException(
+                "Identifiant de Game invalide.");
         }
-        var key = await repository.SaveAsync(id, value, author, ct);
+
+        ValidateGame(value);
+
+        var key = await repository.SaveAsync(
+            id,
+            value,
+            author,
+            ct);
+
         return await repository.GetByIdAsync(key, ct)
-            ?? throw new InvalidOperationException($"Game #{key} non relu après enregistrement.");
+            ?? throw new InvalidOperationException(
+                $"Game #{key} non relu apres enregistrement.");
     }
 
+
     public Task<bool> DeleteAsync(long id, CancellationToken ct) => repository.DeleteAsync(id, ct);
+
+
+    private static void ValidateGame(SaveGameRequest value)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+
+        // ========================================
+        // Validation du Game
+        // ========================================
+
+        if (string.IsNullOrWhiteSpace(value.Name) ||
+            value.Name.Trim().Length < 2)
+        {
+            throw new ApiValidationException(
+                "Le nom du Game doit contenir au moins deux caractères.");
+        }
+
+        if (value.Rounds is null || value.Rounds.Count == 0)
+        {
+            throw new ApiValidationException(
+                "Le Game doit contenir au moins une manche.");
+        }
+
+        // ========================================
+        // Validation des manches
+        // ========================================
+
+        for (int i = 0; i < value.Rounds.Count; i++)
+        {
+            var round = value.Rounds[i];
+
+            long expectedRoundPosition = i + 1L;
+
+            if (round is null)
+            {
+                throw new ApiValidationException(
+                    $"La manche {expectedRoundPosition} est invalide.");
+            }
+
+            if (round.Position != expectedRoundPosition)
+            {
+                throw new ApiValidationException(
+                    $"Position de manche invalide. " +
+                    $"Attendue : {expectedRoundPosition}, " +
+                    $"reçue : {round.Position}.");
+            }
+
+            if (round.Questions is null ||
+                round.Questions.Count == 0)
+            {
+                throw new ApiValidationException(
+                    $"La manche {round.Position} doit contenir " +
+                    "au moins une question.");
+            }
+
+            var references = new HashSet<(string Type, long Id)>();
+
+            // ========================================
+            // Validation des questions
+            // ========================================
+
+            for (int j = 0; j < round.Questions.Count; j++)
+            {
+                var question = round.Questions[j];
+
+                long expectedQuestionPosition = j + 1L;
+
+                if (question is null)
+                {
+                    throw new ApiValidationException(
+                        $"La question {expectedQuestionPosition} " +
+                        $"de la manche {round.Position} est invalide.");
+                }
+
+                if (question.Position != expectedQuestionPosition)
+                {
+                    throw new ApiValidationException(
+                        $"Position de question invalide dans " +
+                        $"la manche {round.Position}. " +
+                        $"Attendue : {expectedQuestionPosition}, " +
+                        $"reçue : {question.Position}.");
+                }
+
+                // ========================================
+                // Exclusivité des références QA / QCM
+                // ========================================
+
+                var validQA = question.IdQuestionAnswer is > 0;
+                var validQcm = question.IdQCMQuestion is > 0;
+
+                if (question.IdListQuestionsAnswers.HasValue ||
+                    validQA == validQcm ||
+                    (question.IdQuestionAnswer.HasValue && !validQA) ||
+                    (question.IdQCMQuestion.HasValue && !validQcm))
+                {
+                    throw new ApiValidationException(
+                        $"Référence invalide pour la question " +
+                        $"{question.Position} de la manche " +
+                        $"{round.Position}. " +
+                        "Utiliser exactement une référence " +
+                        "QuestionAnswer ou QCM.");
+                }
+
+                // ========================================
+                // Détection des doublons
+                // ========================================
+
+                var reference = validQA
+                    ? ("QA", question.IdQuestionAnswer!.Value)
+                    : ("QCM", question.IdQCMQuestion!.Value);
+
+                if (!references.Add(reference))
+                {
+                    throw new ApiValidationException(
+                        $"La question {reference.Item1} " +
+                        $"#{reference.Item2} est présente plusieurs fois " +
+                        $"dans la manche {round.Position}.");
+                }
+            }
+        }
+    }
 }

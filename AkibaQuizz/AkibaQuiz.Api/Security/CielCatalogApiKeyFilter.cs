@@ -1,22 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
-using System;
-using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace AkibaQuiz.Api.Security
 {
-    public class CielCatalogApiKeyFilter : IAsyncAuthorizationFilter
+    public sealed class CielCatalogApiKeyFilter
+        : IAsyncAuthorizationFilter
     {
-        private const string CielHeader =
-        "X-Akiba-Ciel-Key";
-
-        private const string AdminHeader =
-            "X-Akiba-Admin-Key";
-
         private readonly ILogger<CielCatalogApiKeyFilter>
             _logger;
 
@@ -29,112 +20,88 @@ namespace AkibaQuiz.Api.Security
         public Task OnAuthorizationAsync(
             AuthorizationFilterContext context)
         {
-            var headers =
-                context.HttpContext.Request.Headers;
+            var http = context.HttpContext;
+            var headers = http.Request.Headers;
 
-            // Le catalogue ne doit pas être mis en cache
-            // dans des caches HTTP partagés.
-            context.HttpContext.Response.Headers[
-                "Cache-Control"] = "no-store";
+            http.Response.Headers["Cache-Control"] =
+                "no-store";
 
-            string? expectedCielKey =
-                Environment.GetEnvironmentVariable(
-                    "AKIBA_CIEL_READ_API_KEY");
+            var expectedCielKey =
+                ApiKeySecurity.GetCielKey();
 
-            if (string.IsNullOrWhiteSpace(expectedCielKey))
+            var expectedAdminKey =
+                ApiKeySecurity.GetAdminKey();
+
+            if (!ApiKeySecurity.IsConfigured(
+                expectedCielKey))
             {
                 _logger.LogError(
-                    "La clé API de lecture Ciel n'est pas configurée.");
+                    "La clé API Ciel n'est pas configurée " +
+                    "ou est invalide.");
 
-                // Échec fermé : aucun accès au catalogue.
-                context.Result = new StatusCodeResult(503);
+                context.Result =
+                    new StatusCodeResult(503);
+
+                return Task.CompletedTask;
+            }
+
+            if (ApiKeySecurity.AreIdentical(
+                expectedAdminKey,
+                expectedCielKey))
+            {
+                _logger.LogError(
+                    "Les clés API Admin et Ciel " +
+                    "doivent être distinctes.");
+
+                context.Result =
+                    new StatusCodeResult(503);
+
                 return Task.CompletedTask;
             }
 
             bool hasCielHeader = headers.TryGetValue(
-                CielHeader, out var suppliedCiel);
+                ApiKeySecurity.CielHeader,
+                out var suppliedCiel);
 
             bool hasAdminHeader = headers.TryGetValue(
-                AdminHeader, out var suppliedAdmin);
+                ApiKeySecurity.AdminHeader,
+                out var suppliedAdmin);
 
-            // Interdire deux mécanismes d'identification
-            // simultanés dans la même requête.
-            if (hasCielHeader && hasAdminHeader)
+            // Rejeter les requêtes sans identification
+            // ou avec deux identifications simultanées.
+            if (hasCielHeader == hasAdminHeader)
             {
-                context.Result = new UnauthorizedResult();
+                context.Result =
+                    new UnauthorizedResult();
+
                 return Task.CompletedTask;
             }
 
-            // ========================================
-            // 1. ACCÈS CIEL : LECTURE DU CATALOGUE
-            // ========================================
-
+            // Accès normal du client Ciel.
             if (hasCielHeader)
             {
-                if (!Matches(
+                if (!ApiKeySecurity.Matches(
                     expectedCielKey,
                     suppliedCiel))
                 {
-                    context.Result = new UnauthorizedResult();
+                    context.Result =
+                        new UnauthorizedResult();
                 }
 
                 return Task.CompletedTask;
             }
 
-            // ========================================
-            // 2. COMPATIBILITÉ TEMPORAIRE
-            //    AVEC L'ANCIENNE CLÉ ADMIN
-            // ========================================
-
-            if (hasAdminHeader)
+            // Compatibilité historique avec les
+            // outils d'administration existants.
+            if (!ApiKeySecurity.Matches(
+                expectedAdminKey,
+                suppliedAdmin))
             {
-                string? expectedAdminKey =
-                    Environment.GetEnvironmentVariable(
-                        "AKIBA_ADMIN_API_KEY");
-
-                if (!Matches(
-                    expectedAdminKey,
-                    suppliedAdmin))
-                {
-                    context.Result = new UnauthorizedResult();
-                }
-
-                return Task.CompletedTask;
+                context.Result =
+                    new UnauthorizedResult();
             }
 
-            context.Result = new UnauthorizedResult();
             return Task.CompletedTask;
-        }
-
-        private static bool Matches(
-            string? expected,
-            StringValues supplied)
-        {
-            if (string.IsNullOrWhiteSpace(expected))
-                return false;
-
-            // Une seule valeur d'en-tête est acceptée.
-            if (supplied.Count != 1)
-                return false;
-
-            var actual = supplied[0];
-
-            if (string.IsNullOrWhiteSpace(actual))
-                return false;
-
-            // Éviter les valeurs anormalement longues.
-            if (actual.Length > 256)
-                return false;
-
-            byte[] expectedHash = SHA256.HashData(
-                Encoding.UTF8.GetBytes(expected));
-
-            byte[] suppliedHash = SHA256.HashData(
-                Encoding.UTF8.GetBytes(actual));
-
-            return CryptographicOperations.FixedTimeEquals(
-                expectedHash,
-                suppliedHash);
         }
     }
 }

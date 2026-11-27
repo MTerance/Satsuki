@@ -77,19 +77,45 @@ namespace AkibaQuiz.Api.Controllers
         [ValidateAntiForgeryToken]
         [Admin("AkibaQuiz/Studio/RenameCategory")]
         public async Task<IActionResult> RenameCategory(
-            long id,
-            string name,
-            CancellationToken ct)
+        long id,
+        string name,
+        CancellationToken ct)
         {
             if (!await CanManageReferencesAsync())
             {
                 return Forbid();
             }
 
-            await _referenceService
-                .RenameCategoryAsync(id, name, ct);
+            try
+            {
+                await _referenceService.RenameCategoryAsync(
+                    id,
+                    name,
+                    ct);
 
-            return Ok();
+                return Ok();
+            }
+            catch (ApiValidationException ex)
+            {
+                return BadRequest(new
+                {
+                    error = ex.Message
+                });
+            }
+            catch (ApiConflictException ex)
+            {
+                return Conflict(new
+                {
+                    error = ex.Message
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new
+                {
+                    error = ex.Message
+                });
+            }
         }
 
         [HttpPost]

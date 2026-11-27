@@ -1,3 +1,4 @@
+
 using AkibaQuiz.Api.Mapping;
 using AkibaQuiz.Api.Security;
 using AkibaQuiz.Application.Interfaces;
@@ -11,36 +12,120 @@ namespace AkibaQuiz.Api.Controllers;
 [IgnoreAntiforgeryToken]
 [TypeFilter(typeof(AdminApiKeyFilter))]
 [TypeFilter(typeof(ApiExceptionFilter))]
-public sealed class QcmController(IQcmService service) : ControllerBase
+public sealed class QcmController(
+    IQcmService service,
+    IAuditActorProvider auditActorProvider)
+    : ControllerBase
 {
+    #region Lecture
+
     [HttpGet]
-    public async Task<IActionResult> GetAll(CancellationToken ct)
-        => Ok((await service.GetAllAsync(ct)).Select(QuizApiMapper.ToAdminDto).ToList());
+    public async Task<IActionResult> GetAll(
+        CancellationToken ct)
+    {
+        var items = await service.GetAllAsync(ct);
+
+        return Ok(
+            items.Select(QuizApiMapper.ToAdminDto).ToList());
+    }
 
     [HttpGet("{id:long}")]
-    public async Task<IActionResult> GetById(long id, CancellationToken ct)
+    public async Task<IActionResult> GetById(
+        long id,
+        CancellationToken ct)
     {
+        if (id <= 0)
+        {
+            return BadRequest(new
+            {
+                error = "Identifiant de QCM invalide."
+            });
+        }
+
         var item = await service.GetByIdAsync(id, ct);
-        return item is null ? NotFound() : Ok(QuizApiMapper.ToAdminDto(item));
+
+        return item is null
+            ? NotFound()
+            : Ok(QuizApiMapper.ToAdminDto(item));
     }
 
-    // Le endpoint courant prend SaveQcmRequest, pas QcmWrite.
+    #endregion
+
+    #region Creation
+
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] SaveQcmRequest input, CancellationToken ct)
+    public async Task<IActionResult> Create(
+        [FromBody] SaveQcmRequest input,
+        CancellationToken ct)
     {
-        var model = await service.SaveAsync(null, input, User.Identity?.Name ?? "anonymous", ct);
+        var actor = auditActorProvider.GetCurrent();
+
+        var model = await service.SaveAsync(
+            null,
+            input,
+            actor.ActorId,
+            ct);
+
         var dto = QuizApiMapper.ToAdminDto(model);
-        return CreatedAtAction(nameof(GetById), new { id = dto.Id }, dto);
+
+        return CreatedAtAction(
+            nameof(GetById),
+            new { id = dto.Id },
+            dto);
     }
+
+    #endregion
+
+    #region Modification
 
     [HttpPut("{id:long}")]
-    public async Task<IActionResult> Update(long id, [FromBody] SaveQcmRequest input, CancellationToken ct)
+    public async Task<IActionResult> Update(
+        long id,
+        [FromBody] SaveQcmRequest input,
+        CancellationToken ct)
     {
-        await service.SaveAsync(id, input, User.Identity?.Name ?? "anonymous", ct);
+        if (id <= 0)
+        {
+            return BadRequest(new
+            {
+                error = "Identifiant de QCM invalide."
+            });
+        }
+
+        var actor = auditActorProvider.GetCurrent();
+
+        await service.SaveAsync(
+            id,
+            input,
+            actor.ActorId,
+            ct);
+
         return NoContent();
     }
 
+    #endregion
+
+    #region Suppression
+
     [HttpDelete("{id:long}")]
-    public async Task<IActionResult> Delete(long id, CancellationToken ct)
-        => await service.DeleteAsync(id, ct) ? NoContent() : NotFound();
+    public async Task<IActionResult> Delete(
+        long id,
+        CancellationToken ct)
+    {
+        if (id <= 0)
+        {
+            return BadRequest(new
+            {
+                error = "Identifiant de QCM invalide."
+            });
+        }
+
+        var deleted = await service.DeleteAsync(id, ct);
+
+        return deleted
+            ? NoContent()
+            : NotFound();
+    }
+
+    #endregion
 }
