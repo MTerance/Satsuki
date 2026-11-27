@@ -20,64 +20,155 @@ public sealed class GameService(
     public Task<IReadOnlyList<GameSummaryModel>> GetSummariesAsync(CancellationToken ct)
         => repository.GetSummariesAsync(ct);
 
-    public async Task<GameFullModel?> GetFullAsync(long id, CancellationToken ct)
+
+    public async Task<GameFullModel?> GetFullAsync(
+        long id,
+        CancellationToken ct)
     {
-        var game = await repository.GetByIdAsync(id, ct);
-        if (game is null) return null;
+        // ==========================================
+        // 1. Validation de l'identifiant
+        // ==========================================
 
-        // Une même question peut apparaître dans plusieurs manches : un seul chargement par ID.
-        var questionCache = new Dictionary<long, QuestionAnswerModel>();
-        var qcmCache = new Dictionary<long, QcmModel>();
-        var fullRounds = new List<GameFullRoundModel>();
-
-        foreach (var round in game.Rounds.OrderBy(r => r.Position).ThenBy(r => r.Id))
+        if (id <= 0)
         {
-            var fullQuestions = new List<GameFullQuestionModel>();
-            foreach (var entry in round.Questions.OrderBy(q => q.Position).ThenBy(q => q.Id))
+            throw new ApiValidationException(
+                "Identifiant de Game invalide.");
+        }
+
+        ct.ThrowIfCancellationRequested();
+
+        // ==========================================
+        // 2. Chargement du Game
+        // ==========================================
+
+        var game = await repository.GetByIdAsync(id, ct);
+
+        if (game is null)
+            return null;
+
+        // ==========================================
+        // 3. Validation structurelle
+        // ==========================================
+
+        ValidateStoredGame(game);
+
+        // ==========================================
+        // 4. Initialisation des caches locaux
+        // ==========================================
+
+        var questionCache =
+            new Dictionary<long, QuestionAnswerModel>();
+
+        var qcmCache =
+            new Dictionary<long, QcmModel>();
+
+        var fullRounds =
+            new List<GameFullRoundModel>();
+
+        // ==========================================
+        // 5. Construction des manches
+        // ==========================================
+
+        foreach (var round in game.Rounds
+            .OrderBy(r => r.Position)
+            .ThenBy(r => r.Id))
+        {
+            ct.ThrowIfCancellationRequested();
+
+            var fullQuestions =
+                new List<GameFullQuestionModel>();
+
+            foreach (var entry in round.Questions
+                .OrderBy(q => q.Position)
+                .ThenBy(q => q.Id))
             {
-                bool hasQuestion = entry.IdQuestionAnswer is > 0;
-                bool hasQcm = entry.IdQCMQuestion is > 0;
-                if (entry.IdListQuestionsAnswers.HasValue || hasQuestion == hasQcm
-                    || (entry.IdQuestionAnswer.HasValue && !hasQuestion)
-                    || (entry.IdQCMQuestion.HasValue && !hasQcm))
-                    throw new ApiConflictException($"Référence invalide dans RoundQuestions #{entry.Id}.");
+                ct.ThrowIfCancellationRequested();
 
                 QuestionAnswerModel? question = null;
                 QcmModel? qcm = null;
+
+                // ==================================
+                // Chargement QuestionAnswer
+                // ==================================
+
                 if (entry.IdQuestionAnswer is long questionId)
                 {
-                    if (!questionCache.TryGetValue(questionId, out question))
+                    if (!questionCache.TryGetValue(
+                        questionId,
+                        out question))
                     {
-                        question = await questions.GetByIdAsync(questionId, ct)
-                            ?? throw new ApiConflictException($"QuestionAnswer #{questionId} introuvable.");
-                        questionCache.Add(questionId, question);
+                        question = await questions.GetByIdAsync(
+                            questionId,
+                            ct)
+                            ?? throw new ApiConflictException(
+                                $"QuestionAnswer #{questionId} " +
+                                "introuvable.");
+
+                        questionCache.Add(
+                            questionId,
+                            question);
                     }
                 }
+
+                // ==================================
+                // Chargement QCM
+                // ==================================
+
                 else if (entry.IdQCMQuestion is long qcmId)
                 {
                     if (!qcmCache.TryGetValue(qcmId, out qcm))
                     {
                         qcm = await qcms.GetByIdAsync(qcmId, ct)
-                            ?? throw new ApiConflictException($"QCM #{qcmId} introuvable.");
+                            ?? throw new ApiConflictException(
+                                $"QCM #{qcmId} introuvable.");
+
                         qcmCache.Add(qcmId, qcm);
                     }
                 }
+
+                // ==================================
+                // Construction de la question
+                // ==================================
+
                 fullQuestions.Add(new GameFullQuestionModel
                 {
-                    Id = entry.Id, Position = entry.Position,
-                    IdQuestionAnswer = entry.IdQuestionAnswer,
-                    IdQCMQuestion = entry.IdQCMQuestion,
-                    QuestionAnswer = question, Qcm = qcm
+                    Id = entry.Id,
+
+                    Position = entry.Position,
+
+                    IdQuestionAnswer =
+                        entry.IdQuestionAnswer,
+
+                    IdQCMQuestion =
+                        entry.IdQCMQuestion,
+
+                    QuestionAnswer = question,
+
+                    Qcm = qcm
                 });
             }
+
             fullRounds.Add(new GameFullRoundModel
             {
-                Id = round.Id, Position = round.Position, Questions = fullQuestions
+                Id = round.Id,
+
+                Position = round.Position,
+
+                Questions = fullQuestions
             });
         }
-        return new GameFullModel { Game = game, Rounds = fullRounds };
-    }
 
+        // ==========================================
+        // 6. Construction du Game complet
+        // ==========================================
+
+        return new GameFullModel
+        {
+            Game = game,
+
+            Rounds = fullRounds
+        };
+    }
 
     public async Task<GameModel> SaveAsync(
         long? id,
@@ -106,6 +197,54 @@ public sealed class GameService(
 
 
     public Task<bool> DeleteAsync(long id, CancellationToken ct) => repository.DeleteAsync(id, ct);
+
+    private static void ValidateStoredGame(GameModel game)
+    {
+        var request = new SaveGameRequest
+        {
+            Name = game.Name,
+
+            Rounds = game.Rounds
+                .OrderBy(r => r.Position)
+                .ThenBy(r => r.Id)
+                .Select(round => new SaveGameRoundRequest
+                {
+                    Position = round.Position,
+
+                    Questions = round.Questions
+                        .OrderBy(q => q.Position)
+                        .ThenBy(q => q.Id)
+                        .Select(question =>
+                            new SaveRoundQuestionRequest
+                            {
+                                Position = question.Position,
+
+                                IdQuestionAnswer =
+                                    question.IdQuestionAnswer,
+
+                                IdQCMQuestion =
+                                    question.IdQCMQuestion,
+
+                                IdListQuestionsAnswers =
+                                    question.IdListQuestionsAnswers
+                            })
+                        .ToList()
+                })
+                .ToList()
+        };
+
+        try
+        {
+            ValidateGame(request);
+        }
+        catch (ApiValidationException ex)
+        {
+            throw new ApiConflictException(
+                $"Le Game #{game.Id} contient une " +
+                $"structure invalide : {ex.Message}");
+        }
+    }
+
 
 
     private static void ValidateGame(SaveGameRequest value)
